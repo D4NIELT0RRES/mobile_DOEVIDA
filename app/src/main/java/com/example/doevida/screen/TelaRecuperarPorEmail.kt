@@ -22,7 +22,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,7 +51,7 @@ fun TelaRecuperacaoEmail(navController: NavController) {
     ) {
         Box(
             modifier = Modifier
-                .size(300.dp)
+                .size(250.dp)
                 .offset(x = (-100).dp, y = (-120).dp)
                 .background(
                     color = Color(0xFF990410),

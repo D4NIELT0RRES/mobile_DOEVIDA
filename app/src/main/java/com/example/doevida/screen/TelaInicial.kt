@@ -47,7 +47,7 @@ fun TelaInicial(navController: NavController) {
 
         Box(
             modifier = Modifier
-                .size(300.dp)
+                .size(250.dp)
                 .offset(x = (-100).dp, y = (-120).dp)
                 .background(
                     color = Color(0xFF990410),
