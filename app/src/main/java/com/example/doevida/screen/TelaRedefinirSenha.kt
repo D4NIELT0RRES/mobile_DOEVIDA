@@ -21,6 +21,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TelaRedefinirSenha(navController: NavController) {
@@ -41,6 +42,7 @@ fun TelaRedefinirSenha(navController: NavController) {
                     shape = CircleShape
                 )
         )
+
         IconButton(
             onClick = { navController.navigate("tela_inicial") },
             modifier = Modifier
@@ -77,6 +79,8 @@ fun TelaRedefinirSenha(navController: NavController) {
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.align(Alignment.Start)
             )
+
+            // Campo Email
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -85,11 +89,6 @@ fun TelaRedefinirSenha(navController: NavController) {
                     .padding(vertical = 8.dp)
                     .height(56.dp),
                 placeholder = { Text("Email ou Usuário", color = Color.White) },
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    containerColor = Color(0xFF990410),
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent
-                ),
                 shape = RoundedCornerShape(8.dp),
                 leadingIcon = {
                     Icon(
@@ -98,7 +97,18 @@ fun TelaRedefinirSenha(navController: NavController) {
                         tint = Color.White,
                         modifier = Modifier.size(24.dp)
                     )
-                }
+                },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = Color(0xFF990410),
+                    unfocusedContainerColor = Color(0xFF990410),
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedPlaceholderColor = Color.White,
+                    unfocusedPlaceholderColor = Color.White,
+                    cursorColor = Color.White
+                )
             )
 
             Text(
@@ -108,6 +118,8 @@ fun TelaRedefinirSenha(navController: NavController) {
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.align(Alignment.Start)
             )
+
+            // Campo Senha
             OutlinedTextField(
                 value = senha,
                 onValueChange = { senha = it },
@@ -117,11 +129,6 @@ fun TelaRedefinirSenha(navController: NavController) {
                     .height(56.dp),
                 placeholder = { Text("Senha", color = Color.White) },
                 visualTransformation = PasswordVisualTransformation(),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    containerColor = Color(0xFF990410),
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent
-                ),
                 shape = RoundedCornerShape(8.dp),
                 leadingIcon = {
                     Icon(
@@ -130,7 +137,18 @@ fun TelaRedefinirSenha(navController: NavController) {
                         tint = Color.White,
                         modifier = Modifier.size(24.dp)
                     )
-                }
+                },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = Color(0xFF990410),
+                    unfocusedContainerColor = Color(0xFF990410),
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedPlaceholderColor = Color.White,
+                    unfocusedPlaceholderColor = Color.White,
+                    cursorColor = Color.White
+                )
             )
 
             Text(
@@ -175,16 +193,16 @@ fun TelaRedefinirSenha(navController: NavController) {
                 color = Color(0xFF990410),
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp,
-                modifier = Modifier
-                    .clickable { /* navegação para cadastro */ }
+                modifier = Modifier.clickable { /* navegação para cadastro */ }
             )
         }
     }
 }
 
-@Preview
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun TelaRedefinirSenhaPreview() {
     val navController = rememberNavController()
     TelaRedefinirSenha(navController = navController)
 }
+

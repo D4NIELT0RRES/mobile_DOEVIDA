@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -89,14 +90,22 @@ fun TelaCadastro(navController: NavController) {
                         .padding(bottom = 4.dp)
                 )
                 OutlinedTextField(
-                    value = "",
-                    onValueChange = {},
-                    placeholder = { Text("Digite seu nome completo", color = Color.White)},
+                    value = nomeCompleto.value,
+                    onValueChange = { nomeCompleto.value = it },
+                    placeholder = { Text("Digite seu nome completo", color = Color.White) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF990410)),
+                        .background(Color(0xFF990410), shape = RoundedCornerShape(8.dp)),
                     shape = RoundedCornerShape(8.dp),
-                    colors = TextFieldDefaults.outlinedShape
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.White,
+                        unfocusedBorderColor = Color.White,
+                        cursorColor = Color.White,
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedPlaceholderColor = Color.White,
+                        unfocusedPlaceholderColor = Color.White
+                    )
                 )
             }
         }
