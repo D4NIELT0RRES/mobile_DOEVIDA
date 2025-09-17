@@ -4,9 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,7 +23,9 @@ import androidx.compose.ui.unit.sp
 import com.example.doevida.R
 
 @Composable
-fun TelaLearnMore() {
+fun TelaLearnMore(
+    onBackClick: () -> Unit = {} // callback para navegação
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -68,62 +68,76 @@ fun TelaLearnMore() {
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // Top vermelho com logo centralizado
+            // Top vermelho com logo alinhado à esquerda
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(
-                        color = Color(0xFF990410),
-                        shape = RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp)
-                    )
-                    .padding(vertical = 24.dp),
-                contentAlignment = Alignment.Center
+                    .height(80.dp)
+                    .background(Color(0xFF990410)),
+                contentAlignment = Alignment.CenterStart
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
+                    modifier = Modifier.padding(start = 64.dp) // espaço para o botão
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.logocadastro), // ícone gota
+                        painter = painterResource(id = R.drawable.logolermais),
                         contentDescription = "Logo",
-                        modifier = Modifier.size(50.dp)
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(70.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "DOEVIDA",
-                        fontSize = 24.sp,
+                        fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
                 }
+
+                // Botão de voltar
+                IconButton(
+                    onClick = { onBackClick() },
+                    modifier = Modifier
+                        .padding(start = 12.dp)
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFF7B020C)) // tom mais escuro para destacar
+                        .align(Alignment.CenterStart)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.voltar), // seu ícone de seta
+                        contentDescription = "Voltar",
+                        tint = Color.White
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Título "Learn More"
             Text(
                 text = "Learn More",
-                fontSize = 22.sp,
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF990410),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Imagem central
             Image(
-                painter = painterResource(id = R.drawable.image), // sua ilustração
+                painter = painterResource(id = R.drawable.image),
                 contentDescription = "Ilustração Doação",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
-                    .padding(horizontal = 32.dp),
+                    .height(180.dp)
+                    .padding(horizontal = 16.dp),
                 contentScale = ContentScale.Fit
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Texto explicativo com negrito
             Text(
@@ -137,30 +151,30 @@ fun TelaLearnMore() {
                     }
                     append("Acreditamos que cada gota conta, e que juntos podemos salvar milhares de vidas.")
                 },
-                fontSize = 16.sp,
+                fontSize = 15.sp,
                 color = Color.Black,
-                textAlign = TextAlign.Center,
-                lineHeight = 22.sp,
+                textAlign = TextAlign.Justify,
+                lineHeight = 21.sp,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
+                    .padding(horizontal = 20.dp)
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Frase final em vermelho
             Text(
                 text = "\"Uma atitude salva até quatro vidas, seja você essa atitude.\"",
-                fontSize = 15.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF990410),
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 20.dp)
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
