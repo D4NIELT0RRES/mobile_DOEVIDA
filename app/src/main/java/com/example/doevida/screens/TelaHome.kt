@@ -15,6 +15,8 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,6 +30,9 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+
 
 @Composable
 fun TelaHome(modifier: Modifier = Modifier) {
@@ -170,6 +175,16 @@ fun TelaHome(modifier: Modifier = Modifier) {
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
+
+                HorizontalDivider(
+                    modifier = Modifier
+                        .padding(
+                            top = 10.dp,
+                            start = 6.dp,
+                            end = 6.dp
+                        ),
+                    color = Color(0xFFD9D9D9)
+                )
             }
         }
     }
@@ -207,66 +222,71 @@ fun CardButton(text: String, imageRes: Int) {
 }
 //-------------------------------------
 @Composable
-fun BarraDeNavegacao(navController: NavController?) {
+fun BarraDeNavegacao(navController: NavController) {
+    var selectedItem by remember { mutableStateOf("home") }
+
     NavigationBar(
-        containerColor = Color(0xFF990410) //mudar a cor
+        containerColor = Color.White
     ) {
-        NavigationBarItem(
-            selected = false,
-            onClick = { navController!!.navigate(route = "tela_home") },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Home,
-                    contentDescription = "Home",
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
-            },
-            label = {
-                Text(
-                    text = "Home",
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-            }
+        val items = listOf(
+            "home" to Icons.Default.Home,
+            "noticias" to Icons.Default.Newspaper,
+            "profile" to Icons.Default.Person
         )
-        NavigationBarItem(
-            selected = false,
-            onClick = { //arrumar depois
+
+        items.forEach { (route, icon) ->
+            NavigationBarItem(
+                selected = selectedItem == route,
+                onClick = {
+                    selectedItem = route
+                    navController.navigate(route)
                 },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Newspaper,
-                    contentDescription = "Notícias",
-                    tint = MaterialTheme.colorScheme.onPrimary
+                icon = {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = route,
+                                tint = if (selectedItem == route)
+                                    Color.White
+                                else Color.Black
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+
+                            Text(
+                                text = route.replaceFirstChar { it.uppercase() },
+                                color = if (selectedItem == route)
+                                    Color.White
+                                else Color.Black,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        if (selectedItem == route) {
+
+                            Spacer(modifier = Modifier.height(4.dp))
+                        }
+                    }
+                },
+                alwaysShowLabel = false,
+                label = {
+                    Spacer(modifier = Modifier.height(0.dp)) },
+                colors = NavigationBarItemDefaults.colors(
+                    indicatorColor = Color(0xFF990410)
                 )
-            },
-            label = {
-                Text(
-                    text = "Notícias",
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-            }
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = {
-            // arrumar depois
-            },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Profile",
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
-            },
-            label = {
-                Text(
-                    text = "Profile",
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-            }
-        )
+            )
+        }
     }
 }
+
+
 
 @Preview(showBackground = true)
 @Composable
