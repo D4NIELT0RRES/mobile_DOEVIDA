@@ -83,7 +83,7 @@ fun TelaRedefinirSenha(navController: NavController) {
             verticalArrangement = Arrangement.Center
         ) {
             Image(
-                painter = painterResource(id = R.drawable.logologin),
+                painter = painterResource(id = R.drawable.logoredefinir),
                 contentDescription = "Logo DOEVIDA",
                 modifier = Modifier
                     .size(180.dp)
@@ -104,7 +104,7 @@ fun TelaRedefinirSenha(navController: NavController) {
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
                     .height(56.dp),
-                placeholder = { Text("Email ou Usuário", color = Color.White) },
+                placeholder = { Text("Digite Uma Senha", color = Color.White) },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Color(0xFF990410),
                     unfocusedContainerColor = Color(0xFF990410),
