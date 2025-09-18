@@ -1,9 +1,7 @@
-package com.example.doevida.screen
+package com.example.doevida.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -34,7 +32,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,9 +41,8 @@ import com.example.doevida.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TelaLogin(navController: NavController) {
+fun TelaRecuperacaoEmail(navController: NavController) {
     var email by remember { mutableStateOf("") }
-    var senha by remember { mutableStateOf("") }
 
     Box(
         modifier = Modifier
@@ -62,22 +58,36 @@ fun TelaLogin(navController: NavController) {
                     shape = CircleShape
                 )
         )
+        IconButton(
+            onClick = { navController.navigate("tela_login") },
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(top = 16.dp, start = 16.dp)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.voltar),
+                contentDescription = "Voltar",
+                tint = Color.White,
+                modifier = Modifier.size(20.dp)
+            )
+        }
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
         ) {
+            Spacer(modifier = Modifier.weight(1f))
+
             Image(
-                painter = painterResource(id = R.drawable.logologin),
+                painter = painterResource(id = R.drawable.logorecuperacao),
                 contentDescription = "Logo DOEVIDA",
                 modifier = Modifier
                     .size(180.dp)
                     .padding(bottom = 32.dp)
             )
-
+            Spacer(modifier = Modifier.weight(0.5f))
             Text(
                 text = "Digite seu Email ou Usuário",
                 fontSize = 14.sp,
@@ -113,94 +123,34 @@ fun TelaLogin(navController: NavController) {
                 }
             )
 
-            Text(
-                text = "Digite sua Senha",
-                fontSize = 14.sp,
-                color = Color(0xFF990410),
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.align(Alignment.Start)
-            )
-            OutlinedTextField(
-                value = senha,
-                onValueChange = { senha = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-                    .height(56.dp),
-                placeholder = { Text("Senha", color = Color.White) },
-                visualTransformation = PasswordVisualTransformation(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFF990410),
-                    unfocusedContainerColor = Color(0xFF990410),
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
-                    cursorColor = Color.White
-                ),
-                shape = RoundedCornerShape(8.dp),
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.senha),
-                        contentDescription = "Ícone de senha",
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            )
-
-            Text(
-                text = "Esqueci minha senha?",
-                color = Color(0xFF990410),
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .align(Alignment.End)
-                    .clickable { /* navegação para recuperação */ }
-                    .padding(top = 8.dp, bottom = 32.dp),
-                fontSize = 14.sp
-            )
-
-            Spacer(modifier = Modifier.height(15.dp))
+            Spacer(modifier = Modifier.weight(1f))
 
             Button(
-                onClick = { /* login */ },
+                onClick = { navController.navigate("tela_redefinir_senha") },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF990410)
                 ),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
                     .height(48.dp)
-                    .width(130.dp)
+                    .width(200.dp)
             ) {
                 Text(
-                    text = "Entrar",
+                    text = "Concluir Nova Senha",
                     color = Color.White,
-                    fontSize = 18.sp,
+                    fontSize = 15.sp,
                     fontWeight = FontWeight.Medium
                 )
             }
 
-            Text(
-                text = "Não tem uma conta?",
-                color = Color(0xFF990410),
-                fontSize = 14.sp,
-                modifier = Modifier.padding(top = 32.dp)
-            )
-            Text(
-                text = "Fazer cadastro",
-                color = Color(0xFF990410),
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                modifier = Modifier
-                    .clickable { /* navegação para cadastro */ }
-            )
+            Spacer(modifier = Modifier.weight(0.5f))
         }
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
+@Preview
 @Composable
-private fun TelaLoginPreview() {
+private fun TelaRecuperacaoEmailPreview() {
     val navController = rememberNavController()
-    TelaLogin(navController = navController)
+    TelaRecuperacaoEmail(navController = navController)
 }

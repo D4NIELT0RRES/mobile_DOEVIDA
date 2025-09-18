@@ -1,4 +1,4 @@
-package com.example.doevida.screen
+package com.example.doevida.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

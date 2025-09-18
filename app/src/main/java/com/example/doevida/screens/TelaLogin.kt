@@ -1,4 +1,4 @@
-package com.example.doevida.screen
+package com.example.doevida.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -44,7 +44,7 @@ import com.example.doevida.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TelaRedefinirSenha(navController: NavController) {
+fun TelaLogin(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var senha by remember { mutableStateOf("") }
 
@@ -55,13 +55,26 @@ fun TelaRedefinirSenha(navController: NavController) {
     ) {
         Box(
             modifier = Modifier
-                .size(250.dp)
+                .size(300.dp)
                 .offset(x = (-100).dp, y = (-120).dp)
                 .background(
                     color = Color(0xFF990410),
                     shape = CircleShape
                 )
         )
+        IconButton(
+            onClick = { navController.navigate("tela_inicial") },
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(top = 16.dp, start = 16.dp)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.voltar),
+                contentDescription = "Voltar",
+                tint = Color.White,
+                modifier = Modifier.size(20.dp)
+            )
+        }
 
         Column(
             modifier = Modifier
@@ -79,7 +92,7 @@ fun TelaRedefinirSenha(navController: NavController) {
             )
 
             Text(
-                text = "Digite sua nova senha",
+                text = "Digite seu Email ou Usuário",
                 fontSize = 14.sp,
                 color = Color(0xFF990410),
                 fontWeight = FontWeight.Bold,
@@ -113,11 +126,8 @@ fun TelaRedefinirSenha(navController: NavController) {
                 }
             )
 
-            Spacer(modifier = Modifier.height(30.dp))
-
-
             Text(
-                text = "Confirme sua senha",
+                text = "Digite sua Senha",
                 fontSize = 14.sp,
                 color = Color(0xFF990410),
                 fontWeight = FontWeight.Bold,
@@ -152,32 +162,58 @@ fun TelaRedefinirSenha(navController: NavController) {
                 }
             )
 
-            Spacer(modifier = Modifier.height(70.dp))
+            Text(
+                text = "Esqueci minha senha?",
+                color = Color(0xFF990410),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .clickable { navController.navigate("tela_recuperacao")}
+                    .padding(top = 8.dp, bottom = 32.dp),
+                fontSize = 14.sp
+            )
+
+            Spacer(modifier = Modifier.height(15.dp))
 
             Button(
                 onClick = { /* login */ },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF990410)
                 ),
-                shape = RoundedCornerShape(13.dp),
+                shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
-                    .height(46.dp)
-                    .width(209.dp)
+                    .height(48.dp)
+                    .width(130.dp)
             ) {
                 Text(
-                    text = "Confirmar nova senha",
+                    text = "Entrar",
                     color = Color.White,
-                    fontSize = 16.sp,
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.Medium
                 )
             }
+
+            Text(
+                text = "Não tem uma conta?",
+                color = Color(0xFF990410),
+                fontSize = 14.sp,
+                modifier = Modifier.padding(top = 32.dp)
+            )
+            Text(
+                text = "Fazer cadastro",
+                color = Color(0xFF990410),
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp,
+                modifier = Modifier
+                    .clickable { navController.navigate("tela_cadastro") }
+            )
         }
     }
 }
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-private fun TelaRedefinirSenhaPreview() {
+private fun TelaLoginPreview() {
     val navController = rememberNavController()
-    TelaRedefinirSenha(navController = navController)
+    TelaLogin(navController = navController)
 }

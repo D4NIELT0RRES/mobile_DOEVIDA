@@ -1,7 +1,8 @@
-package com.example.doevida.screen
+package com.example.doevida.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -57,7 +60,19 @@ fun TelaCadastro(navController: NavController) {
                     shape = CircleShape
                 )
         )
-
+        IconButton(
+            onClick = { navController.navigate("tela_inicial") },
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(top = 16.dp, start = 16.dp)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.voltar),
+                contentDescription = "Voltar",
+                tint = Color.White,
+                modifier = Modifier.size(20.dp)
+            )
+        }
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -234,6 +249,8 @@ fun TelaCadastro(navController: NavController) {
             Text(
                 text = "Fazer login",
                 color = Color(0xFFB71C1C),
+                modifier = Modifier
+                    .clickable { navController.navigate("tela_login")},
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )
