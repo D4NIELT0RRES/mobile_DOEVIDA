@@ -1,5 +1,7 @@
 package com.example.doevida.screens
 
+import android.util.Log
+import android.util.Patterns
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,8 +26,11 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,20 +42,61 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
+import com.example.doevida.model.Cadastro
+import com.example.doevida.service.RetrofitFactory
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun TelaCadastro(navController: NavController) {
+
+    val doevidaApi = RetrofitFactory().getUserService()
+    val coroutineScope = rememberCoroutineScope()
 
     val nomeCompleto = remember { mutableStateOf("") }
     val email = remember { mutableStateOf("") }
     val senha = remember { mutableStateOf("") }
     val confirmarSenha = remember { mutableStateOf("") }
 
+    //mensagens de erro
+    var isNomeError by remember { mutableStateOf<String?>(null) }
+    var isEmailError by remember { mutableStateOf<String?>(null) }
+    var isSenhaError by remember { mutableStateOf<String?>(null) }
+    var isConfirmarSenhaError by remember { mutableStateOf<String?>(null) }
 
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(color = Color.White)
-    ){
+    fun validarCadastro(): Boolean {
+        isNomeError = when {
+            nomeCompleto.value.isBlank() -> "Campo obrigatório"
+            nomeCompleto.value.length < 2 -> "Nome deve ter pelo menos 2 letras"
+            else -> null
+        }
+        isEmailError = when {
+            email.value.isBlank() -> "Campo obrigatório"
+            !Patterns.EMAIL_ADDRESS.matcher(email.value).matches() -> "Formato inválido"
+            else -> null
+        }
+        isSenhaError = when {
+            senha.value.isBlank() -> "Campo obrigatório"
+            senha.value.length < 6 -> "Senha fraca"
+            else -> null
+        }
+        isConfirmarSenhaError = when {
+            confirmarSenha.value.isBlank() -> "Campo obrigatório"
+            senha.value != confirmarSenha.value -> "Senhas não coincidem"
+            else -> null
+        }
+
+        return listOf(isNomeError, isEmailError, isSenhaError, isConfirmarSenhaError)
+            .all { it == null }
+    }
+
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = Color.White)
+    ) {
         Box(
             modifier = Modifier
                 .size(250.dp)
@@ -98,7 +144,7 @@ fun TelaCadastro(navController: NavController) {
                     .fillMaxWidth()
                     .padding(horizontal = 1.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
-            ){
+            ) {
                 Text(
                     text = "Nome Completo",
                     fontSize = 14.sp,
@@ -111,7 +157,12 @@ fun TelaCadastro(navController: NavController) {
                 OutlinedTextField(
                     value = nomeCompleto.value,
                     onValueChange = { nomeCompleto.value = it },
-                    placeholder = { Text("Digite seu nome completo", color = Color(0x80FFFFFF)) },
+                    placeholder = {
+                        Text(
+                            "Digite seu nome completo",
+                            color = Color(0x80FFFFFF)
+                        )
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(Color(0xFF990410), shape = RoundedCornerShape(8.dp)),
@@ -125,6 +176,11 @@ fun TelaCadastro(navController: NavController) {
                         focusedPlaceholderColor = Color.White,
                         unfocusedPlaceholderColor = Color.White
                     )
+                )
+                if (isNomeError != null) Text(
+                    isNomeError!!,
+                    color = Color.Red,
+                    fontSize = 12.sp
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -140,8 +196,8 @@ fun TelaCadastro(navController: NavController) {
                         .padding(bottom = 4.dp)
                 )
                 OutlinedTextField(
-                    value = nomeCompleto.value,
-                    onValueChange = { nomeCompleto.value = it },
+                    value = email.value,
+                    onValueChange = { email.value = it },
                     placeholder = { Text("Digite seu e-mail", color = Color(0x80FFFFFF)) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -157,6 +213,11 @@ fun TelaCadastro(navController: NavController) {
                         unfocusedPlaceholderColor = Color.White
                     )
                 )
+                if (isEmailError != null) Text(
+                    isEmailError!!,
+                    color = Color.Red,
+                    fontSize = 12.sp
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -171,8 +232,8 @@ fun TelaCadastro(navController: NavController) {
                         .padding(bottom = 4.dp)
                 )
                 OutlinedTextField(
-                    value = nomeCompleto.value,
-                    onValueChange = { nomeCompleto.value = it },
+                    value = senha.value,
+                    onValueChange = { senha.value = it },
                     placeholder = { Text("Digite sua senha", color = Color(0x80FFFFFF)) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -188,6 +249,11 @@ fun TelaCadastro(navController: NavController) {
                         unfocusedPlaceholderColor = Color.White
                     )
                 )
+                if (isSenhaError != null) Text(
+                    isSenhaError!!,
+                    color = Color.Red,
+                    fontSize = 12.sp
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -201,8 +267,8 @@ fun TelaCadastro(navController: NavController) {
                         .padding(bottom = 4.dp)
                 )
                 OutlinedTextField(
-                    value = nomeCompleto.value,
-                    onValueChange = { nomeCompleto.value = it },
+                    value = confirmarSenha.value,
+                    onValueChange = { confirmarSenha.value = it },
                     placeholder = { Text("Confirme sua senha", color = Color(0x80FFFFFF)) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -218,11 +284,18 @@ fun TelaCadastro(navController: NavController) {
                         unfocusedPlaceholderColor = Color.White
                     )
                 )
+                if (isConfirmarSenhaError != null) Text(
+                    isConfirmarSenhaError!!,
+                    color = Color.Red,
+                    fontSize = 12.sp
+                )
             }
             Spacer(modifier = Modifier.height(60.dp))
 
             Button(
-                onClick = {},
+                onClick = {
+
+                },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF990410)
                 ),
@@ -250,12 +323,16 @@ fun TelaCadastro(navController: NavController) {
                 text = "Fazer login",
                 color = Color(0xFFB71C1C),
                 modifier = Modifier
-                    .clickable { navController.navigate("tela_login")},
+                    .clickable { navController.navigate("tela_login") },
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )
         }
     }
+}
+
+fun RetrofitFactory.Companion.getUserService() {
+    TODO("Not yet implemented")
 }
 
 @Preview(showBackground = true, showSystemUi = true)
