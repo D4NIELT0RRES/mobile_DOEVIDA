@@ -83,11 +83,13 @@ fun TelaLearnMore() {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.logocadastro), // ícone gota
+                    Image(
+                        painter = painterResource(id = R.drawable.logolermais),
                         contentDescription = "Logo",
-                        modifier = Modifier.size(50.dp)
+                        modifier = Modifier.size(60.dp),
+                        contentScale = ContentScale.Fit
                     )
+
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "DOEVIDA",
@@ -102,7 +104,7 @@ fun TelaLearnMore() {
 
             // Título "Learn More"
             Text(
-                text = "Learn More",
+                text = "Ler mais",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF990410),

@@ -71,7 +71,7 @@ fun TelaRedefinirSenha(navController: NavController) {
             verticalArrangement = Arrangement.Center
         ) {
             Image(
-                painter = painterResource(id = R.drawable.logologin),
+                painter = painterResource(id = R.drawable.logoredefinirsenha),
                 contentDescription = "Logo DOEVIDA",
                 modifier = Modifier
                     .size(180.dp)
