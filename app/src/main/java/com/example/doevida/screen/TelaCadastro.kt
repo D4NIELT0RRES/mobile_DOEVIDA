@@ -2,8 +2,10 @@ package com.example.doevida.screen
 
 import android.util.Log
 import android.util.Patterns
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -31,19 +34,22 @@ import com.example.doevida.service.RetrofitFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 @Composable
 fun TelaCadastro(navController: NavController) {
 
     val doevidaApi = RetrofitFactory().getUserService()
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
-    val nomeCompleto = remember { mutableStateOf("") }
+    var nomeCompleto = remember { mutableStateOf("") }
     val email = remember { mutableStateOf("") }
     val senha = remember { mutableStateOf("") }
     val confirmarSenha = remember { mutableStateOf("") }
 
-<<<<<<< HEAD:app/src/main/java/com/example/doevida/screens/TelaCadastro.kt
     //mensagens de erro
     var isNomeError by remember { mutableStateOf<String?>(null) }
     var isEmailError by remember { mutableStateOf<String?>(null) }
@@ -76,9 +82,6 @@ fun TelaCadastro(navController: NavController) {
             .all { it == null }
     }
 
-
-=======
->>>>>>> a789be573f21f06ad721149deadbb8a6cbb49d3e:app/src/main/java/com/example/doevida/screen/TelaCadastro.kt
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -113,216 +116,234 @@ fun TelaCadastro(navController: NavController) {
 
             Spacer(modifier = Modifier.height(39.dp))
 
-<<<<<<< HEAD:app/src/main/java/com/example/doevida/screens/TelaCadastro.kt
-
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 1.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-=======
-            Column {
-                // Nome Completo
->>>>>>> a789be573f21f06ad721149deadbb8a6cbb49d3e:app/src/main/java/com/example/doevida/screen/TelaCadastro.kt
-                Text(
-                    text = "Nome Completo",
-                    fontSize = 14.sp,
-                    color = Color(0xFF990410),
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 4.dp, start = 1.dp),
-                    textAlign = TextAlign.Start
-                )
-                OutlinedTextField(
-                    value = nomeCompleto.value,
-                    onValueChange = { nomeCompleto.value = it },
-                    placeholder = {
-                        Text(
-                            "Digite seu nome completo",
-                            color = Color(0x80FFFFFF)
+                Column {
+                    Text(
+                        text = "Nome Completo",
+                        fontSize = 14.sp,
+                        color = Color(0xFF990410),
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 4.dp, start = 1.dp),
+                        textAlign = TextAlign.Start
+                    )
+                    OutlinedTextField(
+                        value = nomeCompleto.value,
+                        onValueChange = { nomeCompleto.value = it },
+                        placeholder = {
+                            Text(
+                                "Digite seu nome completo",
+                                color = Color(0x80FFFFFF)
+                            )
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFF990410), shape = RoundedCornerShape(8.dp)),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color.White,
+                            unfocusedBorderColor = Color.White,
+                            cursorColor = Color.White,
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedPlaceholderColor = Color.White,
+                            unfocusedPlaceholderColor = Color.White
                         )
+                    )
+                    if (isNomeError != null) Text(
+                        isNomeError!!,
+                        color = Color.Red,
+                        fontSize = 12.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // E-mail
+                    Text(
+                        text = "E-mail",
+                        fontSize = 14.sp,
+                        color = Color(0xFF990410),
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 4.dp, start = 1.dp),
+                        textAlign = TextAlign.Start
+                    )
+                    OutlinedTextField(
+                        value = email.value,
+                        onValueChange = { email.value = it },
+                        placeholder = { Text("Digite seu e-mail", color = Color(0x80FFFFFF)) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFF990410), shape = RoundedCornerShape(8.dp)),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color.White,
+                            unfocusedBorderColor = Color.White,
+                            cursorColor = Color.White,
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedPlaceholderColor = Color.White,
+                            unfocusedPlaceholderColor = Color.White
+                        )
+                    )
+                    if (isEmailError != null) Text(
+                        isEmailError!!,
+                        color = Color.Red,
+                        fontSize = 12.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Senha
+                    Text(
+                        text = "Digite sua senha",
+                        fontSize = 14.sp,
+                        color = Color(0xFF990410),
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 4.dp, start = 1.dp),
+                        textAlign = TextAlign.Start
+                    )
+                    OutlinedTextField(
+                        value = senha.value,
+                        onValueChange = { senha.value = it },
+                        placeholder = { Text("Digite sua senha", color = Color(0x80FFFFFF)) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFF990410), shape = RoundedCornerShape(8.dp)),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color.White,
+                            unfocusedBorderColor = Color.White,
+                            cursorColor = Color.White,
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedPlaceholderColor = Color.White,
+                            unfocusedPlaceholderColor = Color.White
+                        )
+                    )
+                    if (isSenhaError != null) Text(
+                        isSenhaError!!,
+                        color = Color.Red,
+                        fontSize = 12.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Confirmar Senha
+                    Text(
+                        text = "Confirme sua senha",
+                        fontSize = 14.sp,
+                        color = Color(0xFF990410),
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 4.dp, start = 1.dp),
+                        textAlign = TextAlign.Start
+                    )
+                    OutlinedTextField(
+                        value = confirmarSenha.value,
+                        onValueChange = { confirmarSenha.value = it },
+                        placeholder = { Text("Confirme sua senha", color = Color(0x80FFFFFF)) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFF990410), shape = RoundedCornerShape(8.dp)),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color.White,
+                            unfocusedBorderColor = Color.White,
+                            cursorColor = Color.White,
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedPlaceholderColor = Color.White,
+                            unfocusedPlaceholderColor = Color.White
+                        )
+                    )
+                    if (isConfirmarSenhaError != null) Text(
+                        isConfirmarSenhaError!!,
+                        color = Color.Red,
+                        fontSize = 12.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(60.dp))
+
+                Button(
+                    onClick = {
+                           if (validarCadastro()) {
+                               val cadastro = Cadastro(
+                                   nome = nomeCompleto.value,
+                                   email = email.value,
+                                   senha = senha.value,
+                                   confirmarSenha = confirmarSenha.value
+                               )
+                               coroutineScope.launch(Dispatchers.IO) {
+                                   try {
+                                       val novoCliente = doevidaApi.insert(cadastro)
+
+                                       withContext(Dispatchers.Main) {
+                                           Toast.makeText(
+                                               context,
+                                               "Cadastro realizado com sucesso!",
+                                               Toast.LENGTH_LONG
+                                           ).show()
+                                       }
+
+                                   } catch (e: Exception) {
+                                       withContext(Dispatchers.Main) {
+                                           Toast.makeText(
+                                               context,
+                                               "Erro ao cadastrar: ${e.message}",
+                                               Toast.LENGTH_LONG
+                                           ).show()
+                                       }
+                                   }
+                               }
+                           }
                     },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color(0xFF990410), shape = RoundedCornerShape(8.dp)),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF990410)
+                    ),
                     shape = RoundedCornerShape(8.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color.White,
-                        unfocusedBorderColor = Color.White,
-                        cursorColor = Color.White,
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedPlaceholderColor = Color.White,
-                        unfocusedPlaceholderColor = Color.White
+                    modifier = Modifier
+                        .height(48.dp)
+                        .width(133.dp)
+                ) {
+                    Text(
+                        text = "Criar conta",
+                        color = Color.White,
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Medium
                     )
-                )
-                if (isNomeError != null) Text(
-                    isNomeError!!,
-                    color = Color.Red,
-                    fontSize = 12.sp
-                )
+                }
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // E-mail
                 Text(
-                    text = "E-mail",
-                    fontSize = 14.sp,
+                    text = "Já tem uma conta?",
                     color = Color(0xFF990410),
-                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 4.dp, start = 1.dp),
-                    textAlign = TextAlign.Start
-                )
-                OutlinedTextField(
-                    value = email.value,
-                    onValueChange = { email.value = it },
-                    placeholder = { Text("Digite seu e-mail", color = Color(0x80FFFFFF)) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color(0xFF990410), shape = RoundedCornerShape(8.dp)),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color.White,
-                        unfocusedBorderColor = Color.White,
-                        cursorColor = Color.White,
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedPlaceholderColor = Color.White,
-                        unfocusedPlaceholderColor = Color.White
-                    )
-                )
-                if (isEmailError != null) Text(
-                    isEmailError!!,
-                    color = Color.Red,
-                    fontSize = 12.sp
+                        .padding(top = 10.dp)
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Senha
                 Text(
-                    text = "Digite sua senha",
+                    text = "Fazer login",
+                    color = Color(0xFFB71C1C),
+                    modifier = Modifier
+                        .clickable { navController.navigate("tela_login") },
                     fontSize = 14.sp,
-                    color = Color(0xFF990410),
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 4.dp, start = 1.dp),
-                    textAlign = TextAlign.Start
-                )
-                OutlinedTextField(
-                    value = senha.value,
-                    onValueChange = { senha.value = it },
-                    placeholder = { Text("Digite sua senha", color = Color(0x80FFFFFF)) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color(0xFF990410), shape = RoundedCornerShape(8.dp)),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color.White,
-                        unfocusedBorderColor = Color.White,
-                        cursorColor = Color.White,
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedPlaceholderColor = Color.White,
-                        unfocusedPlaceholderColor = Color.White
-                    )
-                )
-                if (isSenhaError != null) Text(
-                    isSenhaError!!,
-                    color = Color.Red,
-                    fontSize = 12.sp
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Confirmar Senha
-                Text(
-                    text = "Confirme sua senha",
-                    fontSize = 14.sp,
-                    color = Color(0xFF990410),
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 4.dp, start = 1.dp),
-                    textAlign = TextAlign.Start
-                )
-                OutlinedTextField(
-                    value = confirmarSenha.value,
-                    onValueChange = { confirmarSenha.value = it },
-                    placeholder = { Text("Confirme sua senha", color = Color(0x80FFFFFF)) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color(0xFF990410), shape = RoundedCornerShape(8.dp)),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color.White,
-                        unfocusedBorderColor = Color.White,
-                        cursorColor = Color.White,
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedPlaceholderColor = Color.White,
-                        unfocusedPlaceholderColor = Color.White
-                    )
-                )
-                if (isConfirmarSenhaError != null) Text(
-                    isConfirmarSenhaError!!,
-                    color = Color.Red,
-                    fontSize = 12.sp
+                    fontWeight = FontWeight.Bold
                 )
             }
-
-            Spacer(modifier = Modifier.height(60.dp))
-
-            Button(
-                onClick = {
-
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF990410)
-                ),
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier
-                    .height(48.dp)
-                    .width(133.dp)
-            ) {
-                Text(
-                    text = "Criar conta",
-                    color = Color.White,
-                    fontSize = 17.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-
-            Text(
-                text = "Já tem uma conta?",
-                color = Color(0xFF990410),
-                fontSize = 14.sp,
-                modifier = Modifier
-                    .padding(top = 10.dp)
-            )
-
-            Text(
-                text = "Fazer login",
-                color = Color(0xFFB71C1C),
-<<<<<<< HEAD:app/src/main/java/com/example/doevida/screens/TelaCadastro.kt
-                modifier = Modifier
-                    .clickable { navController.navigate("tela_login") },
-=======
->>>>>>> a789be573f21f06ad721149deadbb8a6cbb49d3e:app/src/main/java/com/example/doevida/screen/TelaCadastro.kt
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
-            )
         }
     }
-}
-
-fun RetrofitFactory.Companion.getUserService() {
-    TODO("Not yet implemented")
 }
 
 @Preview(showBackground = true, showSystemUi = true)
