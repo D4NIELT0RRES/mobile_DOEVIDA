@@ -1,30 +1,13 @@
-package com.example.doevida.screens
+package com.example.doevida.screen
 
 import android.util.Log
 import android.util.Patterns
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -59,6 +43,7 @@ fun TelaCadastro(navController: NavController) {
     val senha = remember { mutableStateOf("") }
     val confirmarSenha = remember { mutableStateOf("") }
 
+<<<<<<< HEAD:app/src/main/java/com/example/doevida/screens/TelaCadastro.kt
     //mensagens de erro
     var isNomeError by remember { mutableStateOf<String?>(null) }
     var isEmailError by remember { mutableStateOf<String?>(null) }
@@ -92,6 +77,8 @@ fun TelaCadastro(navController: NavController) {
     }
 
 
+=======
+>>>>>>> a789be573f21f06ad721149deadbb8a6cbb49d3e:app/src/main/java/com/example/doevida/screen/TelaCadastro.kt
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -106,27 +93,15 @@ fun TelaCadastro(navController: NavController) {
                     shape = CircleShape
                 )
         )
-        IconButton(
-            onClick = { navController.navigate("tela_inicial") },
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(top = 16.dp, start = 16.dp)
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.voltar),
-                contentDescription = "Voltar",
-                tint = Color.White,
-                modifier = Modifier.size(20.dp)
-            )
-        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top // <- muda para Top
+            verticalArrangement = Arrangement.Top
         ) {
-            Spacer(modifier = Modifier.height(100.dp)) // espaço para afastar do topo
+            Spacer(modifier = Modifier.height(100.dp))
 
             Image(
                 painter = painterResource(id = R.drawable.logocadastro),
@@ -136,8 +111,9 @@ fun TelaCadastro(navController: NavController) {
                     .padding(bottom = 16.dp)
             )
 
-            Spacer(modifier = Modifier.height(39.dp)) // espaço entre logo e formulário
+            Spacer(modifier = Modifier.height(39.dp))
 
+<<<<<<< HEAD:app/src/main/java/com/example/doevida/screens/TelaCadastro.kt
 
             Column(
                 modifier = Modifier
@@ -145,14 +121,19 @@ fun TelaCadastro(navController: NavController) {
                     .padding(horizontal = 1.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+=======
+            Column {
+                // Nome Completo
+>>>>>>> a789be573f21f06ad721149deadbb8a6cbb49d3e:app/src/main/java/com/example/doevida/screen/TelaCadastro.kt
                 Text(
                     text = "Nome Completo",
                     fontSize = 14.sp,
                     color = Color(0xFF990410),
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
-                        .align(Alignment.Start)
-                        .padding(bottom = 4.dp)
+                        .fillMaxWidth()
+                        .padding(bottom = 4.dp, start = 1.dp),
+                    textAlign = TextAlign.Start
                 )
                 OutlinedTextField(
                     value = nomeCompleto.value,
@@ -185,15 +166,16 @@ fun TelaCadastro(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-
+                // E-mail
                 Text(
                     text = "E-mail",
                     fontSize = 14.sp,
                     color = Color(0xFF990410),
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
-                        .align(Alignment.Start)
-                        .padding(bottom = 4.dp)
+                        .fillMaxWidth()
+                        .padding(bottom = 4.dp, start = 1.dp),
+                    textAlign = TextAlign.Start
                 )
                 OutlinedTextField(
                     value = email.value,
@@ -221,15 +203,16 @@ fun TelaCadastro(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-
+                // Senha
                 Text(
                     text = "Digite sua senha",
                     fontSize = 14.sp,
                     color = Color(0xFF990410),
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
-                        .align(Alignment.Start)
-                        .padding(bottom = 4.dp)
+                        .fillMaxWidth()
+                        .padding(bottom = 4.dp, start = 1.dp),
+                    textAlign = TextAlign.Start
                 )
                 OutlinedTextField(
                     value = senha.value,
@@ -257,14 +240,16 @@ fun TelaCadastro(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Confirmar Senha
                 Text(
                     text = "Confirme sua senha",
                     fontSize = 14.sp,
                     color = Color(0xFF990410),
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
-                        .align(Alignment.Start)
-                        .padding(bottom = 4.dp)
+                        .fillMaxWidth()
+                        .padding(bottom = 4.dp, start = 1.dp),
+                    textAlign = TextAlign.Start
                 )
                 OutlinedTextField(
                     value = confirmarSenha.value,
@@ -290,6 +275,7 @@ fun TelaCadastro(navController: NavController) {
                     fontSize = 12.sp
                 )
             }
+
             Spacer(modifier = Modifier.height(60.dp))
 
             Button(
@@ -319,11 +305,15 @@ fun TelaCadastro(navController: NavController) {
                 modifier = Modifier
                     .padding(top = 10.dp)
             )
+
             Text(
                 text = "Fazer login",
                 color = Color(0xFFB71C1C),
+<<<<<<< HEAD:app/src/main/java/com/example/doevida/screens/TelaCadastro.kt
                 modifier = Modifier
                     .clickable { navController.navigate("tela_login") },
+=======
+>>>>>>> a789be573f21f06ad721149deadbb8a6cbb49d3e:app/src/main/java/com/example/doevida/screen/TelaCadastro.kt
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )

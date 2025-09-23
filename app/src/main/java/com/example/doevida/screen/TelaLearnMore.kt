@@ -1,10 +1,12 @@
-package com.example.doevida.screens
+package com.example.doevida.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,9 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.example.doevida.R
 
 @Composable
-fun TelaLearnMore(
-    onBackClick: () -> Unit = {} // callback para navegação
-) {
+fun TelaLearnMore() {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -68,76 +68,64 @@ fun TelaLearnMore(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // Top vermelho com logo alinhado à esquerda
+            // Top vermelho com logo centralizado
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(80.dp)
-                    .background(Color(0xFF990410)),
-                contentAlignment = Alignment.CenterStart
+                    .background(
+                        color = Color(0xFF990410),
+                        shape = RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp)
+                    )
+                    .padding(vertical = 24.dp),
+                contentAlignment = Alignment.Center
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(start = 64.dp) // espaço para o botão
+                    horizontalArrangement = Arrangement.Center
                 ) {
-                    Icon(
+                    Image(
                         painter = painterResource(id = R.drawable.logolermais),
                         contentDescription = "Logo",
-                        tint = Color.Unspecified,
-                        modifier = Modifier.size(70.dp)
+                        modifier = Modifier.size(60.dp),
+                        contentScale = ContentScale.Fit
                     )
+
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "DOEVIDA",
-                        fontSize = 22.sp,
+                        fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
                 }
-
-                // Botão de voltar
-                IconButton(
-                    onClick = { onBackClick() },
-                    modifier = Modifier
-                        .padding(start = 12.dp)
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFF7B020C)) // tom mais escuro para destacar
-                        .align(Alignment.CenterStart)
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.voltar), // seu ícone de seta
-                        contentDescription = "Voltar",
-                        tint = Color.White
-                    )
-                }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Título "Learn More"
             Text(
-                text = "Learn More",
-                fontSize = 20.sp,
+                text = "Ler mais",
+                fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF990410),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Imagem central
             Image(
-                painter = painterResource(id = R.drawable.image),
+                painter = painterResource(id = R.drawable.image), // sua ilustração
                 contentDescription = "Ilustração Doação",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(180.dp)
-                    .padding(horizontal = 16.dp),
+                    .height(200.dp)
+                    .padding(horizontal = 32.dp),
                 contentScale = ContentScale.Fit
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Texto explicativo com negrito
             Text(
@@ -151,30 +139,30 @@ fun TelaLearnMore(
                     }
                     append("Acreditamos que cada gota conta, e que juntos podemos salvar milhares de vidas.")
                 },
-                fontSize = 15.sp,
+                fontSize = 16.sp,
                 color = Color.Black,
-                textAlign = TextAlign.Justify,
-                lineHeight = 21.sp,
+                textAlign = TextAlign.Center,
+                lineHeight = 22.sp,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = 24.dp)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Frase final em vermelho
             Text(
                 text = "\"Uma atitude salva até quatro vidas, seja você essa atitude.\"",
-                fontSize = 14.sp,
+                fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF990410),
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = 16.dp)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

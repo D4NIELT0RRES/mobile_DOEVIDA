@@ -1,4 +1,4 @@
-package com.example.doevida.screens
+package com.example.doevida.screen
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -97,7 +97,7 @@ fun TelaInicial(navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedButton(
-                onClick = { navController.navigate("tela_cadastro") },
+                onClick = { /* Navegação para tela de cadastro */ },
                 border = BorderStroke(2.dp, Color(0xFF990410)),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier

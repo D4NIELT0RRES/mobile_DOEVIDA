@@ -1,4 +1,4 @@
-package com.example.doevida.screens
+package com.example.doevida.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -62,19 +62,7 @@ fun TelaRedefinirSenha(navController: NavController) {
                     shape = CircleShape
                 )
         )
-        IconButton(
-            onClick = { navController.navigate("tela_recuperacao") },
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(top = 16.dp, start = 16.dp)
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.voltar),
-                contentDescription = "Voltar",
-                tint = Color.White,
-                modifier = Modifier.size(20.dp)
-            )
-        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -83,7 +71,7 @@ fun TelaRedefinirSenha(navController: NavController) {
             verticalArrangement = Arrangement.Center
         ) {
             Image(
-                painter = painterResource(id = R.drawable.logoredefinir),
+                painter = painterResource(id = R.drawable.logoredefinirsenha),
                 contentDescription = "Logo DOEVIDA",
                 modifier = Modifier
                     .size(180.dp)
@@ -104,7 +92,7 @@ fun TelaRedefinirSenha(navController: NavController) {
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
                     .height(56.dp),
-                placeholder = { Text("Digite Uma Senha", color = Color.White) },
+                placeholder = { Text("Email ou Usuário", color = Color.White) },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Color(0xFF990410),
                     unfocusedContainerColor = Color(0xFF990410),
