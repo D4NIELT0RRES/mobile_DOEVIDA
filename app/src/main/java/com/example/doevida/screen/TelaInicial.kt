@@ -97,7 +97,7 @@ fun TelaInicial(navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedButton(
-                onClick = { /* Navegação para tela de cadastro */ },
+                onClick = { navController.navigate(route = "tela_cadastro") },
                 border = BorderStroke(2.dp, Color(0xFF990410)),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier

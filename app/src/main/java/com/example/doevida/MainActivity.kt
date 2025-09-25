@@ -8,6 +8,8 @@
  import androidx.navigation.compose.NavHost
  import androidx.navigation.compose.composable
  import androidx.navigation.compose.rememberNavController
+ import com.example.doevida.screen.TelaCadastro
+ import com.example.doevida.screen.TelaHome
  import com.example.doevida.screen.TelaInicial
  import com.example.doevida.screen.TelaLogin
  import com.example.doevida.ui.theme.DoevidaTheme
@@ -38,6 +40,12 @@ class MainActivity : ComponentActivity() {
          }
          composable("tela_login") {
              TelaLogin(navController)
+         }
+         composable("tela_cadastro") {
+             TelaCadastro(navController)
+         }
+         composable("tela_home") {
+             TelaHome(navController)
          }
      }
  }

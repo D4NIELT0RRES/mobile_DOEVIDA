@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -59,7 +60,7 @@ fun TelaCadastro(navController: NavController) {
     fun validarCadastro(): Boolean {
         isNomeError = when {
             nomeCompleto.value.isBlank() -> "Campo obrigatório"
-            nomeCompleto.value.length < 2 -> "Nome deve ter pelo menos 2 letras"
+            nomeCompleto.value.length < 2 -> "Nome deve ser completo"
             else -> null
         }
         isEmailError = when {
@@ -122,6 +123,7 @@ fun TelaCadastro(navController: NavController) {
                     .padding(horizontal = 1.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                //Nome
                 Column {
                     Text(
                         text = "Nome Completo",
@@ -220,6 +222,7 @@ fun TelaCadastro(navController: NavController) {
                             .fillMaxWidth()
                             .background(Color(0xFF990410), shape = RoundedCornerShape(8.dp)),
                         shape = RoundedCornerShape(8.dp),
+                        visualTransformation = PasswordVisualTransformation(),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.White,
                             unfocusedBorderColor = Color.White,
@@ -257,6 +260,7 @@ fun TelaCadastro(navController: NavController) {
                             .fillMaxWidth()
                             .background(Color(0xFF990410), shape = RoundedCornerShape(8.dp)),
                         shape = RoundedCornerShape(8.dp),
+                        visualTransformation = PasswordVisualTransformation(),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.White,
                             unfocusedBorderColor = Color.White,
@@ -295,6 +299,10 @@ fun TelaCadastro(navController: NavController) {
                                                "Cadastro realizado com sucesso!",
                                                Toast.LENGTH_LONG
                                            ).show()
+                                           navController.navigate(route = "tela_home"){
+                                               //evita voltar p tela cadastro
+                                               popUpTo("tela_cadastro") { inclusive = true }
+                                           }
                                        }
 
                                    } catch (e: Exception) {
