@@ -291,7 +291,8 @@ fun TelaCadastro(navController: NavController) {
                                )
                                coroutineScope.launch(Dispatchers.IO) {
                                    try {
-                                       val novoCliente = doevidaApi.insert(cadastro)
+                                       val response = doevidaApi.insert(cadastro) // se insert é suspend
+                                       Log.d("API_Cadastro", "Resposta do backend: $response")
 
                                        withContext(Dispatchers.Main) {
                                            Toast.makeText(
@@ -299,13 +300,12 @@ fun TelaCadastro(navController: NavController) {
                                                "Cadastro realizado com sucesso!",
                                                Toast.LENGTH_LONG
                                            ).show()
-                                           navController.navigate(route = "tela_home"){
-                                               //evita voltar p tela cadastro
+                                           navController.navigate("tela_home") {
                                                popUpTo("tela_cadastro") { inclusive = true }
                                            }
                                        }
-
                                    } catch (e: Exception) {
+                                       Log.e("API_Cadastro", "Erro ao cadastrar", e)
                                        withContext(Dispatchers.Main) {
                                            Toast.makeText(
                                                context,

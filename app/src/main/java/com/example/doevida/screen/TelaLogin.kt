@@ -1,5 +1,6 @@
 package com.example.doevida.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,18 +21,18 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -41,12 +42,21 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
+import com.example.doevida.model.LoginResponse
+import com.example.doevida.service.RetrofitFactory
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TelaLogin(navController: NavController) {
-    var email by remember { mutableStateOf("") }
-    var senha by remember { mutableStateOf("") }
+    val login = remember { mutableStateOf("") }
+    val senha = remember { mutableStateOf("") }
+
+    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     Box(
         modifier = Modifier
@@ -86,8 +96,8 @@ fun TelaLogin(navController: NavController) {
                 modifier = Modifier.align(Alignment.Start)
             )
             OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
+                value = login.value,
+                onValueChange = { login.value = it },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
@@ -121,8 +131,8 @@ fun TelaLogin(navController: NavController) {
                 modifier = Modifier.align(Alignment.Start)
             )
             OutlinedTextField(
-                value = senha,
-                onValueChange = { senha = it },
+                value = senha.value,
+                onValueChange = { senha.value = it },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
@@ -163,7 +173,50 @@ fun TelaLogin(navController: NavController) {
             Spacer(modifier = Modifier.height(15.dp))
 
             Button(
-                onClick = { /* login */ },
+                onClick = {
+                    val request = if (login.value.contains("@")) {
+                        LoginResponse(email = login.value, username = null, senha = senha.value)
+                    } else {
+                        LoginResponse(email = null, username = login.value, senha = senha.value)
+                    }
+
+                    val call = RetrofitFactory().getUserService().login(request)
+
+                    scope.launch(Dispatchers.IO) {
+                        try {
+                            val response = call.execute()
+                            if (response.isSuccessful) {
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(
+                                        LocalContext.current,
+                                        "Login realizado com sucesso!",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+
+                                    navController.navigate("tela_home") {
+                                        popUpTo("tela_login") { inclusive = true }
+                                    }
+                                }
+                            } else {
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(
+                                        LocalContext.current,
+                                        "Falha no login: ${response.code()}",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            }
+                        } catch (e: Exception) {
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    LocalContext.current,
+                                    "Erro ao conectar: ${e.message}",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
+                    }
+                },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF990410)
                 ),
