@@ -24,6 +24,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.material.icons.filled.Newspaper
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -39,30 +43,6 @@ fun TelaHome(navController: NavController) {
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
-                //mudar a cor
-                NavigationBarItem(
-                    selected = true,
-                    onClick = {},
-                    icon = {Icon(Icons.Default.Home,
-                        contentDescription = "Home")},
-                    label = {Text("Home")}
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = { },
-                    icon = {Icon(Icons.Default.List,
-                        contentDescription = "Notícias")},
-                    label = {Text("Notícias")}
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = {},
-                    icon = {Icon(Icons.Default.Person,
-                        contentDescription = "Profile")},
-                    label = { Text("Profile")}
-                )
-            }
             BarraDeNavegacao(navController)
         }
     ) { paddingValues ->
@@ -244,64 +224,67 @@ fun CardButton(text: String, imageRes: Int) {
 }
 //-------------------------------------
 @Composable
-fun BarraDeNavegacao(navController: NavController?) {
+fun BarraDeNavegacao(navController: NavController) {
+    var selectedItem by remember { mutableStateOf("home") }
+
     NavigationBar(
-        containerColor = Color(0xFF990410) //mudar a cor
+        containerColor = Color.White
     ) {
-        NavigationBarItem(
-            selected = false,
-            onClick = { navController!!.navigate(route = "tela_home") },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Home,
-                    contentDescription = "Home",
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
-            },
-            label = {
-                Text(
-                    text = "Home",
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-            }
+        val items = listOf(
+            "home" to Icons.Default.Home,
+            "noticias" to Icons.Default.Newspaper,
+            "profile" to Icons.Default.Person
         )
-        NavigationBarItem(
-            selected = false,
-            onClick = { //arrumar depois
-            },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Newspaper,
-                    contentDescription = "Notícias",
-                    tint = MaterialTheme.colorScheme.onPrimary
+
+        items.forEach { (route, icon) ->
+            NavigationBarItem(
+                selected = selectedItem == route,
+                onClick = {
+                    selectedItem = route
+                    navController.navigate(route)
+                },
+                icon = {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = route,
+                                tint = if (selectedItem == route)
+                                    Color.White
+                                else Color.Black
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+
+                            Text(
+                                text = route.replaceFirstChar { it.uppercase() },
+                                color = if (selectedItem == route)
+                                    Color.White
+                                else Color.Black,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        if (selectedItem == route) {
+
+                            Spacer(modifier = Modifier.height(4.dp))
+                        }
+                    }
+                },
+                alwaysShowLabel = false,
+                label = {
+                    Spacer(modifier = Modifier.height(0.dp)) },
+                colors = NavigationBarItemDefaults.colors(
+                    indicatorColor = Color(0xFF990410)
                 )
-            },
-            label = {
-                Text(
-                    text = "Notícias",
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-            }
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = {
-                // arrumar depois
-            },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Profile",
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
-            },
-            label = {
-                Text(
-                    text = "Profile",
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-            }
-        )
+            )
+        }
     }
 }
 
