@@ -149,7 +149,7 @@ fun TelaLogin(navController: NavController) {
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .align(Alignment.End)
-                    .clickable { /* navegação para recuperação */ }
+                    .clickable { navController.navigate(route = "tela_recuperacao") }
                     .padding(top = 8.dp, bottom = 32.dp),
                 fontSize = 14.sp
             )

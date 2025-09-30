@@ -12,6 +12,7 @@
  import com.example.doevida.screen.TelaHome
  import com.example.doevida.screen.TelaInicial
  import com.example.doevida.screen.TelaLogin
+ import com.example.doevida.screen.TelaRecuperacaoEmail
  import com.example.doevida.ui.theme.DoevidaTheme
 
 class MainActivity : ComponentActivity() {
@@ -46,6 +47,9 @@ class MainActivity : ComponentActivity() {
          }
          composable("tela_home") {
              TelaHome(navController)
+         }
+         composable("tela_recuperacao") {
+             TelaRecuperacaoEmail(navController)
          }
      }
  }
