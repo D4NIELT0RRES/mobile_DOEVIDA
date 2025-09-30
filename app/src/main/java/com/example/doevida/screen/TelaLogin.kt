@@ -188,7 +188,7 @@ fun TelaLogin(navController: NavController) {
                             if (response.isSuccessful) {
                                 withContext(Dispatchers.Main) {
                                     Toast.makeText(
-                                        LocalContext.current,
+                                        context, // usa a variável salva
                                         "Login realizado com sucesso!",
                                         Toast.LENGTH_LONG
                                     ).show()
@@ -200,7 +200,7 @@ fun TelaLogin(navController: NavController) {
                             } else {
                                 withContext(Dispatchers.Main) {
                                     Toast.makeText(
-                                        LocalContext.current,
+                                        context, // usa a variável salva
                                         "Falha no login: ${response.code()}",
                                         Toast.LENGTH_LONG
                                     ).show()
@@ -209,7 +209,7 @@ fun TelaLogin(navController: NavController) {
                         } catch (e: Exception) {
                             withContext(Dispatchers.Main) {
                                 Toast.makeText(
-                                    LocalContext.current,
+                                    context, // usa a variável salva
                                     "Erro ao conectar: ${e.message}",
                                     Toast.LENGTH_LONG
                                 ).show()
@@ -245,7 +245,7 @@ fun TelaLogin(navController: NavController) {
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp,
                 modifier = Modifier
-                    .clickable { /* navegação para cadastro */ }
+                    .clickable { navController.navigate(route = "tela_cadastro") }
             )
         }
     }
