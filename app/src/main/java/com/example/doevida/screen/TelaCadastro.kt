@@ -35,10 +35,8 @@ import com.example.doevida.service.RetrofitFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TelaCadastro(navController: NavController) {
 
@@ -51,11 +49,21 @@ fun TelaCadastro(navController: NavController) {
     val senha = remember { mutableStateOf("") }
     val confirmarSenha = remember { mutableStateOf("") }
 
-    //mensagens de erro
+    // mensagens de erro
     var isNomeError by remember { mutableStateOf<String?>(null) }
     var isEmailError by remember { mutableStateOf<String?>(null) }
     var isSenhaError by remember { mutableStateOf<String?>(null) }
     var isConfirmarSenhaError by remember { mutableStateOf<String?>(null) }
+
+    // 🔽 Lista de sexos (ordem do JSON do backend)
+    val listaSexos = listOf(
+        Pair(1, "MASCULINO"),
+        Pair(2, "FEMININO"),
+        Pair(3, "OUTRO")
+    )
+    var expanded by remember { mutableStateOf(false) }
+    var selectedSexo by remember { mutableStateOf(listaSexos[0].first) }
+    var selectedLabel by remember { mutableStateOf(listaSexos[0].second) }
 
     fun validarCadastro(): Boolean {
         isNomeError = when {
@@ -123,7 +131,7 @@ fun TelaCadastro(navController: NavController) {
                     .padding(horizontal = 1.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                //Nome
+                // Nome
                 Column {
                     Text(
                         text = "Nome Completo",
@@ -276,46 +284,98 @@ fun TelaCadastro(navController: NavController) {
                         color = Color.Red,
                         fontSize = 12.sp
                     )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // 🔽 Dropdown Sexo
+                    Text(
+                        text = "Sexo",
+                        fontSize = 14.sp,
+                        color = Color(0xFF990410),
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 4.dp, start = 1.dp),
+                        textAlign = TextAlign.Start
+                    )
+
+                    ExposedDropdownMenuBox(
+                        expanded = expanded,
+                        onExpandedChange = { expanded = !expanded }
+                    ) {
+                        OutlinedTextField(
+                            value = selectedLabel,
+                            onValueChange = {},
+                            readOnly = true,
+                            modifier = Modifier
+                                .menuAnchor()
+                                .width(150.dp) // 👈 largura ajustada para não ficar feio
+                                .background(Color(0xFF990410), shape = RoundedCornerShape(8.dp)),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Color.White,
+                                unfocusedBorderColor = Color.White,
+                                cursorColor = Color.White,
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White
+                            )
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            listaSexos.forEach { (id, label) ->
+                                DropdownMenuItem(
+                                    text = { Text(label) },
+                                    onClick = {
+                                        selectedSexo = id
+                                        selectedLabel = label
+                                        expanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(60.dp))
 
                 Button(
                     onClick = {
-                           if (validarCadastro()) {
-                               val cadastro = Cadastro(
-                                   nome = nomeCompleto.value,
-                                   email = email.value,
-                                   senha = senha.value,
-                                   confirmarSenha = confirmarSenha.value
-                               )
-                               coroutineScope.launch(Dispatchers.IO) {
-                                   try {
-                                       val response = doevidaApi.insert(cadastro) // se insert é suspend
-                                       Log.d("API_Cadastro", "Resposta do backend: $response")
+                        if (validarCadastro()) {
+                            val cadastro = Cadastro(
+                                nome = nomeCompleto.value,
+                                email = email.value,
+                                senha = senha.value,
+                                id_sexo = selectedSexo
+                            )
+                            coroutineScope.launch(Dispatchers.IO) {
+                                try {
+                                    val response = doevidaApi.insert(cadastro)
+                                    Log.d("API_Cadastro", "Resposta do backend: $response")
 
-                                       withContext(Dispatchers.Main) {
-                                           Toast.makeText(
-                                               context,
-                                               "Cadastro realizado com sucesso!",
-                                               Toast.LENGTH_LONG
-                                           ).show()
-                                           navController.navigate("tela_home") {
-                                               popUpTo("tela_cadastro") { inclusive = true }
-                                           }
-                                       }
-                                   } catch (e: Exception) {
-                                       Log.e("API_Cadastro", "Erro ao cadastrar", e)
-                                       withContext(Dispatchers.Main) {
-                                           Toast.makeText(
-                                               context,
-                                               "Erro ao cadastrar: ${e.message}",
-                                               Toast.LENGTH_LONG
-                                           ).show()
-                                       }
-                                   }
-                               }
-                           }
+                                    withContext(Dispatchers.Main) {
+                                        Toast.makeText(
+                                            context,
+                                            "Cadastro realizado com sucesso!",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                        navController.navigate("tela_login") {
+                                            popUpTo("tela_cadastro") { inclusive = true }
+                                        }
+                                    }
+                                } catch (e: Exception) {
+                                    Log.e("API_Cadastro", "Erro ao cadastrar", e)
+                                    withContext(Dispatchers.Main) {
+                                        Toast.makeText(
+                                            context,
+                                            "Erro ao cadastrar: ${e.message}",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+                                }
+                            }
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF990410)

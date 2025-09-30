@@ -1,7 +1,10 @@
 package com.example.doevida.model
 
+import android.os.Message
+
 data class LoginResponse(
-    val email: String? = null,
-    val username: String? = null,
-    val senha: String
+    val status: Boolean,
+    val message: String,
+    val token: String? = null,
+    val usuarioId: Int? = null
 )

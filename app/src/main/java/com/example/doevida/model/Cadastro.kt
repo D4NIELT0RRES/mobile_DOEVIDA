@@ -4,5 +4,5 @@ data class Cadastro(
     val nome: String = "",
     val email: String = "",
     val senha: String,
-    val confirmarSenha: String
+    val id_sexo: Int = 1
 )
