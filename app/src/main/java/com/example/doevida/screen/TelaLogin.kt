@@ -70,7 +70,6 @@ fun TelaLogin(navController: NavController) {
                     .padding(bottom = 32.dp)
             )
 
-            // 📌 Campo de login
             Text(
                 text = "Digite seu Email ou Usuário",
                 fontSize = 14.sp,
@@ -106,7 +105,6 @@ fun TelaLogin(navController: NavController) {
                 }
             )
 
-            // 📌 Campo de senha
             Text(
                 text = "Digite sua Senha",
                 fontSize = 14.sp,
