@@ -7,18 +7,16 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.modifier.modifierLocalMapOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -44,10 +42,10 @@ fun TelaCadastro(navController: NavController) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    var nomeCompleto = remember { mutableStateOf("") }
-    val email = remember { mutableStateOf("") }
-    val senha = remember { mutableStateOf("") }
-    val confirmarSenha = remember { mutableStateOf("") }
+    var nomeCompleto by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var senha by remember { mutableStateOf("") }
+    var confirmarSenha by remember { mutableStateOf("") }
 
     // mensagens de erro
     var isNomeError by remember { mutableStateOf<String?>(null) }
@@ -55,7 +53,25 @@ fun TelaCadastro(navController: NavController) {
     var isSenhaError by remember { mutableStateOf<String?>(null) }
     var isConfirmarSenhaError by remember { mutableStateOf<String?>(null) }
 
-    // 🔽 Lista de sexos (ordem do JSON do backend)
+    var listaTipoSanguineo = listOf(
+        Pair(1, "A+"),
+        Pair(2, "A-"),
+        Pair(3, "B+"),
+        Pair(4, "B-"),
+        Pair(5, "AB+"),
+        Pair(6, "AB-"),
+        Pair(7, "O+"),
+        Pair(8, "O-"),
+    )
+
+    //Lista dos tipos sanguíneos
+    var expandedTipo by remember { mutableStateOf(false) }
+    var selectedTipo by remember { mutableStateOf(listaTipoSanguineo[0].first)}
+    var selectedTipoLabel by remember { mutableStateOf(listaTipoSanguineo[0].second)}
+
+
+
+    //Lista de sexos (mockada, mas pode vir da API também)
     val listaSexos = listOf(
         Pair(1, "MASCULINO"),
         Pair(2, "FEMININO"),
@@ -67,23 +83,23 @@ fun TelaCadastro(navController: NavController) {
 
     fun validarCadastro(): Boolean {
         isNomeError = when {
-            nomeCompleto.value.isBlank() -> "Campo obrigatório"
-            nomeCompleto.value.length < 2 -> "Nome deve ser completo"
+            nomeCompleto.isBlank() -> "Campo obrigatório"
+            nomeCompleto.length < 2 -> "Nome deve ser completo"
             else -> null
         }
         isEmailError = when {
-            email.value.isBlank() -> "Campo obrigatório"
-            !Patterns.EMAIL_ADDRESS.matcher(email.value).matches() -> "Formato inválido"
+            email.isBlank() -> "Campo obrigatório"
+            !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> "Formato inválido"
             else -> null
         }
         isSenhaError = when {
-            senha.value.isBlank() -> "Campo obrigatório"
-            senha.value.length < 6 -> "Senha fraca"
+            senha.isBlank() -> "Campo obrigatório"
+            senha.length < 6 -> "Senha fraca"
             else -> null
         }
         isConfirmarSenhaError = when {
-            confirmarSenha.value.isBlank() -> "Campo obrigatório"
-            senha.value != confirmarSenha.value -> "Senhas não coincidem"
+            confirmarSenha.isBlank() -> "Campo obrigatório"
+            senha != confirmarSenha -> "Senhas não coincidem"
             else -> null
         }
 
@@ -109,7 +125,8 @@ fun TelaCadastro(navController: NavController) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 32.dp),
+                .padding(horizontal = 32.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
@@ -125,229 +142,164 @@ fun TelaCadastro(navController: NavController) {
 
             Spacer(modifier = Modifier.height(39.dp))
 
+            // ================= CAMPOS DE CADASTRO =================
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 1.dp),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Nome
-                Column {
-                    Text(
-                        text = "Nome Completo",
-                        fontSize = 14.sp,
-                        color = Color(0xFF990410),
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 4.dp, start = 1.dp),
-                        textAlign = TextAlign.Start
+                Text("Nome Completo", fontSize = 14.sp, color = Color(0xFF990410), fontWeight = FontWeight.SemiBold, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(
+                    value = nomeCompleto,
+                    onValueChange = { nomeCompleto = it },
+                    placeholder = { Text("Digite seu nome completo", color = Color(0x80FFFFFF)) },
+                    modifier = Modifier.fillMaxWidth().background(Color(0xFF990410), RoundedCornerShape(8.dp)),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.White,
+                        unfocusedBorderColor = Color.White,
+                        cursorColor = Color.White,
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White
                     )
+                )
+                if (isNomeError != null) Text(isNomeError!!, color = Color.Red, fontSize = 12.sp)
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Email
+                Text("E-mail", fontSize = 14.sp, color = Color(0xFF990410), fontWeight = FontWeight.SemiBold, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    placeholder = { Text("Digite seu e-mail", color = Color(0x80FFFFFF)) },
+                    modifier = Modifier.fillMaxWidth().background(Color(0xFF990410), RoundedCornerShape(8.dp)),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.White,
+                        unfocusedBorderColor = Color.White,
+                        cursorColor = Color.White,
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White
+                    )
+                )
+                if (isEmailError != null) Text(isEmailError!!, color = Color.Red, fontSize = 12.sp)
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Senha
+                Text(
+                    text = if (senha.length < 6)
+                        "Digite sua senha (mínimo 6 caracteres)"
+                    else
+                        "Digite sua senha",
+                    fontSize = 14.sp,
+                    color = if (senha.length < 6) Color.Red else Color(0xFF990410),
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 4.dp, start = 1.dp)
+                )
+                OutlinedTextField(
+                    value = senha,
+                    onValueChange = { senha = it},
+                    placeholder = { Text("Digite sua senha", color = Color(0x80FFFFFF))},
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFF990410),
+                            shape = RoundedCornerShape(8.dp)),
+                    shape = RoundedCornerShape(8.dp),
+                    visualTransformation = PasswordVisualTransformation(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.White,
+                        unfocusedBorderColor = Color.White,
+                        cursorColor = Color.White,
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedPlaceholderColor = Color.White,
+                        unfocusedPlaceholderColor = Color.White
+                    )
+                )
+                if (isConfirmarSenhaError != null) Text(isConfirmarSenhaError!!, color = Color.Red, fontSize = 12.sp)
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Dropdown Sexo
+                Text("Sexo", fontSize = 14.sp, color = Color(0xFF990410), fontWeight = FontWeight.SemiBold, modifier = Modifier.fillMaxWidth())
+                ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
                     OutlinedTextField(
-                        value = nomeCompleto.value,
-                        onValueChange = { nomeCompleto.value = it },
-                        placeholder = {
-                            Text(
-                                "Digite seu nome completo",
-                                color = Color(0x80FFFFFF)
+                        value = selectedLabel,
+                        onValueChange = {},
+                        readOnly = true,
+                        modifier = Modifier.menuAnchor().fillMaxWidth().background(Color(0xFF990410), RoundedCornerShape(8.dp)),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color.White,
+                            unfocusedBorderColor = Color.White,
+                            cursorColor = Color.White,
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White
+                        )
+                    )
+                    ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                        listaSexos.forEach { (id, label) ->
+                            DropdownMenuItem(
+                                text = { Text(label) },
+                                onClick = {
+                                    selectedSexo = id
+                                    selectedLabel = label
+                                    expanded = false
+                                }
                             )
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color(0xFF990410), shape = RoundedCornerShape(8.dp)),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.White,
-                            unfocusedBorderColor = Color.White,
-                            cursorColor = Color.White,
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            focusedPlaceholderColor = Color.White,
-                            unfocusedPlaceholderColor = Color.White
-                        )
-                    )
-                    if (isNomeError != null) Text(
-                        isNomeError!!,
-                        color = Color.Red,
-                        fontSize = 12.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // E-mail
-                    Text(
-                        text = "E-mail",
-                        fontSize = 14.sp,
-                        color = Color(0xFF990410),
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 4.dp, start = 1.dp),
-                        textAlign = TextAlign.Start
-                    )
-                    OutlinedTextField(
-                        value = email.value,
-                        onValueChange = { email.value = it },
-                        placeholder = { Text("Digite seu e-mail", color = Color(0x80FFFFFF)) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color(0xFF990410), shape = RoundedCornerShape(8.dp)),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.White,
-                            unfocusedBorderColor = Color.White,
-                            cursorColor = Color.White,
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            focusedPlaceholderColor = Color.White,
-                            unfocusedPlaceholderColor = Color.White
-                        )
-                    )
-                    if (isEmailError != null) Text(
-                        isEmailError!!,
-                        color = Color.Red,
-                        fontSize = 12.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Senha
-                    Text(
-                        text = "Digite sua senha",
-                        fontSize = 14.sp,
-                        color = Color(0xFF990410),
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 4.dp, start = 1.dp),
-                        textAlign = TextAlign.Start
-                    )
-                    OutlinedTextField(
-                        value = senha.value,
-                        onValueChange = { senha.value = it },
-                        placeholder = { Text("Digite sua senha", color = Color(0x80FFFFFF)) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color(0xFF990410), shape = RoundedCornerShape(8.dp)),
-                        shape = RoundedCornerShape(8.dp),
-                        visualTransformation = PasswordVisualTransformation(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.White,
-                            unfocusedBorderColor = Color.White,
-                            cursorColor = Color.White,
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            focusedPlaceholderColor = Color.White,
-                            unfocusedPlaceholderColor = Color.White
-                        )
-                    )
-                    if (isSenhaError != null) Text(
-                        isSenhaError!!,
-                        color = Color.Red,
-                        fontSize = 12.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Confirmar Senha
-                    Text(
-                        text = "Confirme sua senha",
-                        fontSize = 14.sp,
-                        color = Color(0xFF990410),
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 4.dp, start = 1.dp),
-                        textAlign = TextAlign.Start
-                    )
-                    OutlinedTextField(
-                        value = confirmarSenha.value,
-                        onValueChange = { confirmarSenha.value = it },
-                        placeholder = { Text("Confirme sua senha", color = Color(0x80FFFFFF)) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color(0xFF990410), shape = RoundedCornerShape(8.dp)),
-                        shape = RoundedCornerShape(8.dp),
-                        visualTransformation = PasswordVisualTransformation(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.White,
-                            unfocusedBorderColor = Color.White,
-                            cursorColor = Color.White,
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            focusedPlaceholderColor = Color.White,
-                            unfocusedPlaceholderColor = Color.White
-                        )
-                    )
-                    if (isConfirmarSenhaError != null) Text(
-                        isConfirmarSenhaError!!,
-                        color = Color.Red,
-                        fontSize = 12.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // 🔽 Dropdown Sexo
-                    Text(
-                        text = "Sexo",
-                        fontSize = 14.sp,
-                        color = Color(0xFF990410),
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 4.dp, start = 1.dp),
-                        textAlign = TextAlign.Start
-                    )
-
-                    ExposedDropdownMenuBox(
-                        expanded = expanded,
-                        onExpandedChange = { expanded = !expanded }
-                    ) {
-                        OutlinedTextField(
-                            value = selectedLabel,
-                            onValueChange = {},
-                            readOnly = true,
-                            modifier = Modifier
-                                .menuAnchor()
-                                .width(150.dp) // 👈 largura ajustada para não ficar feio
-                                .background(Color(0xFF990410), shape = RoundedCornerShape(8.dp)),
-                            shape = RoundedCornerShape(8.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color.White,
-                                unfocusedBorderColor = Color.White,
-                                cursorColor = Color.White,
-                                focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White
-                            )
-                        )
-                        ExposedDropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false }
-                        ) {
-                            listaSexos.forEach { (id, label) ->
-                                DropdownMenuItem(
-                                    text = { Text(label) },
-                                    onClick = {
-                                        selectedSexo = id
-                                        selectedLabel = label
-                                        expanded = false
-                                    }
-                                )
-                            }
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(60.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
+                // Dropdown Tipo Sanguíneo
+                Text("Tipo sanguíneo", fontSize = 14.sp, color = Color(0xFF990410), fontWeight = FontWeight.SemiBold, modifier = Modifier.fillMaxWidth())
+                ExposedDropdownMenuBox(expanded = expandedTipo, onExpandedChange = { expandedTipo = !expandedTipo }) {
+                    OutlinedTextField(
+                        value = selectedTipoLabel,
+                        onValueChange = {},
+                        readOnly = true,
+                        modifier = Modifier.menuAnchor().fillMaxWidth().background(Color(0xFF990410), RoundedCornerShape(8.dp)),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color.White,
+                            unfocusedBorderColor = Color.White,
+                            cursorColor = Color.White,
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White
+                        )
+                    )
+                    ExposedDropdownMenu(expanded = expandedTipo, onDismissRequest = { expandedTipo = false }) {
+                        listaTipoSanguineo.forEach { (id, label) ->
+                            DropdownMenuItem(
+                                text = { Text(label) },
+                                onClick = {
+                                    selectedTipo = id
+                                    selectedTipoLabel = label
+                                    expandedTipo = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(30.dp))
+
+                // Botão de cadastro
                 Button(
                     onClick = {
                         if (validarCadastro()) {
                             val cadastro = Cadastro(
-                                nome = nomeCompleto.value,
-                                email = email.value,
-                                senha = senha.value,
-                                id_sexo = selectedSexo
+                                nome = nomeCompleto,
+                                email = email,
+                                senha = senha,
+                                id_sexo = selectedSexo,
+                                id_tipo_sanguineo = selectedTipo ?: 0
                             )
                             coroutineScope.launch(Dispatchers.IO) {
                                 try {
@@ -355,11 +307,7 @@ fun TelaCadastro(navController: NavController) {
                                     Log.d("API_Cadastro", "Resposta do backend: $response")
 
                                     withContext(Dispatchers.Main) {
-                                        Toast.makeText(
-                                            context,
-                                            "Cadastro realizado com sucesso!",
-                                            Toast.LENGTH_LONG
-                                        ).show()
+                                        Toast.makeText(context, "Cadastro realizado com sucesso!", Toast.LENGTH_LONG).show()
                                         navController.navigate("tela_login") {
                                             popUpTo("tela_cadastro") { inclusive = true }
                                         }
@@ -367,48 +315,30 @@ fun TelaCadastro(navController: NavController) {
                                 } catch (e: Exception) {
                                     Log.e("API_Cadastro", "Erro ao cadastrar", e)
                                     withContext(Dispatchers.Main) {
-                                        Toast.makeText(
-                                            context,
-                                            "Erro ao cadastrar: ${e.message}",
-                                            Toast.LENGTH_LONG
-                                        ).show()
+                                        Toast.makeText(context, "Erro ao cadastrar: ${e.message}", Toast.LENGTH_LONG).show()
                                     }
                                 }
                             }
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF990410)
-                    ),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF990410)),
                     shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier
-                        .height(48.dp)
-                        .width(133.dp)
+                    modifier = Modifier.height(48.dp).width(160.dp)
                 ) {
-                    Text(
-                        text = "Criar conta",
-                        color = Color.White,
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Text("Criar conta", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Medium)
                 }
 
-                Text(
-                    text = "Já tem uma conta?",
-                    color = Color(0xFF990410),
-                    fontSize = 14.sp,
-                    modifier = Modifier
-                        .padding(top = 10.dp)
-                )
-
-                Text(
-                    text = "Fazer login",
-                    color = Color(0xFFB71C1C),
-                    modifier = Modifier
-                        .clickable { navController.navigate("tela_login") },
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                // 🔼 Textos logo abaixo do botão
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(top = 12.dp)) {
+                    Text("Já tem uma conta?", color = Color(0xFF990410), fontSize = 14.sp)
+                    Text(
+                        text = "Fazer login",
+                        color = Color(0xFFB71C1C),
+                        modifier = Modifier.padding(top = 4.dp).clickable { navController.navigate("tela_login") },
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }
