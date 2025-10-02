@@ -88,7 +88,7 @@ fun TelaCadastro(navController: NavController) {
         }
         isSenhaError = when {
             senha.isBlank() -> "Campo obrigatório"
-            senha.length < 6 -> "Senha fraca"
+            senha.length < 8 -> "Senha fraca"
             else -> null
         }
 
@@ -181,12 +181,12 @@ fun TelaCadastro(navController: NavController) {
 
                 // Senha
                 Text(
-                    text = if (senha.length < 6)
-                        "Digite sua senha (mínimo 6 caracteres)"
+                    text = if (senha.length < 8)
+                        "Digite sua senha (mínimo 8 caracteres)"
                     else
                         "Digite sua senha",
                     fontSize = 14.sp,
-                    color = if (senha.length < 6) Color.Red else Color(0xFF990410),
+                    color = if (senha.length < 8) Color.Red else Color(0xFF990410),
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
                         .fillMaxWidth()

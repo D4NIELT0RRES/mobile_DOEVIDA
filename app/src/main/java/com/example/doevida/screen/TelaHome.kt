@@ -37,11 +37,11 @@ import androidx.compose.ui.tooling.preview.Preview
 
 
 @Composable
-fun TelaHome(navController: NavController, nomeUser: String) {
+fun TelaHome(navController: NavController, nomeCompleto: String) {
 
     var navController = rememberNavController()
 
-    var nomeUser by remember {
+    var nomeCompleto by remember {
         mutableStateOf(value = "")
     }
 
@@ -81,7 +81,7 @@ fun TelaHome(navController: NavController, nomeUser: String) {
                             Spacer(modifier = Modifier.width(12.dp))
 
                             Text(
-                                text = nomeUser,
+                                text = nomeCompleto,
                                 color = Color.White,
                                 fontSize = 15.sp
                             )
@@ -296,5 +296,5 @@ fun BarraDeNavegacao(navController: NavController) {
 @Composable
 private fun TelaHomePreview() {
     val navController = rememberNavController()
-    TelaHome(navController = navController, nomeUser = "Nome User")
+    TelaHome(navController = navController, nomeCompleto = "Nome User")
 }
