@@ -1,6 +1,7 @@
 package com.example.doevida.screen
 
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -24,9 +25,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.material.icons.filled.Newspaper
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,6 +37,9 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.doevida.service.SharedPreferencesUtils
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 
 
 @Composable
@@ -41,8 +47,19 @@ fun TelaHome(navController: NavController, nomeCompleto: String) {
 
     var navController = rememberNavController()
 
-    var nomeCompleto by remember {
-        mutableStateOf(value = "")
+    val userName = remember { mutableStateOf("") }
+    val userEmail = remember { mutableStateOf("") }
+    val context = LocalContext.current
+
+//    var nomeCompleto by remember {
+//        mutableStateOf(value = "")
+//    }
+
+    LaunchedEffect(Unit) {
+        userName.value = SharedPreferencesUtils.getUserName(context)
+        userEmail.value = SharedPreferencesUtils.getUserEmail(context)
+        Log.d("TelaHome", "Nome de usuário carregado: ${userName.value}")
+        Log.d("TelaHome", "E-mail do usuário carregado: ${userEmail.value}")
     }
 
     Scaffold(
@@ -68,43 +85,52 @@ fun TelaHome(navController: NavController, nomeCompleto: String) {
                         .padding(16.dp)
                 ) {
                     Column {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(55.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.White)
-                            )
-
-                            Spacer(modifier = Modifier.width(12.dp))
-
-                            Text(
-                                text = nomeCompleto,
-                                color = Color.White,
-                                fontSize = 15.sp
-                            )
-                        }
-
+                        ListItem(
+                            leadingContent = {
+                                Box(
+                                    Modifier
+                                        .size(55.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.White)
+                                )
+                            },
+                            headlineContent = {
+                                Text(
+                                    text = userName.value,
+                                    color = Color.White,
+                                    fontSize = 16.sp,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            },
+                            supportingContent = {
+                                Text(
+                                    text = userEmail.value,
+                                    color = Color.White.copy(alpha = 0.85f),
+                                    fontSize = 12.sp,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                        )
                         Spacer(modifier = Modifier.height(20.dp))
-
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
                         ) {
-                            //botão de quantos dias faltam para a próxima doação
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(top = 16.dp),
                                 contentAlignment = Alignment.Center
-                            ) {
-                                Row(
+                            ){
+                                Row (
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp) //espaço entre eles
-                                ) {
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ){
                                     Box(
                                         modifier = Modifier
                                             .size(70.dp)
@@ -115,8 +141,7 @@ fun TelaHome(navController: NavController, nomeCompleto: String) {
                                             )
                                             .clip(CircleShape),
                                         contentAlignment = Alignment.Center
-                                    ) {
-                                        //mudar depois
+                                    ){
                                         Text(
                                             text = "13",
                                             color = Color.White,
