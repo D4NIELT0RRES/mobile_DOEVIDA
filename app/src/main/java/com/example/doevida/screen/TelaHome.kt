@@ -43,18 +43,18 @@ import androidx.compose.ui.text.style.TextOverflow
 
 
 @Composable
-fun TelaHome(navController: NavController, nomeCompleto: String) {
+fun TelaHome(navController: NavController) {
 
-    var navController = rememberNavController()
+    // Declaração de variáveis para armazenar o nome e o e-mail do usuário
 
     val userName = remember { mutableStateOf("") }
     val userEmail = remember { mutableStateOf("") }
+
+    // Recuperando os dados do usuário dos SharedPreferences
     val context = LocalContext.current
 
-//    var nomeCompleto by remember {
-//        mutableStateOf(value = "")
-//    }
 
+    // Usando LaunchedEffect para carregar os dados assim que a TelaHome for composta
     LaunchedEffect(Unit) {
         userName.value = SharedPreferencesUtils.getUserName(context)
         userEmail.value = SharedPreferencesUtils.getUserEmail(context)
@@ -321,5 +321,5 @@ fun BarraDeNavegacao(navController: NavController) {
 @Composable
 private fun TelaHomePreview() {
     val navController = rememberNavController()
-    TelaHome(navController = navController, nomeCompleto = "Nome User")
+    TelaHome(navController = navController)
 }

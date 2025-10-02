@@ -30,9 +30,11 @@ import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
 import com.example.doevida.model.Cadastro
 import com.example.doevida.service.RetrofitFactory
+import com.example.doevida.service.SharedPreferencesUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.mindrot.jbcrypt.BCrypt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -282,21 +284,29 @@ fun TelaCadastro(navController: NavController) {
                 Button(
                     onClick = {
                         if (validarCadastro()) {
+                            val senhaHash = BCrypt.hashpw(senha, BCrypt.gensalt())  // Gerando o hash da senha
+
                             val cadastro = Cadastro(
                                 nome = nomeCompleto,
                                 email = email,
-                                senha = senha,
+                                senha = senhaHash,  // Passando o hash da senha para o backend
                                 id_sexo = selectedSexo,
                                 id_tipo_sanguineo = selectedTipo ?: 0
                             )
+
+
                             coroutineScope.launch(Dispatchers.IO) {
                                 try {
                                     val response = doevidaApi.insert(cadastro)
                                     Log.d("API_Cadastro", "Resposta do backend: $response")
 
+                                    // Salvar os dados do usuário no SharedPreferences
                                     withContext(Dispatchers.Main) {
+                                        SharedPreferencesUtils.saveUserData(context, nomeCompleto, email) // Salvando nome e e-mail
                                         Toast.makeText(context, "Cadastro realizado com sucesso!", Toast.LENGTH_LONG).show()
-                                        navController.navigate("tela_home/$nomeCompleto") {
+
+                                        // Navegar para TelaHome
+                                        navController.navigate("tela_home") {
                                             popUpTo("tela_cadastro") { inclusive = true }
                                         }
                                     }
