@@ -45,9 +45,7 @@ fun TelaCadastro(navController: NavController) {
     var nomeCompleto by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var senha by remember { mutableStateOf("") }
-    var confirmarSenha by remember { mutableStateOf("") }
 
-    // mensagens de erro
     var isNomeError by remember { mutableStateOf<String?>(null) }
     var isEmailError by remember { mutableStateOf<String?>(null) }
     var isSenhaError by remember { mutableStateOf<String?>(null) }
@@ -64,14 +62,10 @@ fun TelaCadastro(navController: NavController) {
         Pair(8, "O-"),
     )
 
-    //Lista dos tipos sanguíneos
     var expandedTipo by remember { mutableStateOf(false) }
     var selectedTipo by remember { mutableStateOf(listaTipoSanguineo[0].first)}
     var selectedTipoLabel by remember { mutableStateOf(listaTipoSanguineo[0].second)}
 
-
-
-    //Lista de sexos (mockada, mas pode vir da API também)
     val listaSexos = listOf(
         Pair(1, "MASCULINO"),
         Pair(2, "FEMININO"),
@@ -95,11 +89,6 @@ fun TelaCadastro(navController: NavController) {
         isSenhaError = when {
             senha.isBlank() -> "Campo obrigatório"
             senha.length < 6 -> "Senha fraca"
-            else -> null
-        }
-        isConfirmarSenhaError = when {
-            confirmarSenha.isBlank() -> "Campo obrigatório"
-            senha != confirmarSenha -> "Senhas não coincidem"
             else -> null
         }
 
@@ -142,13 +131,17 @@ fun TelaCadastro(navController: NavController) {
 
             Spacer(modifier = Modifier.height(39.dp))
 
-            // ================= CAMPOS DE CADASTRO =================
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Nome
-                Text("Nome Completo", fontSize = 14.sp, color = Color(0xFF990410), fontWeight = FontWeight.SemiBold, modifier = Modifier.fillMaxWidth())
+                Text(
+                    "Nome Completo",
+                    fontSize = 14.sp,
+                    color = Color(0xFF990410),
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier
+                        .fillMaxWidth())
                 OutlinedTextField(
                     value = nomeCompleto,
                     onValueChange = { nomeCompleto = it },
@@ -167,7 +160,6 @@ fun TelaCadastro(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Email
                 Text("E-mail", fontSize = 14.sp, color = Color(0xFF990410), fontWeight = FontWeight.SemiBold, modifier = Modifier.fillMaxWidth())
                 OutlinedTextField(
                     value = email,
@@ -220,11 +212,9 @@ fun TelaCadastro(navController: NavController) {
                         unfocusedPlaceholderColor = Color.White
                     )
                 )
-                if (isConfirmarSenhaError != null) Text(isConfirmarSenhaError!!, color = Color.Red, fontSize = 12.sp)
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Dropdown Sexo
                 Text("Sexo", fontSize = 14.sp, color = Color(0xFF990410), fontWeight = FontWeight.SemiBold, modifier = Modifier.fillMaxWidth())
                 ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
                     OutlinedTextField(
@@ -257,7 +247,6 @@ fun TelaCadastro(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Dropdown Tipo Sanguíneo
                 Text("Tipo sanguíneo", fontSize = 14.sp, color = Color(0xFF990410), fontWeight = FontWeight.SemiBold, modifier = Modifier.fillMaxWidth())
                 ExposedDropdownMenuBox(expanded = expandedTipo, onExpandedChange = { expandedTipo = !expandedTipo }) {
                     OutlinedTextField(
@@ -290,7 +279,6 @@ fun TelaCadastro(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(30.dp))
 
-                // Botão de cadastro
                 Button(
                     onClick = {
                         if (validarCadastro()) {
@@ -308,7 +296,7 @@ fun TelaCadastro(navController: NavController) {
 
                                     withContext(Dispatchers.Main) {
                                         Toast.makeText(context, "Cadastro realizado com sucesso!", Toast.LENGTH_LONG).show()
-                                        navController.navigate("tela_login") {
+                                        navController.navigate("tela_home/$nomeCompleto") {
                                             popUpTo("tela_cadastro") { inclusive = true }
                                         }
                                     }
@@ -328,7 +316,6 @@ fun TelaCadastro(navController: NavController) {
                     Text("Criar conta", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Medium)
                 }
 
-                // 🔼 Textos logo abaixo do botão
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(top = 12.dp)) {
                     Text("Já tem uma conta?", color = Color(0xFF990410), fontSize = 14.sp)
                     Text(

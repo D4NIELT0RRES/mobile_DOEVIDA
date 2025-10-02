@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
      val navController = rememberNavController()
      NavHost(
          navController = navController,
-         startDestination = "tela_informacao"
+         startDestination = "tela_inicial"
      ) {
          composable("tela_inicial") {
              TelaInicial(navController)
@@ -45,8 +45,9 @@ class MainActivity : ComponentActivity() {
          composable("tela_cadastro") {
              TelaCadastro(navController)
          }
-         composable("tela_home") {
-             TelaHome(navController)
+         composable("tela_home/{nomeUser}") { backStackEntry ->
+             val nomeUser = backStackEntry.arguments?.getString("nomeUser") ?: ""
+             TelaHome(navController, nomeUser)
          }
          composable("tela_recuperacao") {
              TelaRecuperacaoEmail(navController)

@@ -37,9 +37,13 @@ import androidx.compose.ui.tooling.preview.Preview
 
 
 @Composable
-fun TelaHome(navController: NavController) {
+fun TelaHome(navController: NavController, nomeUser: String) {
 
     var navController = rememberNavController()
+
+    var nomeUser by remember {
+        mutableStateOf(value = "")
+    }
 
     Scaffold(
         bottomBar = {
@@ -77,7 +81,7 @@ fun TelaHome(navController: NavController) {
                             Spacer(modifier = Modifier.width(12.dp))
 
                             Text(
-                                text = "Nome do User",
+                                text = nomeUser,
                                 color = Color.White,
                                 fontSize = 15.sp
                             )
@@ -292,5 +296,5 @@ fun BarraDeNavegacao(navController: NavController) {
 @Composable
 private fun TelaHomePreview() {
     val navController = rememberNavController()
-    TelaHome(navController = navController)
+    TelaHome(navController = navController, nomeUser = "Nome User")
 }
