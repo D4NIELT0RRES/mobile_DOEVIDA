@@ -284,12 +284,11 @@ fun TelaCadastro(navController: NavController) {
                 Button(
                     onClick = {
                         if (validarCadastro()) {
-                            val senhaHash = BCrypt.hashpw(senha, BCrypt.gensalt())  // Gerando o hash da senha
 
                             val cadastro = Cadastro(
                                 nome = nomeCompleto,
                                 email = email,
-                                senha = senhaHash,  // Passando o hash da senha para o backend
+                                senha = senha,
                                 id_sexo = selectedSexo,
                                 id_tipo_sanguineo = selectedTipo ?: 0
                             )
