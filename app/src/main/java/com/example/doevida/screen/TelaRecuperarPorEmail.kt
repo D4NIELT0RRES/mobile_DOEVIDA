@@ -38,7 +38,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.util.PatternsCompat
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
@@ -50,7 +49,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun TelaRecuperacaoEmail(navController: NavController) {
     var email by remember { mutableStateOf("") }
-
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     var isLoading by remember { mutableStateOf(false) }
@@ -69,6 +67,7 @@ fun TelaRecuperacaoEmail(navController: NavController) {
                     shape = CircleShape
                 )
         )
+
         IconButton(
             onClick = { navController.navigate("tela_inicial") },
             modifier = Modifier
@@ -98,14 +97,17 @@ fun TelaRecuperacaoEmail(navController: NavController) {
                     .size(180.dp)
                     .padding(bottom = 32.dp)
             )
+
             Spacer(modifier = Modifier.weight(0.5f))
+
             Text(
-                text = "Digite seu Email ou Usuário",
+                text = "Digite seu Email",
                 fontSize = 14.sp,
                 color = Color(0xFF990410),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.align(Alignment.Start)
             )
+
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -113,7 +115,7 @@ fun TelaRecuperacaoEmail(navController: NavController) {
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
                     .height(56.dp),
-                placeholder = { Text("Email ou Usuário", color = Color.White) },
+                placeholder = { Text("Digite seu email", color = Color.White) },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Color(0xFF990410),
                     unfocusedContainerColor = Color(0xFF990410),
@@ -144,7 +146,7 @@ fun TelaRecuperacaoEmail(navController: NavController) {
                         return@Button
                     }
 
-                    if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()) {
                         Toast.makeText(context, "Formato de email inválido", Toast.LENGTH_LONG).show()
                         return@Button
                     }
@@ -158,19 +160,44 @@ fun TelaRecuperacaoEmail(navController: NavController) {
                             val request = RecuperarSenhaRequest(email = email.trim())
                             val response = userService.recuperarSenha(request)
 
+                            // Debug - adicionar logs para verificar a resposta
+                            println("Response Code: ${response.code()}")
+                            println("Response Body: ${response.body()}")
+                            println("Is Successful: ${response.isSuccessful}")
+
                             isLoading = false
 
                             if (response.isSuccessful) {
                                 val body = response.body()
-                                // CORRIGIDO: Usar 'status' ao invés de 'success'
-                                if (body != null && body.suc) {
+
+                                // Debug adicional
+                                println("Body não é null: ${body != null}")
+                                if (body != null) {
+                                    println("Status: ${body.status}")  // CORRIGIDO: usando status
+                                    println("Message: ${body.message}")
+                                }
+
+                                // CORRIGIDO: Verificação baseada na mensagem OU status
+                                if (body != null && (
+                                            body.status == true ||
+                                                    body.message.contains("enviado", ignoreCase = true)
+                                            )) {
                                     Toast.makeText(
                                         context,
                                         "Código enviado para seu email!",
                                         Toast.LENGTH_LONG
                                     ).show()
-                                    // CORRIGIDO: Navegação com encoding do email
-                                    navController.navigate("tela_redefinir_senha/${email.trim()}")
+
+                                    // Debug da navegação
+                                    println("Tentando navegar para tela_redefinir_senha")
+
+                                    // Navegação forçada
+                                    try {
+                                        navController.navigate("tela_redefinir_senha")
+                                        println("Navegação executada!")
+                                    } catch (e: Exception) {
+                                        println("Erro na navegação: ${e.message}")
+                                    }
                                 } else {
                                     Toast.makeText(
                                         context,
@@ -189,14 +216,16 @@ fun TelaRecuperacaoEmail(navController: NavController) {
                             isLoading = false
                             Toast.makeText(
                                 context,
-                                "Erro de conexão: ${e.message}",
+                                "Erro de conexão: Verifique sua internet",
                                 Toast.LENGTH_LONG
                             ).show()
-                            println("Erro completo: ${e.printStackTrace()}") // Para debug
+                            // Debug - mostrar erro completo
+                            e.printStackTrace()
+                            println("Erro detalhado: ${e.message}")
                         }
                     }
                 },
-                enabled = !isLoading, // Agora funciona corretamente
+                enabled = !isLoading,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF990410)
                 ),
@@ -204,9 +233,9 @@ fun TelaRecuperacaoEmail(navController: NavController) {
                 modifier = Modifier
                     .height(48.dp)
                     .width(200.dp)
-                    {
+            ) {
                 Text(
-                    text = "Concluir Nova Senha",
+                    text = if (isLoading) "Enviando..." else "Enviar Código",
                     color = Color.White,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Medium

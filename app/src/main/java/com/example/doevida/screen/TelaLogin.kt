@@ -27,6 +27,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
 import com.example.doevida.model.LoginRequest
 import com.example.doevida.service.RetrofitFactory
+import com.example.doevida.service.SharedPreferencesUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -167,9 +168,26 @@ fun TelaLogin(navController: NavController) {
                             val response = RetrofitFactory().getUserService().login(request)
 
                             withContext(Dispatchers.Main) {
-
-                                if (response.isSuccessful){
+                                if (response.isSuccessful) {
                                     val body = response.body()
+
+                                    // ===== ADICIONADO: LOGS DE DEBUG =====
+                                    println("=== DEBUG LOGIN ===")
+                                    println("Email/Username digitado: ${login.value}")
+                                    println("Resposta da API: $body")
+                                    println("Nome retornado: ${body?.usuario?.nome}")
+                                    println("Email retornado: ${body?.usuario?.email}")
+                                    println("==================")
+
+                                    // ===== CORRIGIDO: SALVANDO DADOS DO USUÁRIO =====
+                                    if (body?.usuario != null) {
+                                        SharedPreferencesUtils.saveUserData(
+                                            context = context,
+                                            userName = body.usuario.nome ?: "Usuário",
+                                            userEmail = body.usuario.email ?: "email@exemplo.com"
+                                        )
+                                        println("Dados salvos no SharedPreferences!")
+                                    }
 
                                     Toast.makeText(
                                         context,
@@ -180,14 +198,13 @@ fun TelaLogin(navController: NavController) {
                                     navController.navigate("tela_home") {
                                         popUpTo("tela_login") { inclusive = true }
                                     }
-                                }else{
+                                } else {
                                     Toast.makeText(
                                         context,
                                         "Falha no login: ${response.code()}",
                                         Toast.LENGTH_LONG
                                     ).show()
                                 }
-
                             }
                         } catch (e: Exception) {
                             withContext(Dispatchers.Main) {

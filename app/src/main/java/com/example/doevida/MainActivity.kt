@@ -14,6 +14,7 @@ import com.example.doevida.screen.TelaInformacaoDoDoador
 import com.example.doevida.screen.TelaInicial
 import com.example.doevida.screen.TelaLogin
 import com.example.doevida.screen.TelaRecuperacaoEmail
+import com.example.doevida.screen.TelaRedefinirSenha
 import com.example.doevida.ui.theme.DoevidaTheme
 
 class MainActivity : ComponentActivity() {
@@ -52,6 +53,9 @@ fun AppNavigation() {
         }
         composable("tela_informacao") {
             TelaInformacaoDoDoador(navController)
+        }
+        composable("tela_redefinir_senha") {
+            TelaRedefinirSenha(navController)
         }
     }
 }
