@@ -53,7 +53,7 @@ fun TelaRecuperacaoEmail(navController: NavController) {
 
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    var errorMessage by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -138,37 +138,65 @@ fun TelaRecuperacaoEmail(navController: NavController) {
 
             Button(
                 onClick = {
-                    var errorMessage = ""
+                    // Validações
                     if (email.isBlank()) {
-                        errorMessage = "Campo obrigatório"
-                    } else if (email.contains("@") && !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                        errorMessage = "Formato de email inválido"
-                    }
-
-                    if (errorMessage.isNotEmpty()) {
-                        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, "Por favor, digite seu email", Toast.LENGTH_LONG).show()
                         return@Button
                     }
 
-                    // Chamada à API usando sua classe RetrofitFactory
+                    if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                        Toast.makeText(context, "Formato de email inválido", Toast.LENGTH_LONG).show()
+                        return@Button
+                    }
+
+                    // Chamar a API
+                    isLoading = true
                     val userService = RetrofitFactory().getUserService()
 
                     coroutineScope.launch {
                         try {
-                            val request = RecuperarSenhaRequest(emailOrUser = email)
+                            val request = RecuperarSenhaRequest(email = email.trim())
                             val response = userService.recuperarSenha(request)
-                            val body = response.body()
 
-                            if (body != null && body.success) {
-                                navController.navigate("tela_redefinir_senha/$email")
+                            isLoading = false
+
+                            if (response.isSuccessful) {
+                                val body = response.body()
+                                // CORRIGIDO: Usar 'status' ao invés de 'success'
+                                if (body != null && body.suc) {
+                                    Toast.makeText(
+                                        context,
+                                        "Código enviado para seu email!",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                    // CORRIGIDO: Navegação com encoding do email
+                                    navController.navigate("tela_redefinir_senha/${email.trim()}")
+                                } else {
+                                    Toast.makeText(
+                                        context,
+                                        body?.message ?: "Erro ao enviar email",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
                             } else {
-                                Toast.makeText(context, body?.message ?: "Email ou User Inexistente", Toast.LENGTH_LONG).show()
+                                Toast.makeText(
+                                    context,
+                                    "Erro no servidor: ${response.code()}",
+                                    Toast.LENGTH_LONG
+                                ).show()
                             }
                         } catch (e: Exception) {
-                            Toast.makeText(context, "Erro de conexão: ${e.message}", Toast.LENGTH_LONG).show()
+                            isLoading = false
+                            Toast.makeText(
+                                context,
+                                "Erro de conexão: ${e.message}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            println("Erro completo: ${e.printStackTrace()}") // Para debug
                         }
                     }
                 },
+                enabled = !isLoading, // Agora funciona corretamente
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF990410)
                 ),
@@ -176,7 +204,7 @@ fun TelaRecuperacaoEmail(navController: NavController) {
                 modifier = Modifier
                     .height(48.dp)
                     .width(200.dp)
-            ) {
+                    {
                 Text(
                     text = "Concluir Nova Senha",
                     color = Color.White,

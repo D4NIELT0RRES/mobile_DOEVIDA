@@ -1,6 +1,7 @@
 import com.google.gson.annotations.SerializedName
 
 data class RecuperarSenhaResponse(
-    @SerializedName("success") val success: Boolean,
-    @SerializedName("message") val message: String
+    val status: Boolean,
+    val status_code: Int,
+    val message: String
 )

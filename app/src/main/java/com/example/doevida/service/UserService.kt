@@ -25,5 +25,4 @@ interface UserService {
     @Headers("Content-Type: application/json")
     @POST("recuperar-senha")
     suspend fun recuperarSenha(@Body request: RecuperarSenhaRequest): Response<RecuperarSenhaResponse>
-
 }

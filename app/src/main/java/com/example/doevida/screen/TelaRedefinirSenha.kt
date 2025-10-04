@@ -79,7 +79,7 @@ fun TelaRedefinirSenha(navController: NavController) {
             )
 
             Text(
-                text = "Digite sua nova senha",
+                text = "Digite seu token",
                 fontSize = 14.sp,
                 color = Color(0xFF990410),
                 fontWeight = FontWeight.Bold,
@@ -117,7 +117,7 @@ fun TelaRedefinirSenha(navController: NavController) {
 
 
             Text(
-                text = "Confirme sua senha",
+                text = "Digite sua senha",
                 fontSize = 14.sp,
                 color = Color(0xFF990410),
                 fontWeight = FontWeight.Bold,
