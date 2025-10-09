@@ -48,13 +48,26 @@ fun TelaLogin(navController: NavController) {
     ) {
         Box(
             modifier = Modifier
-                .size(250.dp)
+                .size(270.dp)
                 .offset(x = (-100).dp, y = (-120).dp)
                 .background(
                     color = Color(0xFF990410),
                     shape = CircleShape
                 )
         )
+        IconButton(
+            onClick = { navController.navigate("tela_inicial") },
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(top = 16.dp, start = 16.dp)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.voltar),
+                contentDescription = "Voltar",
+                tint = Color.White,
+                modifier = Modifier.size(20.dp)
+            )
+        }
 
         Column(
             modifier = Modifier
