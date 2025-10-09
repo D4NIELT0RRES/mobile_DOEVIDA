@@ -2,7 +2,8 @@ package com.example.doevida.model
 
 import com.google.gson.annotations.SerializedName
 
-data class RecuperarSenhaResponse(
-    @SerializedName("success") val success: Boolean,
+data class RedefinirSenhaResponse(
+    @SerializedName("status") val status: Boolean,
+    @SerializedName("status_code") val status_code: Int,
     @SerializedName("message") val message: String
 )
