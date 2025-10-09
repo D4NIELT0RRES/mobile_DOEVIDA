@@ -57,5 +57,8 @@ fun AppNavigation() {
         composable("tela_redefinir_senha") {
             TelaRedefinirSenha(navController)
         }
+        composable("tela_detalhes_hospitais") {
+            TelaRedefinirSenha(navController)
+        }
     }
 }
