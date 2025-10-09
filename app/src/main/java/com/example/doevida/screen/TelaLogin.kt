@@ -4,27 +4,10 @@ import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,7 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
-import com.example.doevida.model.LoginResponse
+import com.example.doevida.model.LoginRequest
 import com.example.doevida.service.RetrofitFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -55,7 +38,6 @@ fun TelaLogin(navController: NavController) {
     val senha = remember { mutableStateOf("") }
 
     val context = LocalContext.current
-    val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
     Box(
@@ -165,7 +147,7 @@ fun TelaLogin(navController: NavController) {
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .align(Alignment.End)
-                    .clickable { /* navegação para recuperação */ }
+                    .clickable { navController.navigate(route = "tela_recuperacao") }
                     .padding(top = 8.dp, bottom = 32.dp),
                 fontSize = 14.sp
             )
@@ -175,20 +157,22 @@ fun TelaLogin(navController: NavController) {
             Button(
                 onClick = {
                     val request = if (login.value.contains("@")) {
-                        LoginResponse(email = login.value, username = null, senha = senha.value)
+                        LoginRequest(email = login.value, username = null, senha = senha.value)
                     } else {
-                        LoginResponse(email = null, username = login.value, senha = senha.value)
+                        LoginRequest(email = null, username = login.value, senha = senha.value)
                     }
-
-                    val call = RetrofitFactory().getUserService().login(request)
 
                     scope.launch(Dispatchers.IO) {
                         try {
-                            val response = call.execute()
-                            if (response.isSuccessful) {
-                                withContext(Dispatchers.Main) {
+                            val response = RetrofitFactory().getUserService().login(request)
+
+                            withContext(Dispatchers.Main) {
+
+                                if (response.isSuccessful){
+                                    val body = response.body()
+
                                     Toast.makeText(
-                                        LocalContext.current,
+                                        context,
                                         "Login realizado com sucesso!",
                                         Toast.LENGTH_LONG
                                     ).show()
@@ -196,20 +180,19 @@ fun TelaLogin(navController: NavController) {
                                     navController.navigate("tela_home") {
                                         popUpTo("tela_login") { inclusive = true }
                                     }
-                                }
-                            } else {
-                                withContext(Dispatchers.Main) {
+                                }else{
                                     Toast.makeText(
-                                        LocalContext.current,
+                                        context,
                                         "Falha no login: ${response.code()}",
                                         Toast.LENGTH_LONG
                                     ).show()
                                 }
+
                             }
                         } catch (e: Exception) {
                             withContext(Dispatchers.Main) {
                                 Toast.makeText(
-                                    LocalContext.current,
+                                    context,
                                     "Erro ao conectar: ${e.message}",
                                     Toast.LENGTH_LONG
                                 ).show()
@@ -245,7 +228,7 @@ fun TelaLogin(navController: NavController) {
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp,
                 modifier = Modifier
-                    .clickable { /* navegação para cadastro */ }
+                    .clickable { navController.navigate(route = "tela_cadastro") }
             )
         }
     }

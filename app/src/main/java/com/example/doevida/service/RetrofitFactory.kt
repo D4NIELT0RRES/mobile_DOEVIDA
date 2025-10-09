@@ -5,19 +5,15 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class RetrofitFactory {
 
-    private val BASE_URL = "http://10.107.140.8:3030/" //link da api
+    private val BASE_URL = "http://10.107.144.16:8080/v1/doevida/"
 
-    private val retrofitFactory = Retrofit
-        .Builder()
+    private val retrofit: Retrofit = Retrofit.Builder()
         .baseUrl(BASE_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-
     fun getUserService(): UserService {
-        return retrofitFactory.create(UserService::class.java)
+        return retrofit.create(UserService::class.java)
     }
-
-    companion object
 
 }
