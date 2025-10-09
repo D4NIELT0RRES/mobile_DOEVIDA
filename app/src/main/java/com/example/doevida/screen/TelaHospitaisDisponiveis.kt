@@ -77,13 +77,12 @@ fun TelaHospitais(navController: NavController) {
             contentScale = ContentScale.Crop
         )
 
-        Button(
-            onClick = { /* Filtrar hospitais mais próximos */ },
+        Row(
             modifier = Modifier
                 .padding(horizontal = 16.dp, vertical = 12.dp)
-                .height(40.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                .background(Color.White, shape = RoundedCornerShape(12.dp))
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 imageVector = Icons.Default.LocationOn,
@@ -91,12 +90,27 @@ fun TelaHospitais(navController: NavController) {
                 tint = Color.Black
             )
             Spacer(modifier = Modifier.width(6.dp))
-
-            Text(text = "Mais próximos", color = Color.Black)
+            Text(
+                text = "Mais próximos",
+                color = Color.Black,
+                fontWeight = FontWeight.Medium,
+                fontSize = 16.sp
+            )
         }
     }
 }
+//-------------------------------------
+@Composable
+fun CardsHospitais(modifier: Modifier = Modifier) {
+    
+}
 
+@Preview
+@Composable
+private fun CardsHospitaisPreview() {
+    CardsHospitais()
+}
+//-------------------------------------
 @Preview(showSystemUi = true)
 @Composable
 private fun TelaHospitaisPreview() {
