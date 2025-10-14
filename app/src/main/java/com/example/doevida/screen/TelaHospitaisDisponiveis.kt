@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
@@ -24,10 +25,17 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
-
+import com.example.doevida.model.HospitaisCards
 
 @Composable
 fun TelaHospitais(navController: NavController) {
+
+    val listaHospitais = listOf(
+        HospitaisCards("Hospital Regional", "Av. Principal, 711 - São Paulo", "(11) 3373-2050"),
+        HospitaisCards("Hospital Centra", "Rua das Flores, 123 - São Paulo", "(11) 2253-1050"),
+        HospitaisCards("Centro Médico", "Rua da Saúde, 815 - São Paulo", "(11) 4198-2785"),
+        HospitaisCards("Banco de Sangue de São Paulo", "R. Dr. Tomás Carvalhal, 711 - São Paulo", "(11) 3574-9075")
+    )
 
     Column(
         modifier = Modifier
@@ -67,9 +75,9 @@ fun TelaHospitais(navController: NavController) {
                 Spacer(modifier = Modifier.size(48.dp))
             }
         }
-        
+
         Image(
-            painter = painterResource(id = R.drawable.mapa), // integrar com API depois
+            painter = painterResource(id = R.drawable.mapa),
             contentDescription = "Mapa de hospitais",
             modifier = Modifier
                 .fillMaxWidth()
@@ -97,20 +105,80 @@ fun TelaHospitais(navController: NavController) {
                 fontSize = 16.sp
             )
         }
+
+        // lista de hospitais
+        LazyColumn {
+            items(listaHospitais) { hospital ->
+                CardsHospitais(hospital)
+            }
+        }
     }
 }
-//-------------------------------------
+//---------------------------------------------
 @Composable
-fun CardsHospitais(modifier: Modifier = Modifier) {
-    
-}
+fun CardsHospitais(hospital: HospitaisCards) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF9F9F9)),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = hospital.nomeHospital,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = Color.Black
+                )
+                Text(
+                    text = hospital.endereco,
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+                Text(
+                    text = hospital.telefone,
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+            }
 
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Mais informações",
+                    tint = Color.Black
+                )
+                Text(
+                    text = "Informações",
+                    fontSize = 13.sp,
+                    color = Color.Black
+                )
+            }
+        }
+    }
+}
+//---------------------------------------------
 @Preview
 @Composable
 private fun CardsHospitaisPreview() {
-    CardsHospitais()
+    CardsHospitais(
+        HospitaisCards(
+            nomeHospital = "Hospital Regional",
+            endereco = "Av. Principal, 711 - São Paulo",
+            telefone = "(11) 3373-2050"
+        )
+    )
 }
-//-------------------------------------
+//---------------------------------------------
 @Preview(showSystemUi = true)
 @Composable
 private fun TelaHospitaisPreview() {
