@@ -1,40 +1,51 @@
-package com.example.doevida.Util
-
+package com.example.doevida.util
 
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import com.example.doevida.data.Hospital
+import com.example.doevida.model.HospitaisCards
 
-fun abrirNoMaps(context: Context, h: Hospital) {
-    // Se você tiver latitude/longitude no seu modelo:
-    val lat = (h as? HasLatLng)?.latitude
-    val lng = (h as? HasLatLng)?.longitude
-
-    val uri: Uri = if (lat != null && lng != null) {
-        // Com coordenadas e rótulo
-        Uri.parse("geo:$lat,$lng?q=$lat,$lng(${Uri.encode(h.nome)})")
-    } else {
-        // Sem coordenadas: consulta por nome + CEP (ou logradouro, se houver)
-        val query = listOfNotNull(h.nome, h.cep).joinToString(" ")
-        Uri.parse("geo:0,0?q=${Uri.encode(query)}")
-    }
-
-    val intent = Intent(Intent.ACTION_VIEW, uri).apply {
-        // Se tiver Google Maps instalado, abre nele; senão, em qualquer app de mapas
+fun abrirNoMaps(context: Context, hospital: HospitaisCards) {
+    val query = "${hospital.nomeHospital} ${hospital.endereco}"
+    val gmmIntentUri = Uri.parse("geo:0,0?q=${Uri.encode(query)}")
+    val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
         setPackage("com.google.android.apps.maps")
     }
-
-    // fallback se o Maps não estiver instalado
-    if (intent.resolveActivity(context.packageManager) == null) {
-        context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+    if (mapIntent.resolveActivity(context.packageManager) != null) {
+        context.startActivity(mapIntent)
     } else {
-        context.startActivity(intent)
+        val browserIntent = Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse("https://maps.google.com/maps?q=${Uri.encode(query)}")
+        )
+        context.startActivity(browserIntent)
     }
 }
 
-// Interface opcional caso você adicione lat/lng ao Hospital futuramente
-interface HasLatLng {
-    val latitude: Double?
-    val longitude: Double?
+fun ligarPara(context: Context, telefone: String) {
+    val intent = Intent(Intent.ACTION_DIAL).apply {
+        data = Uri.parse("tel:$telefone")
+    }
+    context.startActivity(intent)
+}
+
+fun abrirNoMapsPorCEP(context: Context, hospital: HospitaisCards) {
+    val query = if (hospital.cep != null) {
+        "${hospital.nomeHospital} ${hospital.cep}"
+    } else {
+        "${hospital.nomeHospital} ${hospital.endereco}"
+    }
+    val gmmIntentUri = Uri.parse("geo:0,0?q=${Uri.encode(query)}")
+    val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
+        setPackage("com.google.android.apps.maps")
+    }
+    if (mapIntent.resolveActivity(context.packageManager) != null) {
+        context.startActivity(mapIntent)
+    } else {
+        val browserIntent = Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse("https://maps.google.com/maps?q=${Uri.encode(query)}")
+        )
+        context.startActivity(browserIntent)
+    }
 }

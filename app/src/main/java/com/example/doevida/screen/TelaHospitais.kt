@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -27,9 +28,12 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
 import com.example.doevida.model.HospitaisCards
-import com.example.doevida.model.HospitalResponse
 import com.example.doevida.service.RetrofitFactory
 import kotlinx.coroutines.launch
+
+// >>> IMPORTA AS FUNÇÕES DE UTIL
+import com.example.doevida.util.abrirNoMaps
+import com.example.doevida.util.ligarPara
 
 @Composable
 fun TelaHospitais(navController: NavController) {
@@ -37,8 +41,8 @@ fun TelaHospitais(navController: NavController) {
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
-    // Carregar dados da API quando a tela for criada
     LaunchedEffect(Unit) {
         scope.launch {
             try {
@@ -130,26 +134,19 @@ fun TelaHospitais(navController: NavController) {
             )
         }
 
-        // Conteúdo principal
         when {
             isLoading -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(
-                        color = Color(0xFF990410)
-                    )
-                }
+                ) { CircularProgressIndicator(color = Color(0xFF990410)) }
             }
             errorMessage != null -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = errorMessage!!,
                             color = Color.Red,
@@ -177,12 +174,8 @@ fun TelaHospitais(navController: NavController) {
                                     }
                                 }
                             },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF990410)
-                            )
-                        ) {
-                            Text("Tentar Novamente")
-                        }
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF990410))
+                        ) { Text("Tentar Novamente") }
                     }
                 }
             }
@@ -190,23 +183,16 @@ fun TelaHospitais(navController: NavController) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Nenhum hospital encontrado",
-                        color = Color.Gray,
-                        fontSize = 16.sp
-                    )
-                }
+                ) { Text(text = "Nenhum hospital encontrado", color = Color.Gray, fontSize = 16.sp) }
             }
             else -> {
-                // Lista de hospitais
                 LazyColumn {
                     items(listaHospitais) { hospital ->
                         CardsHospitais(
                             hospital = hospital,
-                            onInfoClick = {
-                                navController.navigate("tela_detalhe_hospital/${hospital.id}")
-                            }
+                            onInfoClick = { navController.navigate("tela_detalhe_hospital/${hospital.id}") },
+                            onOpenMaps = { abrirNoMaps(context, hospital) },
+                            onCall = { ligarPara(context, hospital.telefone) }
                         )
                     }
                 }
@@ -218,7 +204,9 @@ fun TelaHospitais(navController: NavController) {
 @Composable
 fun CardsHospitais(
     hospital: HospitaisCards,
-    onInfoClick: () -> Unit = {}
+    onInfoClick: () -> Unit = {},
+    onOpenMaps: () -> Unit = {},
+    onCall: () -> Unit = {}
 ) {
     Card(
         modifier = Modifier
@@ -247,28 +235,36 @@ fun CardsHospitais(
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
+                // Telefone "clicável" para ligar
                 Text(
                     text = hospital.telefone,
                     fontSize = 14.sp,
-                    color = Color.Gray
+                    color = Color.Gray,
+                    modifier = Modifier.clickable { onCall() }
                 )
             }
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.clickable { onInfoClick() }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Mais informações",
-                    tint = Color.Black
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "Informações",
-                    fontSize = 13.sp,
-                    color = Color.Black
-                )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // Botão "Mapa"
+                TextButton(onClick = onOpenMaps) { Text("Mapa") }
+                Spacer(modifier = Modifier.width(8.dp))
+                // Botão "Ligar"
+                TextButton(onClick = onCall) { Text("Ligar") }
+                Spacer(modifier = Modifier.width(8.dp))
+                // Botão "Informações"
+                Row(modifier = Modifier.clickable { onInfoClick() }) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Mais informações",
+                        tint = Color.Black
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Informações",
+                        fontSize = 13.sp,
+                        color = Color.Black
+                    )
+                }
             }
         }
     }

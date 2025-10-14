@@ -1,6 +1,5 @@
 package com.example.doevida.screen
 
-import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -28,9 +27,13 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
 import com.example.doevida.model.HospitaisCards
-import com.example.doevida.model.HospitalDetailResponse
 import com.example.doevida.service.RetrofitFactory
 import kotlinx.coroutines.launch
+
+// >>> IMPORTA AS FUNÇÕES DE UTIL
+import com.example.doevida.util.abrirNoMaps
+import com.example.doevida.util.abrirNoMapsPorCEP
+import com.example.doevida.util.ligarPara
 
 @Composable
 fun TelaDetalheHospital(
@@ -43,7 +46,6 @@ fun TelaDetalheHospital(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    // Carregar dados do hospital específico
     LaunchedEffect(hospitalId) {
         scope.launch {
             try {
@@ -104,16 +106,13 @@ fun TelaDetalheHospital(
             }
         }
 
-        // Conteúdo principal
         when {
             isLoading -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(
-                        color = Color(0xFF990410)
-                    )
+                    CircularProgressIndicator(color = Color(0xFF990410))
                 }
             }
             errorMessage != null -> {
@@ -121,9 +120,7 @@ fun TelaDetalheHospital(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = errorMessage!!,
                             color = Color.Red,
@@ -151,19 +148,14 @@ fun TelaDetalheHospital(
                                     }
                                 }
                             },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF990410)
-                            )
-                        ) {
-                            Text("Tentar Novamente")
-                        }
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF990410))
+                        ) { Text("Tentar Novamente") }
                     }
                 }
             }
             hospital != null -> {
                 val hospitalData = hospital!!
 
-                // Imagem do hospital
                 Image(
                     painter = painterResource(id = R.drawable.hospital),
                     contentDescription = "Hospital",
@@ -186,7 +178,6 @@ fun TelaDetalheHospital(
                         ) {
                             Spacer(modifier = Modifier.height(15.dp))
 
-                            // Nome do hospital
                             Text(
                                 text = hospitalData.nomeHospital,
                                 fontSize = 25.sp,
@@ -195,14 +186,12 @@ fun TelaDetalheHospital(
 
                             Spacer(modifier = Modifier.height(5.dp))
 
-                            // Endereço
                             Text(
                                 text = hospitalData.endereco,
                                 color = Color.Gray,
                                 fontSize = 16.sp
                             )
 
-                            // Telefone
                             Text(
                                 text = hospitalData.telefone,
                                 color = Color.Gray,
@@ -212,20 +201,11 @@ fun TelaDetalheHospital(
 
                             Spacer(modifier = Modifier.height(15.dp))
 
-                            // Botão Google Maps
+                            // >>> USA A FUNÇÃO UTIL PARA MAPS
                             OutlinedButton(
                                 onClick = {
-                                    val gmmIntentUri = Uri.parse("geo:0,0?q=${Uri.encode(hospitalData.endereco)}")
-                                    val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
-                                    mapIntent.setPackage("com.google.android.apps.maps")
-                                    if (mapIntent.resolveActivity(context.packageManager) != null) {
-                                        context.startActivity(mapIntent)
-                                    } else {
-                                        // Fallback para o navegador
-                                        val browserIntent = Intent(Intent.ACTION_VIEW,
-                                            Uri.parse("https://maps.google.com/maps?q=${Uri.encode(hospitalData.endereco)}"))
-                                        context.startActivity(browserIntent)
-                                    }
+                                    // Se quiser priorizar CEP: abrirNoMapsPorCEP(context, hospitalData)
+                                    abrirNoMaps(context, hospitalData)
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -239,14 +219,9 @@ fun TelaDetalheHospital(
 
                             Spacer(modifier = Modifier.height(10.dp))
 
-                            // Botão Ligar
+                            // >>> USA A FUNÇÃO UTIL PARA LIGAR
                             OutlinedButton(
-                                onClick = {
-                                    val intent = Intent(Intent.ACTION_DIAL).apply {
-                                        data = Uri.parse("tel:${hospitalData.telefone}")
-                                    }
-                                    context.startActivity(intent)
-                                },
+                                onClick = { ligarPara(context, hospitalData.telefone) },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(56.dp)
@@ -259,7 +234,6 @@ fun TelaDetalheHospital(
 
                             Spacer(modifier = Modifier.height(15.dp))
 
-                            // Horário de funcionamento
                             if (hospitalData.horario_abertura != null && hospitalData.horario_fechamento != null) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
@@ -285,7 +259,6 @@ fun TelaDetalheHospital(
                                 Spacer(modifier = Modifier.height(15.dp))
                             }
 
-                            // Informações adicionais
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
@@ -301,28 +274,13 @@ fun TelaDetalheHospital(
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 16.sp
                                     )
-
-                                    // Convênios
                                     hospitalData.convenios?.let { convenios ->
-                                        Text(
-                                            text = "• Convênios: $convenios",
-                                            fontSize = 14.sp
-                                        )
+                                        Text(text = "• Convênios: $convenios", fontSize = 14.sp)
                                     }
-
-                                    // Capacidade máxima
                                     hospitalData.capacidade_maxima?.let { capacidade ->
-                                        Text(
-                                            text = "• Capacidade máxima: $capacidade pessoas",
-                                            fontSize = 14.sp
-                                        )
+                                        Text(text = "• Capacidade máxima: $capacidade pessoas", fontSize = 14.sp)
                                     }
-
-                                    // Informação padrão
-                                    Text(
-                                        text = "• Estacionamento disponível",
-                                        fontSize = 14.sp
-                                    )
+                                    Text(text = "• Estacionamento disponível", fontSize = 14.sp)
                                 }
                             }
                         }
