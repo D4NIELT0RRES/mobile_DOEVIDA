@@ -2,6 +2,7 @@ package com.example.doevida.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -11,7 +12,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,22 +27,43 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
 import com.example.doevida.model.HospitaisCards
+import com.example.doevida.model.HospitalResponse
+import com.example.doevida.service.RetrofitFactory
+import kotlinx.coroutines.launch
 
 @Composable
 fun TelaHospitais(navController: NavController) {
+    var listaHospitais by remember { mutableStateOf<List<HospitaisCards>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
 
-    val listaHospitais = listOf(
-        HospitaisCards("Hospital Regional", "Av. Principal, 711 - São Paulo", "(11) 3373-2050"),
-        HospitaisCards("Hospital Centra", "Rua das Flores, 123 - São Paulo", "(11) 2253-1050"),
-        HospitaisCards("Centro Médico", "Rua da Saúde, 815 - São Paulo", "(11) 4198-2785"),
-        HospitaisCards("Banco de Sangue de São Paulo", "R. Dr. Tomás Carvalhal, 711 - São Paulo", "(11) 3574-9075")
-    )
+    // Carregar dados da API quando a tela for criada
+    LaunchedEffect(Unit) {
+        scope.launch {
+            try {
+                val response = RetrofitFactory().getHospitalService().getHospitais()
+                if (response.isSuccessful) {
+                    response.body()?.let { hospitalResponse ->
+                        listaHospitais = hospitalResponse.hospitais
+                    }
+                } else {
+                    errorMessage = "Erro ao carregar hospitais: ${response.code()}"
+                }
+            } catch (e: Exception) {
+                errorMessage = "Erro de conexão: ${e.message}"
+            } finally {
+                isLoading = false
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
     ) {
+        // Header
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -76,6 +98,7 @@ fun TelaHospitais(navController: NavController) {
             }
         }
 
+        // Mapa
         Image(
             painter = painterResource(id = R.drawable.mapa),
             contentDescription = "Mapa de hospitais",
@@ -85,6 +108,7 @@ fun TelaHospitais(navController: NavController) {
             contentScale = ContentScale.Crop
         )
 
+        // Seção "Mais próximos"
         Row(
             modifier = Modifier
                 .padding(horizontal = 16.dp, vertical = 12.dp)
@@ -106,17 +130,96 @@ fun TelaHospitais(navController: NavController) {
             )
         }
 
-        // lista de hospitais
-        LazyColumn {
-            items(listaHospitais) { hospital ->
-                CardsHospitais(hospital)
+        // Conteúdo principal
+        when {
+            isLoading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = Color(0xFF990410)
+                    )
+                }
+            }
+            errorMessage != null -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = errorMessage!!,
+                            color = Color.Red,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                        Button(
+                            onClick = {
+                                isLoading = true
+                                errorMessage = null
+                                scope.launch {
+                                    try {
+                                        val response = RetrofitFactory().getHospitalService().getHospitais()
+                                        if (response.isSuccessful) {
+                                            response.body()?.let { hospitalResponse ->
+                                                listaHospitais = hospitalResponse.hospitais
+                                            }
+                                        } else {
+                                            errorMessage = "Erro ao carregar hospitais: ${response.code()}"
+                                        }
+                                    } catch (e: Exception) {
+                                        errorMessage = "Erro de conexão: ${e.message}"
+                                    } finally {
+                                        isLoading = false
+                                    }
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF990410)
+                            )
+                        ) {
+                            Text("Tentar Novamente")
+                        }
+                    }
+                }
+            }
+            listaHospitais.isEmpty() -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Nenhum hospital encontrado",
+                        color = Color.Gray,
+                        fontSize = 16.sp
+                    )
+                }
+            }
+            else -> {
+                // Lista de hospitais
+                LazyColumn {
+                    items(listaHospitais) { hospital ->
+                        CardsHospitais(
+                            hospital = hospital,
+                            onInfoClick = {
+                                navController.navigate("tela_detalhe_hospital/${hospital.id}")
+                            }
+                        )
+                    }
+                }
             }
         }
     }
 }
-//---------------------------------------------
+
 @Composable
-fun CardsHospitais(hospital: HospitaisCards) {
+fun CardsHospitais(
+    hospital: HospitaisCards,
+    onInfoClick: () -> Unit = {}
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -151,12 +254,16 @@ fun CardsHospitais(hospital: HospitaisCards) {
                 )
             }
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable { onInfoClick() }
+            ) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Mais informações",
                     tint = Color.Black
                 )
+                Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = "Informações",
                     fontSize = 13.sp,
@@ -166,19 +273,20 @@ fun CardsHospitais(hospital: HospitaisCards) {
         }
     }
 }
-//---------------------------------------------
+
 @Preview
 @Composable
 private fun CardsHospitaisPreview() {
     CardsHospitais(
         HospitaisCards(
+            id = 1,
             nomeHospital = "Hospital Regional",
             endereco = "Av. Principal, 711 - São Paulo",
             telefone = "(11) 3373-2050"
         )
     )
 }
-//---------------------------------------------
+
 @Preview(showSystemUi = true)
 @Composable
 private fun TelaHospitaisPreview() {

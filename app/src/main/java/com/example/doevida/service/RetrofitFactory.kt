@@ -16,4 +16,7 @@ class RetrofitFactory {
         return retrofit.create(UserService::class.java)
     }
 
+    fun getHospitalService(): HospitalService {
+        return retrofit.create(HospitalService::class.java)
+    }
 }
