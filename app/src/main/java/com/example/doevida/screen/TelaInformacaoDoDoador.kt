@@ -95,7 +95,7 @@ fun TelaInformacaoDoDoador(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
-            Spacer(modifier = Modifier.height(65.dp))
+            Spacer(modifier = Modifier.height(80.dp))
 
             Image(
                 painter = painterResource(id = R.drawable.logoinfo),
@@ -147,7 +147,7 @@ fun TelaInformacaoDoDoador(navController: NavController) {
                         )
                     )
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(15.dp))
 
                     Text(
                         text = "Data De Nascimento",
@@ -183,7 +183,7 @@ fun TelaInformacaoDoDoador(navController: NavController) {
                         )
                     )
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(15.dp))
 
                     Text(
                         text = "Celular",
@@ -215,7 +215,7 @@ fun TelaInformacaoDoDoador(navController: NavController) {
                         )
                     )
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(15.dp))
 
                     Text(
                         text = "CEP",
@@ -247,129 +247,9 @@ fun TelaInformacaoDoDoador(navController: NavController) {
                         )
                     )
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(150.dp))
 
-                    Text(
-                        text = "Sexo",
-                        fontSize = 14.sp,
-                        color = Color(0xFF990410),
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 4.dp, start = 1.dp),
-                        textAlign = TextAlign.Start
-                    )
-
-                    ExposedDropdownMenuBox(
-                        expanded = expanded,
-                        onExpandedChange = { expanded = !expanded }
-                    ) {
-                        OutlinedTextField(
-                            value = selectedLabel,
-                            onValueChange = {},
-                            readOnly = true,
-                            trailingIcon = {
-                                Icon(
-                                    imageVector = Icons.Filled.ArrowDropDown,
-                                    contentDescription = "Selecionar sexo",
-                                    modifier = Modifier.clickable { expanded = !expanded },
-                                    tint = Color.White
-                                )
-                            },
-                            modifier = Modifier
-                                .menuAnchor()
-                                .width(175.dp)
-                                .background(Color(0xFF990410), shape = RoundedCornerShape(8.dp)),
-                            shape = RoundedCornerShape(8.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color.White,
-                                unfocusedBorderColor = Color.White,
-                                cursorColor = Color.White,
-                                focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White
-                            )
-                        )
-
-                        ExposedDropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false }
-                        ) {
-                            listaSexos.forEach { (id, label) ->
-                                DropdownMenuItem(
-                                    text = { Text(label) },
-                                    onClick = {
-                                        selectedSexo = id
-                                        selectedLabel = label
-                                        expanded = false
-                                    }
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-
-                    Text(
-                        text = "Tipo Sanguíneo",
-                        fontSize = 14.sp,
-                        color = Color(0xFF990410),
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 4.dp),
-                        textAlign = TextAlign.Start
-                    )
-
-                    ExposedDropdownMenuBox(
-                        expanded = expandedTipo,
-                        onExpandedChange = { expandedTipo = !expandedTipo }
-                    ) {
-                        OutlinedTextField(
-                            value = selectedLabelTipo,
-                            onValueChange = {},
-                            readOnly = true,
-                            trailingIcon = {
-                                Icon(
-                                    imageVector = Icons.Filled.ArrowDropDown,
-                                    contentDescription = "Selecionar tipo sanguíneo",
-                                    modifier = Modifier.clickable { expandedTipo = !expandedTipo },
-                                    tint = Color.White
-                                )
-                            },
-                            modifier = Modifier
-                                .menuAnchor()
-                                .width(150.dp)
-                                .background(Color(0xFF990410), shape = RoundedCornerShape(8.dp)),
-                            shape = RoundedCornerShape(8.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color.White,
-                                unfocusedBorderColor = Color.White,
-                                cursorColor = Color.White,
-                                focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White
-                            )
-                        )
-                        ExposedDropdownMenu(
-                            expanded = expandedTipo,
-                            onDismissRequest = { expandedTipo = false }
-                        ) {
-                            listaTipos.forEach { (id, label) ->
-                                DropdownMenuItem(
-                                    text = { Text(label) },
-                                    onClick = {
-                                        selectedTipo = id
-                                        selectedLabelTipo = label
-                                        expandedTipo = false
-                                    }
-                                )
-                            }
-                        }
-                    }
                 }
-
-                Spacer(modifier = Modifier.height(17.dp))
-
                 Button(
                     onClick = {
 
