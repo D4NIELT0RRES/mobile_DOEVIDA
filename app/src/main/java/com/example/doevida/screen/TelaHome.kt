@@ -192,20 +192,47 @@ fun TelaHome(navController: NavController) {
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        CardButton("Doar Sangue", R.drawable.doarsangue)
-                        CardButton("Hospitais", R.drawable.hospitais)
+                        CardButton(
+                            "Doar Sangue",
+                            R.drawable.doarsangue,
+                            navController,
+                            "tela_doar_sangue"
+                        )
+                        CardButton(
+                            "Hospitais",
+                            R.drawable.hospitais,
+                            navController,
+                            "tela_hospitais"
+                        )
                     }
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        CardButton("Banco de Sangue", R.drawable.bancodesangue)
-                        CardButton("Histórico", R.drawable.historicos)
+                        CardButton(
+                            "Banco de Sangue",
+                            R.drawable.bancodesangue,
+                            navController,
+                            "tela_banco_sangue"
+                        )
+                        CardButton(
+                            "Histórico",
+                            R.drawable.historicos,
+                            navController,
+                            "tela_historico"
+                        )
                     }
-                    CardButton("Registrar Doação", R.drawable.doarsangue)
+
+                    CardButton(
+                        "Registrar Doação",
+                        R.drawable.doarsangue,
+                        navController,
+                        "tela_registrar_doacao"
+                    )
                 }
 
-                Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.weight(1f))
 
                 HorizontalDivider(
                     modifier = Modifier
@@ -222,11 +249,11 @@ fun TelaHome(navController: NavController) {
 }
 //-------------------------------------
 @Composable
-fun CardButton(text: String, imageRes: Int) {
+fun CardButton(text: String, imageRes: Int, navController: NavController, rota: String) {
     Card(
         modifier = Modifier
             .size(width = 150.dp, height = 90.dp)
-            .clickable { /* ação do botão */ },
+            .clickable { navController.navigate(rota) }, //navegação
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         border = BorderStroke(1.dp, Color.LightGray)
