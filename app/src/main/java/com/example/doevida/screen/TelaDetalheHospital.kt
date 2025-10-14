@@ -45,7 +45,6 @@ fun TelaDetalheHospital(navController: NavController) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Botão de voltar (lado esquerdo)
                 IconButton(onClick = { navController.navigate("tela_inicial") }) {
                     Icon(
                         painter = painterResource(id = R.drawable.voltar),
@@ -55,7 +54,6 @@ fun TelaDetalheHospital(navController: NavController) {
                     )
                 }
 
-                // Texto centralizado
                 Text(
                     text = "Hospital",
                     color = Color.White,
@@ -65,13 +63,13 @@ fun TelaDetalheHospital(navController: NavController) {
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
 
-                // Espaço à direita (para equilibrar o layout)
-                Box(modifier = Modifier.size(48.dp)) {}
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)) {
+                }
             }
         }
 
-
-        // Imagem principal
         Image(
             painter = painterResource(id = R.drawable.hospital),
             contentDescription = "Hospital",
@@ -81,7 +79,6 @@ fun TelaDetalheHospital(navController: NavController) {
             contentScale = ContentScale.Crop
         )
 
-        // Conteúdo rolável
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
