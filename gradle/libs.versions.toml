@@ -11,6 +11,7 @@ room = "2.6.1"
 agp = "8.5.2"
 kotlin = "1.9.24"
 foundation = "1.9.2"
+uiText = "1.9.3"
 
 [libraries]
 androidx-core-ktx = "androidx.core:core-ktx:1.13.1"
@@ -46,6 +47,7 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
+androidx-compose-ui-text = { group = "androidx.compose.ui", name = "ui-text", version.ref = "uiText" }
 
 
 [plugins]

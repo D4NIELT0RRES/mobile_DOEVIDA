@@ -35,7 +35,7 @@ fun TelaDetalheHospital(navController: NavController) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFFB71C1C))
+                .background(Color(0xFF990410))
                 .padding(vertical = 16.dp)
         ) {
             Row(
