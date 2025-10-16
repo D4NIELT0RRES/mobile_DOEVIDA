@@ -190,7 +190,7 @@ fun TelaHospitais(navController: NavController) {
                     items(listaHospitais) { hospital ->
                         CardsHospitais(
                             hospital = hospital,
-                            onInfoClick = { navController.navigate("tela_detalhe_hospital/${hospital.id}") },
+                            onInfoClick = { navController.navigate("tela_detalhes_hospitais/${hospital.id}") },
                             onOpenMaps = { abrirNoMaps(context, hospital) },
                             onCall = { ligarPara(context, hospital.telefone) }
                         )
@@ -235,7 +235,6 @@ fun CardsHospitais(
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
-                // Telefone "clicável" para ligar
                 Text(
                     text = hospital.telefone,
                     fontSize = 14.sp,
@@ -244,31 +243,27 @@ fun CardsHospitais(
                 )
             }
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                // Botão "Mapa"
-                TextButton(onClick = onOpenMaps) { Text("Mapa") }
-                Spacer(modifier = Modifier.width(8.dp))
-                // Botão "Ligar"
-                TextButton(onClick = onCall) { Text("Ligar") }
-                Spacer(modifier = Modifier.width(8.dp))
-                // Botão "Informações"
-                Row(modifier = Modifier.clickable { onInfoClick() }) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Mais informações",
-                        tint = Color.Black
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "Informações",
-                        fontSize = 13.sp,
-                        color = Color.Black
-                    )
-                }
+            // 🔹 Ação de navegação vem do onInfoClick
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable { onInfoClick() }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Mais informações",
+                    tint = Color.Black
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "Informações",
+                    fontSize = 13.sp,
+                    color = Color.Black
+                )
             }
         }
     }
 }
+
 
 @Preview
 @Composable

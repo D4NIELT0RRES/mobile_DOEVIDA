@@ -5,10 +5,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.doevida.screen.TelaCadastro
+import com.example.doevida.screen.TelaDetalheHospital
 import com.example.doevida.screen.TelaHome
 import com.example.doevida.screen.TelaHospitais
 import com.example.doevida.screen.TelaInformacaoDoDoador
@@ -58,8 +61,12 @@ fun AppNavigation() {
         composable("tela_redefinir_senha") {
             TelaRedefinirSenha(navController)
         }
-        composable("tela_detalhes_hospitais") {
-            TelaRedefinirSenha(navController)
+        composable(
+            route = "tela_detalhes_hospitais/{hospitalId}", //Define rota com parâmetro
+            arguments = listOf(navArgument("hospitalId") { type = NavType.IntType }) //Declara o tipo do parâmetro
+        ) { backStackEntry ->
+            val hospitalId = backStackEntry.arguments?.getInt("hospitalId") ?: 0 //Recupera o ID na tela de destino
+            TelaDetalheHospital(navController, hospitalId)
         }
         composable("tela_hospitais") {
             TelaHospitais(navController)
