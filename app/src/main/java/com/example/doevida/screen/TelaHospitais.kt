@@ -224,26 +224,28 @@ fun CardsHospitais(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
+                // ✅ SEGURO - com null-safety
                 Text(
-                    text = hospital.nomeHospital,
+                    text = hospital.nomeHospital.takeIf { it.isNotBlank() } ?: "Hospital não informado",
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                     color = Color.Black
                 )
                 Text(
-                    text = hospital.endereco,
+                    text = hospital.endereco, // Já tem tratamento de null na propriedade computada
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
                 Text(
-                    text = hospital.telefone,
+                    text = hospital.telefone.takeIf { it.isNotBlank() } ?: "Telefone não disponível",
                     fontSize = 14.sp,
                     color = Color.Gray,
-                    modifier = Modifier.clickable { onCall() }
+                    modifier = Modifier.clickable {
+                        if (hospital.telefone.isNotBlank()) onCall()
+                    }
                 )
             }
 
-            // 🔹 Ação de navegação vem do onInfoClick
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.clickable { onInfoClick() }
@@ -264,19 +266,6 @@ fun CardsHospitais(
     }
 }
 
-
-@Preview
-@Composable
-private fun CardsHospitaisPreview() {
-    CardsHospitais(
-        HospitaisCards(
-            id = 1,
-            nomeHospital = "Hospital Regional",
-            endereco = "Av. Principal, 711 - São Paulo",
-            telefone = "(11) 3373-2050"
-        )
-    )
-}
 
 @Preview(showSystemUi = true)
 @Composable

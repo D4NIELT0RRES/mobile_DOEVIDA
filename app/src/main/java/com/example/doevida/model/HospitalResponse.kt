@@ -1,9 +1,12 @@
 package com.example.doevida.model
 
+import com.google.gson.annotations.SerializedName
+
 data class HospitalResponse(
     val status: Boolean,
     val status_code: Int,
-    val items: Int,
+    @SerializedName("quantidade")
+    val items: Int,              // API retorna "quantidade", mapeia para "items"
     val hospitais: List<HospitaisCards>
 )
 
