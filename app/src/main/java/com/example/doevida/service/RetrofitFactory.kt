@@ -7,7 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class RetrofitFactory {
 
-    private val BASE_URL = "http://192.168.15.13:8080/v1/doevida/"
+    private val BASE_URL = "http://10.0.2.2:8080/v1/doevida/"
 
     // Cria um interceptor para logar as requisições e respostas
     private val loggingInterceptor = HttpLoggingInterceptor().apply {

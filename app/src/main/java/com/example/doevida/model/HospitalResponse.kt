@@ -5,8 +5,9 @@ import com.google.gson.annotations.SerializedName
 data class HospitalResponse(
     val status: Boolean,
     val status_code: Int,
-    @SerializedName("quantidade")
-    val items: Int,              // API retorna "quantidade", mapeia para "items"
+    // Casa "items" (seu JSON atual) e "quantidade" (seu modelo anterior)
+    @SerializedName(value = "items", alternate = ["quantidade"])
+    val items: Int,
     val hospitais: List<HospitaisCards>
 )
 
