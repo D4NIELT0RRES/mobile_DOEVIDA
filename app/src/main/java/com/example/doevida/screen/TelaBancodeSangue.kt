@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -12,43 +11,52 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.doevida.R
 
 @Composable
 fun TelaBancodeSangue(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White) // fundo branco
+            .background(Color.White)
     ) {
         // TopBar
-        Box(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color(0xFF8B0000))
-                .padding(vertical = 16.dp, horizontal = 16.dp)
+                .padding(vertical = 16.dp, horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Voltar",
-                tint = Color.White,
-                modifier = Modifier.align(Alignment.CenterStart)
-            )
+            IconButton(
+                onClick = { navController.navigate("tela_inicial") },
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.voltar),
+                    contentDescription = "Voltar",
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
             Text(
                 text = "Banco de Sangue",
                 color = Color.White,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.align(Alignment.Center)
+                fontSize = 25.sp,
+                fontWeight = FontWeight.Bold
             )
-        }
 
-        Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.weight(1f))
+        }
 
         Column(
             modifier = Modifier
