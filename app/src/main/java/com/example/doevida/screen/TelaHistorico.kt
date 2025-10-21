@@ -19,11 +19,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
 import com.example.doevida.model.Doacao
 
 @Composable
-fun TelaHistorico() {
+fun TelaHistorico(navController: NavController) {
 
     //tirar dps
     val doacoes = listOf(
@@ -176,5 +178,6 @@ fun DoacaoCard(doacao: Doacao) {
 @Preview
 @Composable
 private fun TelaHistoricoPreview() {
-    TelaHistorico()
+    val navController = rememberNavController()
+    TelaHistorico(navController = navController)
 }

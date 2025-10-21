@@ -119,38 +119,43 @@ fun BloodStockRow(tipo: String, nivel: Float, cor: Color) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp),
+            .padding(vertical = 8.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White), // card branco
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
-        Row(
+
+    Row(
             modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = tipo,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
-            Column(
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Box(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = 16.dp)
+                    .height(12.dp)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(Color(0xFFDADADA))
             ) {
-                LinearProgressIndicator(
-                    progress = nivel,
-                    color = cor,
-                    trackColor = Color(0xFFDADADA),
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(10.dp)
-                        .clip(RoundedCornerShape(5.dp))
+                        .fillMaxHeight()
+                        .fillMaxWidth(nivel) // preenche conforme nível
+                        .background(cor)
+                        .clip(RoundedCornerShape(6.dp))
                 )
             }
-            Spacer(modifier = Modifier.width(10.dp))
+
+            Spacer(modifier = Modifier.width(12.dp))
+
             Text(
                 text = "${(nivel * 100).toInt()}%",
                 fontWeight = FontWeight.Medium,

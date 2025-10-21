@@ -10,8 +10,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.doevida.screen.TelaBancodeSangue
 import com.example.doevida.screen.TelaCadastro
 import com.example.doevida.screen.TelaDetalheHospital
+import com.example.doevida.screen.TelaHistorico
 import com.example.doevida.screen.TelaHome
 import com.example.doevida.screen.TelaHospitais
 import com.example.doevida.screen.TelaInformacaoDoDoador
@@ -38,7 +40,7 @@ fun AppNavigation() {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = "tela_inicial"
+        startDestination = "tela_home"
     ) {
         composable("tela_inicial") {
             TelaInicial(navController)
@@ -70,6 +72,12 @@ fun AppNavigation() {
         }
         composable("tela_hospitais") {
             TelaHospitais(navController)
+        }
+        composable("tela_historico") {
+            TelaHistorico(navController)
+        }
+        composable("tela_banco_sangue") {
+            TelaBancodeSangue(navController)
         }
     }
 }
