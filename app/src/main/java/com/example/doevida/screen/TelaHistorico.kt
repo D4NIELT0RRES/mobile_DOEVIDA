@@ -40,7 +40,7 @@ fun TelaHistorico(navController: NavController) {
             .background(color = Color(0xFF990410))
     ) {
         // topo
-        TopBar()
+        TopBar(navController)
 
         Box(
             modifier = Modifier
@@ -60,7 +60,7 @@ fun TelaHistorico(navController: NavController) {
 }
 //-------------------------------------
 @Composable
-fun TopBar() {
+fun TopBar(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -74,14 +74,19 @@ fun TopBar() {
                 .padding(bottom = 16.dp),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.voltar),
-                contentDescription = "Voltar",
-                tint = Color.White,
+            IconButton(
+                onClick = { navController.navigate("tela_home") },
                 modifier = Modifier
-                    .size(22.dp)
-                    .align(Alignment.CenterStart)
-            )
+                    .align(Alignment.TopStart)
+                    .padding(top = 16.dp, start = 16.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.voltar),
+                    contentDescription = "Voltar",
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
 
             Text(
                 text = "Histórico de Doação",

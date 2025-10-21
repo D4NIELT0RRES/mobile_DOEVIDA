@@ -84,12 +84,16 @@ fun TelaDetalheHospital(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                IconButton(onClick = { navController.popBackStack() }) {
+                IconButton(
+                    onClick = { navController.navigate("tela_hospitais") },
+                    modifier = Modifier
+                        .padding(top = 16.dp, start = 16.dp)
+                ) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
+                        painter = painterResource(id = R.drawable.voltar),
                         contentDescription = "Voltar",
                         tint = Color.White,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
 

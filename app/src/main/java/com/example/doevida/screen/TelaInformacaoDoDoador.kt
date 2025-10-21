@@ -87,7 +87,19 @@ fun TelaInformacaoDoDoador(navController: NavController) {
                     shape = CircleShape
                 )
         )
-
+        IconButton(
+            onClick = { navController.navigate("tela_agendamento") },
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(top = 16.dp, start = 16.dp)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.voltar),
+                contentDescription = "Voltar",
+                tint = Color.White,
+                modifier = Modifier.size(20.dp)
+            )
+        }
         Column(
             modifier = Modifier
                 .fillMaxSize()

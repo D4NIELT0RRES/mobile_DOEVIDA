@@ -36,7 +36,7 @@ fun TelaBancodeSangue(navController: NavController) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
-                onClick = { navController.navigate("tela_inicial") },
+                onClick = { navController.navigate("tela_home") },
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.voltar),

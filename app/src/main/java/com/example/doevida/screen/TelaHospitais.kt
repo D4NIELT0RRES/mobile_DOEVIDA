@@ -81,11 +81,16 @@ fun TelaHospitais(navController: NavController) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                IconButton(onClick = { navController.popBackStack() }) {
+                IconButton(
+                    onClick = { navController.navigate("tela_home") },
+                    modifier = Modifier
+                        .padding(top = 15.dp, start = 15.dp)
+                ) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
+                        painter = painterResource(id = R.drawable.voltar),
                         contentDescription = "Voltar",
-                        tint = Color.White
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
 

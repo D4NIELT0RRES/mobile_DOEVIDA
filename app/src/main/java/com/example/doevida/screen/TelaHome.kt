@@ -196,7 +196,7 @@ fun TelaHome(navController: NavController) {
                             "Doar Sangue",
                             R.drawable.doarsangue,
                             navController,
-                            "tela_doar_sangue"
+                            "tela_agendamento"
                         )
                         CardButton(
                             "Hospitais",
@@ -228,7 +228,7 @@ fun TelaHome(navController: NavController) {
                         "Registrar Doação",
                         R.drawable.doarsangue,
                         navController,
-                        "tela_registrar_doacao"
+                        " " // arrumar dps de pronto
                     )
                 }
 
