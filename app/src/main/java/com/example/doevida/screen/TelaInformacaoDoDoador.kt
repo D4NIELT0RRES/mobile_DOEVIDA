@@ -1,16 +1,13 @@
 package com.example.doevida.screen
 
 import android.util.Log
-import android.util.Patterns
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -21,11 +18,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -33,45 +33,104 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
-import com.example.doevida.model.Cadastro
+import com.example.doevida.model.ComplementoPerfilRequest
 import com.example.doevida.service.RetrofitFactory
+import com.example.doevida.util.UserDataManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TelaInformacaoDoDoador(navController: NavController) {
+fun TelaInformacaoDoDoador(
+    navController: NavController,
+    hospitalId: Int,
+    data: String
+) {
 
-    var cpf = remember { mutableStateOf("") }
-    val datadenascimento = remember { mutableStateOf("") }
-    val celular = remember { mutableStateOf("") }
-    val cep = remember { mutableStateOf("") }
+    var cpf by remember { mutableStateOf("") }
+    var dataDeNascimento by remember { mutableStateOf("") } // Irá armazenar apenas os dígitos: DDMMAAAA
+    var celular by remember { mutableStateOf("") }
+    var cep by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
 
-    val listaSexos = listOf(
-        Pair(1, "MASCULINO"),
-        Pair(2, "FEMININO"),
-        Pair(3, "OUTRO")
-    )
-    var expanded by remember { mutableStateOf(false) }
-    var selectedSexo by remember { mutableStateOf(listaSexos[0].first) }
-    var selectedLabel by remember { mutableStateOf(listaSexos[0].second) }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
-    val listaTipos = listOf(
-        Pair(1, "A+"),
-        Pair(2, "A-"),
-        Pair(3, "B+"),
-        Pair(4, "B-"),
-        Pair(5, "AB+"),
-        Pair(6, "AB-"),
-        Pair(7, "O+"),
-        Pair(8, "O-")
-    )
-    var expandedTipo by remember { mutableStateOf(false) }
-    var selectedTipo by remember { mutableStateOf(listaTipos[0].first) }
-    var selectedLabelTipo by remember { mutableStateOf(listaTipos[0].second) }
+    fun validarCampos(): String? {
+        when {
+            cpf.isBlank() -> return "CPF é obrigatório"
+            cpf.replace(Regex("[^0-9]"), "").length != 11 -> return "CPF deve ter 11 dígitos"
+            dataDeNascimento.isBlank() -> return "Data de nascimento é obrigatória"
+            dataDeNascimento.length != 8 -> return "Data de nascimento deve ser preenchida completamente"
+            celular.isBlank() -> return "Celular é obrigatório"
+            celular.replace(Regex("[^0-9]"), "").length < 10 -> return "Celular deve ter pelo menos 10 dígitos"
+            cep.isBlank() -> return "CEP é obrigatório"
+            cep.replace(Regex("[^0-9]"), "").length != 8 -> return "CEP deve ter 8 dígitos"
+            else -> return null
+        }
+    }
 
-    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
+    fun completarPerfil() {
+        val erro = validarCampos()
+        if (erro != null) {
+            Toast.makeText(context, erro, Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        isLoading = true
+
+        scope.launch {
+            try {
+                val dataFormatadaParaApi = dataDeNascimento.let {
+                    val dia = it.substring(0, 2)
+                    val mes = it.substring(2, 4)
+                    val ano = it.substring(4, 8)
+                    "$ano-$mes-$dia"
+                }
+
+                val service = RetrofitFactory(context).getUserService()
+                val request = ComplementoPerfilRequest(
+                    cpf = cpf.replace(Regex("[^0-9]"), ""),
+                    data_nascimento = dataFormatadaParaApi, // Envia a data formatada
+                    numero = celular.replace(Regex("[^0-9]"), ""),
+                    cep = cep.replace(Regex("[^0-9]"), "")
+                )
+
+                val response = service.completarPerfil(request)
+
+                withContext(Dispatchers.Main) {
+                    isLoading = false
+
+                    if (response.isSuccessful) {
+                        val body = response.body()
+                        if (body?.status == true) {
+                            Toast.makeText(context, body.message, Toast.LENGTH_SHORT).show()
+                            // Salva o CPF
+                            UserDataManager.saveCpf(context, cpf.replace(Regex("[^0-9]"), ""))
+                            // Navega para a tela de protocolo, levando os dados
+                            navController.navigate("tela_protocolo/$hospitalId/$data")
+                        } else {
+                            Toast.makeText(context, body?.message ?: "Erro desconhecido", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        when (response.code()) {
+                            400 -> Toast.makeText(context, "Dados inválidos. Verifique os campos.", Toast.LENGTH_SHORT).show()
+                            401 -> Toast.makeText(context, "Sessão expirada. Faça login novamente.", Toast.LENGTH_SHORT).show()
+                            409 -> Toast.makeText(context, "CPF já cadastrado para outro usuário.", Toast.LENGTH_SHORT).show()
+                            else -> Toast.makeText(context, "Erro no servidor. Tente novamente.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    isLoading = false
+                    Log.e("TelaInformacaoDoDoador", "Erro ao completar perfil", e)
+                    Toast.makeText(context, "Erro de conexão. Verifique sua internet.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -87,8 +146,9 @@ fun TelaInformacaoDoDoador(navController: NavController) {
                     shape = CircleShape
                 )
         )
+
         IconButton(
-            onClick = { navController.navigate("tela_agendamento") },
+            onClick = { navController.popBackStack() },
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .padding(top = 16.dp, start = 16.dp)
@@ -100,6 +160,7 @@ fun TelaInformacaoDoDoador(navController: NavController) {
                 modifier = Modifier.size(20.dp)
             )
         }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -117,13 +178,13 @@ fun TelaInformacaoDoDoador(navController: NavController) {
                     .padding(bottom = 16.dp)
             )
 
-
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 1.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Campo CPF
                 Column {
                     Text(
                         text = "CPF",
@@ -136,31 +197,30 @@ fun TelaInformacaoDoDoador(navController: NavController) {
                         textAlign = TextAlign.Start
                     )
                     OutlinedTextField(
-                        value = cpf.value,
-                        onValueChange = { cpf.value = it },
-                        placeholder = {
-                            Text(
-                                "Digite Seu CPF",
-                                color = Color(0x80FFFFFF)
-                            )
+                        value = cpf,
+                        onValueChange = {
+                            val numeros = it.replace(Regex("[^0-9]"), "")
+                            if (numeros.length <= 11) {
+                                cpf = numeros
+                            }
                         },
+                        placeholder = { Text("00000000000", color = Color.White.copy(alpha = 0.5f)) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(Color(0xFF990410), shape = RoundedCornerShape(8.dp)),
                         shape = RoundedCornerShape(8.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.White,
-                            unfocusedBorderColor = Color.White,
+                            focusedBorderColor = Color.Transparent,
+                            unfocusedBorderColor = Color.Transparent,
                             cursorColor = Color.White,
                             focusedTextColor = Color.White,
                             unfocusedTextColor = Color.White,
-                            focusedPlaceholderColor = Color.White,
-                            unfocusedPlaceholderColor = Color.White
                         )
                     )
-
                     Spacer(modifier = Modifier.height(15.dp))
 
+                    // Campo Data de Nascimento
                     Text(
                         text = "Data De Nascimento",
                         fontSize = 14.sp,
@@ -172,31 +232,31 @@ fun TelaInformacaoDoDoador(navController: NavController) {
                         textAlign = TextAlign.Start
                     )
                     OutlinedTextField(
-                        value = datadenascimento.value,
-                        onValueChange = { datadenascimento.value = it },
-                        placeholder = {
-                            Text(
-                                "Digite Sua Data De Nascimento",
-                                color = Color(0x80FFFFFF)
-                            )
+                        value = dataDeNascimento,
+                        onValueChange = { 
+                            val numeros = it.replace(Regex("[^0-9]"), "")
+                            if (numeros.length <= 8) {
+                                dataDeNascimento = numeros
+                            }
                         },
+                        placeholder = { Text("DD/MM/AAAA", color = Color.White.copy(alpha = 0.5f)) },
+                        visualTransformation = DateVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(Color(0xFF990410), shape = RoundedCornerShape(8.dp)),
                         shape = RoundedCornerShape(8.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.White,
-                            unfocusedBorderColor = Color.White,
+                            focusedBorderColor = Color.Transparent,
+                            unfocusedBorderColor = Color.Transparent,
                             cursorColor = Color.White,
                             focusedTextColor = Color.White,
                             unfocusedTextColor = Color.White,
-                            focusedPlaceholderColor = Color.White,
-                            unfocusedPlaceholderColor = Color.White
                         )
                     )
-
                     Spacer(modifier = Modifier.height(15.dp))
 
+                    // Campo Celular
                     Text(
                         text = "Celular",
                         fontSize = 14.sp,
@@ -208,27 +268,30 @@ fun TelaInformacaoDoDoador(navController: NavController) {
                         textAlign = TextAlign.Start
                     )
                     OutlinedTextField(
-                        value = celular.value,
-                        onValueChange = { celular.value = it },
-                        placeholder = { Text("Digite Seu Celular", color = Color(0x80FFFFFF)) },
+                        value = celular,
+                        onValueChange = {
+                            val numeros = it.replace(Regex("[^0-9]"), "")
+                            if (numeros.length <= 11) {
+                                celular = numeros
+                            }
+                        },
+                        placeholder = { Text("00000000000", color = Color.White.copy(alpha = 0.5f)) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(Color(0xFF990410), shape = RoundedCornerShape(8.dp)),
                         shape = RoundedCornerShape(8.dp),
-                        visualTransformation = PasswordVisualTransformation(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.White,
-                            unfocusedBorderColor = Color.White,
+                            focusedBorderColor = Color.Transparent,
+                            unfocusedBorderColor = Color.Transparent,
                             cursorColor = Color.White,
                             focusedTextColor = Color.White,
                             unfocusedTextColor = Color.White,
-                            focusedPlaceholderColor = Color.White,
-                            unfocusedPlaceholderColor = Color.White
                         )
                     )
-
                     Spacer(modifier = Modifier.height(15.dp))
 
+                    // Campo CEP
                     Text(
                         text = "CEP",
                         fontSize = 14.sp,
@@ -240,32 +303,34 @@ fun TelaInformacaoDoDoador(navController: NavController) {
                         textAlign = TextAlign.Start
                     )
                     OutlinedTextField(
-                        value = cep.value,
-                        onValueChange = { cep.value = it },
-                        placeholder = { Text("Digite Seu CEP", color = Color(0x80FFFFFF)) },
+                        value = cep,
+                        onValueChange = {
+                            val numeros = it.replace(Regex("[^0-9]"), "")
+                            if (numeros.length <= 8) {
+                                cep = numeros
+                            }
+                        },
+                        placeholder = { Text("00000000", color = Color.White.copy(alpha = 0.5f)) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(Color(0xFF990410), shape = RoundedCornerShape(8.dp)),
                         shape = RoundedCornerShape(8.dp),
-                        visualTransformation = PasswordVisualTransformation(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.White,
-                            unfocusedBorderColor = Color.White,
+                            focusedBorderColor = Color.Transparent,
+                            unfocusedBorderColor = Color.Transparent,
                             cursorColor = Color.White,
                             focusedTextColor = Color.White,
                             unfocusedTextColor = Color.White,
-                            focusedPlaceholderColor = Color.White,
-                            unfocusedPlaceholderColor = Color.White
                         )
                     )
-
                     Spacer(modifier = Modifier.height(150.dp))
-
                 }
-                Button(
-                    onClick = {
 
-                    },
+                // Botão de Confirmar
+                Button(
+                    onClick = { completarPerfil() },
+                    enabled = !isLoading,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF990410)
                     ),
@@ -274,15 +339,64 @@ fun TelaInformacaoDoDoador(navController: NavController) {
                         .height(50.dp)
                         .width(200.dp)
                 ) {
-                    Text(
-                        text = "Confirmar Dados",
-                        color = Color.White,
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    } else {
+                        Text(
+                            text = "Confirmar Dados",
+                            color = Color.White,
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             }
         }
+    }
+}
+
+// Classe para a transformação visual da data - VERSÃO CORRIGIDA
+class DateVisualTransformation : VisualTransformation {
+    override fun filter(text: AnnotatedString): TransformedText {
+        // Limita a 8 dígitos: DDMMAAAA
+        val trimmed = if (text.text.length >= 8) text.text.substring(0..7) else text.text
+        
+        // Constrói a string formatada: DD/MM/AAAA
+        val formattedText = buildString {
+            for (i in trimmed.indices) {
+                append(trimmed[i])
+                if (i == 1 || i == 3) {
+                    if (i < trimmed.length - 1) { // Só adiciona a barra se não for o último caractere
+                        append('/')
+                    }
+                }
+            }
+        }
+
+        val offsetMapping = object : OffsetMapping {
+            // Mapeia do texto original (só dígitos) para o formatado (com barras)
+            override fun originalToTransformed(offset: Int): Int {
+                return when {
+                    offset <= 2 -> offset
+                    offset <= 4 -> offset + 1
+                    else -> offset + 2
+                }.coerceAtMost(10) // Garante que não ultrapasse o tamanho máximo de DD/MM/AAAA
+            }
+
+            // Mapeia do texto formatado (com barras) de volta para o original (só dígitos)
+            override fun transformedToOriginal(offset: Int): Int {
+                return when {
+                    offset <= 2 -> offset
+                    offset <= 5 -> offset - 1
+                    else -> offset - 2
+                }.coerceAtLeast(0) // Garante que não seja menor que zero
+            }
+        }
+
+        return TransformedText(AnnotatedString(formattedText), offsetMapping)
     }
 }
 
@@ -290,5 +404,5 @@ fun TelaInformacaoDoDoador(navController: NavController) {
 @Composable
 private fun TelaInformacaoDoDoadorPreview() {
     val navController = rememberNavController()
-    TelaInformacaoDoDoador(navController = navController)
+    TelaInformacaoDoDoador(navController = navController, hospitalId = 0, data = "")
 }

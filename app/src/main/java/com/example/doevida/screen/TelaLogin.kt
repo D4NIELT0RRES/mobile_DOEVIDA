@@ -1,5 +1,6 @@
 package com.example.doevida.screen
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -27,7 +28,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
 import com.example.doevida.model.LoginRequest
 import com.example.doevida.service.RetrofitFactory
-import com.example.doevida.service.SharedPreferencesUtils
+import com.example.doevida.util.TokenManager
+import com.example.doevida.util.UserDataManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -178,38 +180,38 @@ fun TelaLogin(navController: NavController) {
 
                     scope.launch(Dispatchers.IO) {
                         try {
-                            val response = RetrofitFactory().getUserService().login(request)
+                            val response = RetrofitFactory(context).getUserService().login(request)
 
                             withContext(Dispatchers.Main) {
                                 if (response.isSuccessful) {
                                     val body = response.body()
-
-                                    // ===== ADICIONADO: LOGS DE DEBUG =====
-                                    println("=== DEBUG LOGIN ===")
-                                    println("Email/Username digitado: ${login.value}")
-                                    println("Resposta da API: $body")
-                                    println("Nome retornado: ${body?.usuario?.nome}")
-                                    println("Email retornado: ${body?.usuario?.email}")
-                                    println("==================")
-
-                                    // ===== CORRIGIDO: SALVANDO DADOS DO USUÁRIO =====
-                                    if (body?.usuario != null) {
-                                        SharedPreferencesUtils.saveUserData(
+                                    if (body?.usuario != null && body.token != null) {
+                                        // Salvar dados do usuário
+                                        UserDataManager.saveUser(
                                             context = context,
-                                            userName = body.usuario.nome ?: "Usuário",
-                                            userEmail = body.usuario.email ?: "email@exemplo.com"
+                                            name = body.usuario.nome ?: "",
+                                            email = body.usuario.email ?: ""
                                         )
-                                        println("Dados salvos no SharedPreferences!")
-                                    }
 
-                                    Toast.makeText(
-                                        context,
-                                        "Login realizado com sucesso!",
-                                        Toast.LENGTH_LONG
-                                    ).show()
+                                        // Salvar o token JWT
+                                        TokenManager(context).saveToken(body.token)
 
-                                    navController.navigate("tela_home") {
-                                        popUpTo("tela_login") { inclusive = true }
+                                        Toast.makeText(
+                                            context,
+                                            "Login realizado com sucesso!",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+
+                                        navController.navigate("tela_home") {
+                                            popUpTo("tela_login") { inclusive = true }
+                                        }
+                                    } else {
+                                        // Caso em que o corpo da resposta é nulo ou não contém os dados esperados
+                                        Toast.makeText(
+                                            context,
+                                            "Resposta inválida do servidor.",
+                                            Toast.LENGTH_LONG
+                                        ).show()
                                     }
                                 } else {
                                     Toast.makeText(
@@ -221,9 +223,10 @@ fun TelaLogin(navController: NavController) {
                             }
                         } catch (e: Exception) {
                             withContext(Dispatchers.Main) {
+                                Log.e("TelaLogin", "Erro ao conectar", e)
                                 Toast.makeText(
                                     context,
-                                    "Erro ao conectar: ${e.message}",
+                                    "Erro ao conectar. Verifique sua conexão.",
                                     Toast.LENGTH_LONG
                                 ).show()
                             }

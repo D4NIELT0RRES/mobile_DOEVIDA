@@ -153,7 +153,7 @@ fun TelaRecuperacaoEmail(navController: NavController) {
 
                     // Chamar a API
                     isLoading = true
-                    val userService = RetrofitFactory().getUserService()
+                    val userService = RetrofitFactory(context).getUserService()
 
                     coroutineScope.launch {
                         try {

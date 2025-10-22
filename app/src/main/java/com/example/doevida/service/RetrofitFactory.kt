@@ -1,32 +1,41 @@
 package com.example.doevida.service
 
-import com.example.doevida.model.HospitalDetailResponse
-import com.example.doevida.model.HospitalResponse
+import android.content.Context
+import com.example.doevida.util.TokenManager // Corrigido para o caminho que você usa
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.GET
-import retrofit2.http.Path
 
-class RetrofitFactory {
+class RetrofitFactory(private val context: Context) { // Contexto agora é obrigatório
 
-    private val BASE_URL = "http://10.107.144.2:8080/v1/doevida/"
+    // Use 10.0.2.2 para se conectar ao localhost da sua máquina a partir do emulador Android
+    private val BASE_URL = "http://192.168.15.12:8080/v1/doevida/"
 
-    // Cria um interceptor para logar as requisições e respostas
+    // Interceptor para adicionar o token de autorização
+    private val authInterceptor = Interceptor { chain ->
+        val token = TokenManager(context).getToken()
+        val requestBuilder = chain.request().newBuilder()
+        token?.let {
+            requestBuilder.addHeader("Authorization", "Bearer $it")
+        }
+        chain.proceed(requestBuilder.build())
+    }
+
+    // Interceptor para logar o corpo das requisições e respostas (MUITO útil para debug)
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }
 
-    // Cria um cliente OkHttp e adiciona o interceptor
     private val client = OkHttpClient.Builder()
-        .addInterceptor(loggingInterceptor)
+        .addInterceptor(authInterceptor)
+        .addInterceptor(loggingInterceptor) // Adiciona o logging interceptor
         .build()
 
-    private val retrofit: Retrofit = Retrofit.Builder()
+    private val retrofit = Retrofit.Builder()
         .baseUrl(BASE_URL)
-        .client(client) // Adiciona o cliente OkHttp ao Retrofit
+        .client(client)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
@@ -38,4 +47,3 @@ class RetrofitFactory {
         return retrofit.create(HospitalService::class.java)
     }
 }
-

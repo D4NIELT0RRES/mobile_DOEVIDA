@@ -28,7 +28,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
 import com.example.doevida.model.Cadastro
 import com.example.doevida.service.RetrofitFactory
-import com.example.doevida.service.SharedPreferencesUtils
+import com.example.doevida.util.UserDataManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -37,9 +37,9 @@ import kotlinx.coroutines.withContext
 @Composable
 fun TelaCadastro(navController: NavController) {
 
-    val doevidaApi = RetrofitFactory().getUserService()
-    val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
+    val doevidaApi = RetrofitFactory(context).getUserService()
+    val coroutineScope = rememberCoroutineScope()
 
     var nomeCompleto by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -307,16 +307,16 @@ fun TelaCadastro(navController: NavController) {
                             coroutineScope.launch(Dispatchers.IO) {
                                 try {
                                     val response = doevidaApi.insert(cadastro)
-                                    Log.d("API_Cadastro", "Resposta do backend: $response")
-
-                                    // Salvar os dados do usuário no SharedPreferences
                                     withContext(Dispatchers.Main) {
-                                        SharedPreferencesUtils.saveUserData(context, nomeCompleto, email) // Salvando nome e e-mail
-                                        Toast.makeText(context, "Cadastro realizado com sucesso!", Toast.LENGTH_LONG).show()
-
-                                        // Navegar para TelaHome
-                                        navController.navigate("tela_home") {
-                                            popUpTo("tela_cadastro") { inclusive = true }
+                                        if (response.isSuccessful) {
+                                            // PADRONIZADO: Usando UserDataManager
+                                            UserDataManager.saveUser(context, nomeCompleto, email)
+                                            Toast.makeText(context, "Cadastro realizado com sucesso!", Toast.LENGTH_LONG).show()
+                                            navController.navigate("tela_home") {
+                                                popUpTo("tela_cadastro") { inclusive = true }
+                                            }
+                                        } else {
+                                            Toast.makeText(context, "Erro: ${response.message()}", Toast.LENGTH_LONG).show()
                                         }
                                     }
                                 } catch (e: Exception) {

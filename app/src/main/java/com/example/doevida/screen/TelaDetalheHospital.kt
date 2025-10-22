@@ -49,7 +49,7 @@ fun TelaDetalheHospital(
     LaunchedEffect(hospitalId) {
         scope.launch {
             try {
-                val response = RetrofitFactory().getHospitalService().getHospitalById(hospitalId)
+                val response = RetrofitFactory(context).getHospitalService().getHospitalById(hospitalId)
                 if (response.isSuccessful) {
                     response.body()?.let { hospitalResponse ->
                         hospital = hospitalResponse.hospital
@@ -137,7 +137,7 @@ fun TelaDetalheHospital(
                                 errorMessage = null
                                 scope.launch {
                                     try {
-                                        val response = RetrofitFactory().getHospitalService().getHospitalById(hospitalId)
+                                        val response = RetrofitFactory(context).getHospitalService().getHospitalById(hospitalId)
                                         if (response.isSuccessful) {
                                             response.body()?.let { hospitalResponse ->
                                                 hospital = hospitalResponse.hospital

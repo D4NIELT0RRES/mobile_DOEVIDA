@@ -2,6 +2,8 @@ package com.example.doevida.service
 
 import RecuperarSenhaResponse
 import com.example.doevida.model.Cadastro
+import com.example.doevida.model.ComplementoPerfilRequest
+import com.example.doevida.model.ComplementoPerfilResponse
 import com.example.doevida.model.HospitalDetailResponse
 import com.example.doevida.model.HospitalResponse
 import com.example.doevida.model.LoginRequest
@@ -14,6 +16,7 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Headers
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
 
@@ -40,4 +43,9 @@ interface UserService {
 
     @GET("hospital/mobile/{id}")
     suspend fun getHospitalById(@Path("id") id: Int): Response<HospitalDetailResponse>
+
+    // NOVO: Endpoint para completar perfil
+    @Headers("Content-Type: application/json")
+    @PATCH("usuarios/me/complemento")
+    suspend fun completarPerfil(@Body complemento: ComplementoPerfilRequest): Response<ComplementoPerfilResponse>
 }

@@ -188,7 +188,7 @@ fun TelaRedefinirSenha(navController: NavController) {
                     }
 
                     isLoading = true
-                    val userService = RetrofitFactory().getUserService()
+                    val userService = RetrofitFactory(context).getUserService()
 
                     coroutineScope.launch {
                         try {

@@ -20,6 +20,7 @@ import com.example.doevida.screen.TelaHospitais
 import com.example.doevida.screen.TelaInformacaoDoDoador
 import com.example.doevida.screen.TelaInicial
 import com.example.doevida.screen.TelaLogin
+import com.example.doevida.screen.TelaProtocoloAgendamento
 import com.example.doevida.screen.TelaRecuperacaoEmail
 import com.example.doevida.screen.TelaRedefinirSenha
 import com.example.doevida.ui.theme.DoevidaTheme
@@ -41,7 +42,7 @@ fun AppNavigation() {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = "tela_home"
+        startDestination = "tela_login"
     ) {
         composable("tela_inicial") {
             TelaInicial(navController)
@@ -52,23 +53,31 @@ fun AppNavigation() {
         composable("tela_cadastro") {
             TelaCadastro(navController)
         }
-        composable("tela_home") { // Não precisa mais de {nomeCompleto} aqui
-            TelaHome(navController)  // Apenas passe o navController
+        composable("tela_home") {
+            TelaHome(navController)
         }
         composable("tela_recuperacao") {
             TelaRecuperacaoEmail(navController)
         }
-        composable("tela_informacao") {
-            TelaInformacaoDoDoador(navController)
+        composable(
+            route = "tela_informacao/{hospitalId}/{data}",
+            arguments = listOf(
+                navArgument("hospitalId") { type = NavType.IntType },
+                navArgument("data") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val hospitalId = backStackEntry.arguments?.getInt("hospitalId") ?: 0
+            val data = backStackEntry.arguments?.getString("data") ?: ""
+            TelaInformacaoDoDoador(navController, hospitalId, data)
         }
         composable("tela_redefinir_senha") {
             TelaRedefinirSenha(navController)
         }
         composable(
-            route = "tela_detalhes_hospitais/{hospitalId}", //Define rota com parâmetro
-            arguments = listOf(navArgument("hospitalId") { type = NavType.IntType }) //Declara o tipo do parâmetro
+            route = "tela_detalhes_hospitais/{hospitalId}",
+            arguments = listOf(navArgument("hospitalId") { type = NavType.IntType })
         ) { backStackEntry ->
-            val hospitalId = backStackEntry.arguments?.getInt("hospitalId") ?: 0 //Recupera o ID na tela de destino
+            val hospitalId = backStackEntry.arguments?.getInt("hospitalId") ?: 0
             TelaDetalheHospital(navController, hospitalId)
         }
         composable("tela_hospitais") {
@@ -82,6 +91,21 @@ fun AppNavigation() {
         }
         composable("tela_agendamento") {
             TelaAgendamento(navController)
+        }
+        composable(
+            route = "tela_protocolo/{hospitalId}/{data}",
+            arguments = listOf(
+                navArgument("hospitalId") { type = NavType.IntType },
+                navArgument("data") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val hospitalId = backStackEntry.arguments?.getInt("hospitalId") ?: 0
+            val data = backStackEntry.arguments?.getString("data") ?: ""
+            TelaProtocoloAgendamento(
+                navController = navController,
+                hospitalId = hospitalId,
+                dataSelecionada = data
+            )
         }
     }
 }

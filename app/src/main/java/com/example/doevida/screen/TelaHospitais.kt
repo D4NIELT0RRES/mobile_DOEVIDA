@@ -46,7 +46,7 @@ fun TelaHospitais(navController: NavController) {
     LaunchedEffect(Unit) {
         scope.launch {
             try {
-                val response = RetrofitFactory().getHospitalService().getHospitais()
+                val response = RetrofitFactory(context).getHospitalService().getHospitais()
                 if (response.isSuccessful) {
                     response.body()?.let { hospitalResponse ->
                         listaHospitais = hospitalResponse.hospitais
@@ -164,7 +164,7 @@ fun TelaHospitais(navController: NavController) {
                                 errorMessage = null
                                 scope.launch {
                                     try {
-                                        val response = RetrofitFactory().getHospitalService().getHospitais()
+                                        val response = RetrofitFactory(context).getHospitalService().getHospitais()
                                         if (response.isSuccessful) {
                                             response.body()?.let { hospitalResponse ->
                                                 listaHospitais = hospitalResponse.hospitais

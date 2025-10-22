@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -45,7 +46,7 @@ fun TelaAgendamento(navController: NavController) {
     var listaHospitais by remember { mutableStateOf<List<HospitaisCards>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     var selectedHospital by remember { mutableStateOf<HospitaisCards?>(null) }
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
@@ -63,24 +64,22 @@ fun TelaAgendamento(navController: NavController) {
     }
 
     LaunchedEffect(Unit) {
-        scope.launch {
-            try {
-                val response = RetrofitFactory().getHospitalService().getHospitais()
-                if (response.isSuccessful) {
-                    val body = response.body()
-                    if (body != null) {
-                        listaHospitais = body.hospitais
-                    } else {
-                        errorMessage = "Resposta vazia do servidor."
-                    }
+        try {
+            val response = RetrofitFactory(context).getHospitalService().getHospitais()
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body != null) {
+                    listaHospitais = body.hospitais
                 } else {
-                    errorMessage = "Erro ao carregar hospitais: ${response.code()}"
+                    errorMessage = "Resposta vazia do servidor."
                 }
-            } catch (e: Exception) {
-                errorMessage = "Erro de conexão: ${e.message}"
-            } finally {
-                isLoading = false
+            } else {
+                errorMessage = "Erro ao carregar hospitais: ${response.code()}"
             }
+        } catch (e: Exception) {
+            errorMessage = "Erro de conexão: ${e.message}"
+        } finally {
+            isLoading = false
         }
     }
 
@@ -122,7 +121,11 @@ fun TelaAgendamento(navController: NavController) {
             ) {
                 Column(Modifier.padding(16.dp)) {
                     Button(
-                        onClick = { /* TODO: Navegar para tela de confirmação */ },
+                        onClick = {
+                            val hospitalId = selectedHospital!!.id
+                            val data = selectedDate!!.toString()
+                            navController.navigate("tela_informacao/$hospitalId/$data")
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp)
