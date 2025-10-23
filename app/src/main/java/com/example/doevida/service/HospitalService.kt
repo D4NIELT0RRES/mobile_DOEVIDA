@@ -10,6 +10,7 @@ interface HospitalService {
     @GET("hospital/mobile")
     suspend fun getHospitais(): Response<HospitalResponse>
 
-    @GET("hospital/mobile/{id}")
+    // Correção: Removido o "/mobile" para alinhar com a rota mais provável do backend
+    @GET("hospital/{id}")
     suspend fun getHospitalById(@Path("id") id: Int): Response<HospitalDetailResponse>
 }

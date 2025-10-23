@@ -42,7 +42,7 @@ fun AppNavigation() {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = "tela_login"
+        startDestination = "tela_hospitais"
     ) {
         composable("tela_inicial") {
             TelaInicial(navController)

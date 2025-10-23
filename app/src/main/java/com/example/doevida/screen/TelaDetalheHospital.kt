@@ -205,16 +205,9 @@ fun TelaDetalheHospital(
 
                             Spacer(modifier = Modifier.height(15.dp))
 
-                            // >>> USA A FUNÇÃO UTIL PARA MAPS
                             OutlinedButton(
-                                onClick = {
-                                    // Se quiser priorizar CEP: abrirNoMapsPorCEP(context, hospitalData)
-                                    abrirNoMaps(context, hospitalData)
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(56.dp)
-                                    .padding(vertical = 4.dp),
+                                onClick = { abrirNoMaps(context, hospitalData) },
+                                modifier = Modifier.fillMaxWidth().height(56.dp).padding(vertical = 4.dp),
                                 shape = RoundedCornerShape(10.dp),
                                 colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White)
                             ) {
@@ -223,13 +216,9 @@ fun TelaDetalheHospital(
 
                             Spacer(modifier = Modifier.height(10.dp))
 
-                            // >>> USA A FUNÇÃO UTIL PARA LIGAR
                             OutlinedButton(
                                 onClick = { ligarPara(context, hospitalData.telefone) },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(56.dp)
-                                    .padding(vertical = 4.dp),
+                                modifier = Modifier.fillMaxWidth().height(56.dp).padding(vertical = 4.dp),
                                 shape = RoundedCornerShape(10.dp),
                                 colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White)
                             ) {
@@ -239,6 +228,10 @@ fun TelaDetalheHospital(
                             Spacer(modifier = Modifier.height(15.dp))
 
                             if (hospitalData.horario_abertura != null && hospitalData.horario_fechamento != null) {
+                                // >>> FORMATA OS HORÁRIOS ANTES DE EXIBIR
+                                val horarioAbertura = formatarHorario(hospitalData.horario_abertura)
+                                val horarioFechamento = formatarHorario(hospitalData.horario_fechamento)
+
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier.padding(top = 24.dp)
@@ -254,8 +247,9 @@ fun TelaDetalheHospital(
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 16.sp
                                         )
+                                        // >>> USA AS VARIÁVEIS FORMATADAS
                                         Text(
-                                            text = "${hospitalData.horario_abertura} - ${hospitalData.horario_fechamento}\nSegunda a sexta",
+                                            text = "$horarioAbertura - $horarioFechamento\nSegunda a sexta",
                                             fontSize = 14.sp
                                         )
                                     }
@@ -292,6 +286,20 @@ fun TelaDetalheHospital(
                 }
             }
         }
+    }
+}
+
+// Função auxiliar para formatar o horário
+private fun formatarHorario(horarioISO: String?): String {
+    if (horarioISO.isNullOrBlank() || !horarioISO.contains("T")) {
+        return "" // Retorna vazio se o formato for inválido
+    }
+    return try {
+        // Pega a string após o 'T' e extrai as 5 primeiras posições (HH:mm)
+        horarioISO.substringAfter('T').take(5)
+    } catch (e: Exception) {
+        // Em caso de qualquer erro na manipulação da string, retorna vazio
+        ""
     }
 }
 
