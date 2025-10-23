@@ -101,7 +101,10 @@ fun TelaPerfil(navController: NavController) {
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Divider(
-                        color = Color.White)
+                        color = Color.White
+                            .copy(alpha = 0.1f), // quase transparente
+                        thickness = 1.dp
+                    )
 
                     Spacer(
                         modifier = Modifier.height(12.dp))

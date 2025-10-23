@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Home
@@ -27,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.doevida.model.HospitaisCards
 import com.example.doevida.service.SharedPreferencesUtils
 
 @Composable
@@ -93,7 +95,10 @@ fun TelaCertificado(navController: NavController) {
 
                     Divider(
                         color = Color.White
+                            .copy(alpha = 0.1f), // quase transparente
+                        thickness = 1.dp
                     )
+
 
                     Spacer(
                         modifier = Modifier.height(12.dp)
@@ -127,8 +132,82 @@ fun TelaCertificado(navController: NavController) {
             }
         }
     }
-
 }
+
+@Composable
+fun CardsCertificado(
+    nome: String = "Nome da Competência:",
+    organizacao: String = "Organização emissora:",
+    data: String = "Data de emissão:",
+    onExibirClick: () -> Unit = {}
+) {
+
+    val corTexto = Color(0xFF8B0000)
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(120.dp)
+            .padding(horizontal = 12.dp,
+                vertical = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xC6FFFFFF)),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = nome,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = corTexto
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = organizacao,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = corTexto
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = data,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = corTexto
+                )
+            }
+
+            Button(
+                onClick = { onExibirClick() },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(12.dp)
+                    .height(36.dp)
+                    .width(90.dp),
+                shape = CircleShape,
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8B0000))
+            ) {
+                Text(
+                    text = "Exibir",
+                    color = Color.White,
+                    fontSize = 14.sp
+                )
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun CardsCertificadoPreview() {
+    CardsCertificado()
+}
+
 @Preview
 @Composable
 private fun TelaCertificadoPreview() {
