@@ -28,8 +28,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
 import com.example.doevida.model.LoginRequest
 import com.example.doevida.service.RetrofitFactory
+import com.example.doevida.service.SharedPreferencesUtils // << IMPORT CORRETO
 import com.example.doevida.util.TokenManager
-import com.example.doevida.util.UserDataManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -186,14 +186,16 @@ fun TelaLogin(navController: NavController) {
                                 if (response.isSuccessful) {
                                     val body = response.body()
                                     if (body?.usuario != null && body.token != null) {
-                                        // Salvar dados do usuário
-                                        UserDataManager.saveUser(
+
+                                        // 1. Salva os dados usando o SharedPreferencesUtils (que a TelaHome usa)
+                                        SharedPreferencesUtils.saveUserData(
                                             context = context,
-                                            name = body.usuario.nome ?: "",
-                                            email = body.usuario.email ?: ""
+                                            userId = body.usuario.id, 
+                                            userName = body.usuario.nome ?: "",
+                                            userEmail = body.usuario.email ?: ""
                                         )
 
-                                        // Salvar o token JWT
+                                        // 2. Salva o token JWT com o TokenManager (mantém o que já funciona)
                                         TokenManager(context).saveToken(body.token)
 
                                         Toast.makeText(
@@ -206,7 +208,6 @@ fun TelaLogin(navController: NavController) {
                                             popUpTo("tela_login") { inclusive = true }
                                         }
                                     } else {
-                                        // Caso em que o corpo da resposta é nulo ou não contém os dados esperados
                                         Toast.makeText(
                                             context,
                                             "Resposta inválida do servidor.",

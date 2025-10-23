@@ -1,6 +1,5 @@
 package com.example.doevida.model
 
-import android.os.Message
 import com.google.gson.annotations.SerializedName
 
 data class LoginResponse(
@@ -12,7 +11,7 @@ data class LoginResponse(
 )
 
 data class Usuario(
-    @SerializedName("id") val id: Int,
+    @SerializedName("id") val id: Int, // O campo ID que estava faltando
     @SerializedName("nome") val nome: String,
     @SerializedName("email") val email: String
 )
