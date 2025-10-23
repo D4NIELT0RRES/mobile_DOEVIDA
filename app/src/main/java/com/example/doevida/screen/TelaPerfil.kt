@@ -43,7 +43,16 @@ fun TelaPerfil(navController: NavController) {
 
     Scaffold(
         bottomBar = {
-            MenuInferior(navController)
+            Column {
+                Divider(
+                    color = Color(0xFFD9D9D9),
+                    thickness = 1.dp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp) // deixa alinhado com o conteúdo da tela
+                )
+                MenuInferior(navController)
+            }
         }
     ) { paddingValues ->
         Column(
