@@ -17,6 +17,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -65,7 +66,7 @@ private fun ProtocoloInfoLinha(label: String, value: String) {
 }
 
 @Composable
-fun LembreteCard(onConfirm: () -> Unit) {
+fun LembreteCard(onConfirm: () -> Unit, isLoading: Boolean) { // Parâmetro isLoading adicionado
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -109,13 +110,18 @@ fun LembreteCard(onConfirm: () -> Unit) {
             Spacer(modifier = Modifier.height(24.dp))
             Button(
                 onClick = onConfirm,
+                enabled = !isLoading, // Botão desabilitado enquanto carrega
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9A0410)),
                 modifier = Modifier
                     .fillMaxWidth(0.7f)
                     .height(48.dp)
             ) {
-                Text("Confirmar", color = Color.White, fontSize = 16.sp)
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
+                } else {
+                    Text("Confirmar", color = Color.White, fontSize = 16.sp)
+                }
             }
         }
     }

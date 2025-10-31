@@ -32,7 +32,6 @@ import com.example.doevida.components.CartaoHospital
 import com.example.doevida.components.ChipHorario
 import com.example.doevida.model.HospitaisCards
 import com.example.doevida.service.RetrofitFactory
-import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
 import androidx.compose.foundation.layout.WindowInsets
@@ -40,6 +39,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.imePadding
 import com.example.doevida.util.gerarHorarios
+import kotlinx.coroutines.launch
 
 @Composable
 fun TelaAgendamento(navController: NavController) {
@@ -124,7 +124,8 @@ fun TelaAgendamento(navController: NavController) {
                         onClick = {
                             val hospitalId = selectedHospital!!.id
                             val data = selectedDate!!.toString()
-                            navController.navigate("tela_informacao/$hospitalId/$data")
+                            val horario = selectedTime!!
+                            navController.navigate("tela_informacao/$hospitalId/$data/$horario")
                         },
                         modifier = Modifier
                             .fillMaxWidth()

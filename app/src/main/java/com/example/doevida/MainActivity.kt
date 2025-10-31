@@ -42,7 +42,7 @@ fun AppNavigation() {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = "tela_home"
+        startDestination = "tela_inicial"
     ) {
         composable("tela_inicial") {
             TelaInicial(navController)
@@ -60,15 +60,17 @@ fun AppNavigation() {
             TelaRecuperacaoEmail(navController)
         }
         composable(
-            route = "tela_informacao/{hospitalId}/{data}",
+            route = "tela_informacao/{hospitalId}/{data}/{horario}", // Rota atualizada
             arguments = listOf(
                 navArgument("hospitalId") { type = NavType.IntType },
-                navArgument("data") { type = NavType.StringType }
+                navArgument("data") { type = NavType.StringType },
+                navArgument("horario") { type = NavType.StringType } // Novo argumento
             )
         ) { backStackEntry ->
             val hospitalId = backStackEntry.arguments?.getInt("hospitalId") ?: 0
             val data = backStackEntry.arguments?.getString("data") ?: ""
-            TelaInformacaoDoDoador(navController, hospitalId, data)
+            val horario = backStackEntry.arguments?.getString("horario") ?: "" // Novo argumento
+            TelaInformacaoDoDoador(navController, hospitalId, data, horario)
         }
         composable("tela_redefinir_senha") {
             TelaRedefinirSenha(navController)
@@ -93,18 +95,21 @@ fun AppNavigation() {
             TelaAgendamento(navController)
         }
         composable(
-            route = "tela_protocolo/{hospitalId}/{data}",
+            route = "tela_protocolo/{hospitalId}/{data}/{horario}", // Rota atualizada
             arguments = listOf(
                 navArgument("hospitalId") { type = NavType.IntType },
-                navArgument("data") { type = NavType.StringType }
+                navArgument("data") { type = NavType.StringType },
+                navArgument("horario") { type = NavType.StringType } // Novo argumento
             )
         ) { backStackEntry ->
             val hospitalId = backStackEntry.arguments?.getInt("hospitalId") ?: 0
             val data = backStackEntry.arguments?.getString("data") ?: ""
+            val horario = backStackEntry.arguments?.getString("horario") ?: ""
             TelaProtocoloAgendamento(
                 navController = navController,
                 hospitalId = hospitalId,
-                dataSelecionada = data
+                dataSelecionada = data,
+                horarioSelecionado = horario // Novo argumento
             )
         }
     }

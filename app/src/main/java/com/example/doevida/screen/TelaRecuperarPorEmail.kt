@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -140,88 +141,32 @@ fun TelaRecuperacaoEmail(navController: NavController) {
 
             Button(
                 onClick = {
-                    // Validações
-                    if (email.isBlank()) {
-                        Toast.makeText(context, "Por favor, digite seu email", Toast.LENGTH_LONG).show()
-                        return@Button
-                    }
-
                     if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()) {
-                        Toast.makeText(context, "Formato de email inválido", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, "Por favor, digite um email válido", Toast.LENGTH_LONG).show()
                         return@Button
                     }
 
-                    // Chamar a API
                     isLoading = true
-                    val userService = RetrofitFactory(context).getUserService()
-
                     coroutineScope.launch {
                         try {
                             val request = RecuperarSenhaRequest(email = email.trim())
-                            val response = userService.recuperarSenha(request)
-
-                            // Debug - adicionar logs para verificar a resposta
-                            println("Response Code: ${response.code()}")
-                            println("Response Body: ${response.body()}")
-                            println("Is Successful: ${response.isSuccessful}")
-
-                            isLoading = false
+                            val response = RetrofitFactory(context).getUserService().recuperarSenha(request)
 
                             if (response.isSuccessful) {
                                 val body = response.body()
-
-                                // Debug adicional
-                                println("Body não é null: ${body != null}")
-                                if (body != null) {
-                                    println("Status: ${body.status}")  // CORRIGIDO: usando status
-                                    println("Message: ${body.message}")
-                                }
-
-                                // CORRIGIDO: Verificação baseada na mensagem OU status
-                                if (body != null && (
-                                            body.status == true ||
-                                                    body.message.contains("enviado", ignoreCase = true)
-                                            )) {
-                                    Toast.makeText(
-                                        context,
-                                        "Código enviado para seu email!",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-
-                                    // Debug da navegação
-                                    println("Tentando navegar para tela_redefinir_senha")
-
-                                    // Navegação forçada
-                                    try {
-                                        navController.navigate("tela_redefinir_senha")
-                                        println("Navegação executada!")
-                                    } catch (e: Exception) {
-                                        println("Erro na navegação: ${e.message}")
-                                    }
+                                if (body?.status == true) {
+                                    Toast.makeText(context, "Código enviado para seu email!", Toast.LENGTH_LONG).show()
+                                    navController.navigate("tela_redefinir_senha")
                                 } else {
-                                    Toast.makeText(
-                                        context,
-                                        body?.message ?: "Erro ao enviar email",
-                                        Toast.LENGTH_LONG
-                                    ).show()
+                                    Toast.makeText(context, body?.message ?: "Erro ao enviar email", Toast.LENGTH_LONG).show()
                                 }
                             } else {
-                                Toast.makeText(
-                                    context,
-                                    "Erro no servidor: ${response.code()}",
-                                    Toast.LENGTH_LONG
-                                ).show()
+                                Toast.makeText(context, "Erro no servidor: ${response.code()}", Toast.LENGTH_LONG).show()
                             }
                         } catch (e: Exception) {
+                            Toast.makeText(context, "Erro de conexão. Verifique sua internet.", Toast.LENGTH_LONG).show()
+                        } finally {
                             isLoading = false
-                            Toast.makeText(
-                                context,
-                                "Erro de conexão: Verifique sua internet",
-                                Toast.LENGTH_LONG
-                            ).show()
-                            // Debug - mostrar erro completo
-                            e.printStackTrace()
-                            println("Erro detalhado: ${e.message}")
                         }
                     }
                 },
@@ -234,12 +179,16 @@ fun TelaRecuperacaoEmail(navController: NavController) {
                     .height(48.dp)
                     .width(200.dp)
             ) {
-                Text(
-                    text = if (isLoading) "Enviando..." else "Enviar Código",
-                    color = Color.White,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Medium
-                )
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
+                } else {
+                    Text(
+                        text = "Enviar Código",
+                        color = Color.White,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.weight(0.5f))

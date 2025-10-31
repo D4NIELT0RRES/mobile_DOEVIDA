@@ -45,11 +45,12 @@ import kotlinx.coroutines.withContext
 fun TelaInformacaoDoDoador(
     navController: NavController,
     hospitalId: Int,
-    data: String
+    data: String,
+    horario: String // Novo parâmetro
 ) {
 
     var cpf by remember { mutableStateOf("") }
-    var dataDeNascimento by remember { mutableStateOf("") } // Irá armazenar apenas os dígitos: DDMMAAAA
+    var dataDeNascimento by remember { mutableStateOf("") }
     var celular by remember { mutableStateOf("") }
     var cep by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
@@ -106,10 +107,9 @@ fun TelaInformacaoDoDoador(
                         val body = response.body()
                         if (body?.status == true) {
                             Toast.makeText(context, body.message, Toast.LENGTH_SHORT).show()
-                            // Salva o CPF
                             UserDataManager.saveCpf(context, cpf.replace(Regex("[^0-9]"), ""))
-                            // Navega para a tela de protocolo, levando os dados
-                            navController.navigate("tela_protocolo/$hospitalId/$data")
+                            // Navega para a tela de protocolo, repassando TODOS os dados
+                            navController.navigate("tela_protocolo/$hospitalId/$data/$horario")
                         } else {
                             Toast.makeText(context, body?.message ?: "Erro desconhecido", Toast.LENGTH_SHORT).show()
                         }
@@ -404,5 +404,5 @@ class DateVisualTransformation : VisualTransformation {
 @Composable
 private fun TelaInformacaoDoDoadorPreview() {
     val navController = rememberNavController()
-    TelaInformacaoDoDoador(navController = navController, hospitalId = 0, data = "")
+    TelaInformacaoDoDoador(navController = navController, hospitalId = 0, data = "", horario = "")
 }
