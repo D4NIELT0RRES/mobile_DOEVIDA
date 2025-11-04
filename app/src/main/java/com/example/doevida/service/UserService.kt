@@ -11,6 +11,7 @@ import com.example.doevida.model.RecuperarSenhaRequest
 import com.example.doevida.model.RecuperarSenhaResponse
 import com.example.doevida.model.RedefinirSenhaRequest
 import com.example.doevida.model.RedefinirSenhaResponse
+import com.example.doevida.model.RespostaCadastro
 import com.example.doevida.model.User
 import retrofit2.Response
 import retrofit2.http.Body
@@ -22,9 +23,10 @@ import retrofit2.http.PUT
 import retrofit2.http.Path
 
 interface UserService {
+
     @Headers("Content-Type: application/json")
     @POST("usuarios")
-    suspend fun insert(@Body cadastro: Cadastro): Response<Cadastro>
+    suspend fun insert(@Body cadastro: Cadastro): Response<RespostaCadastro>
 
     @Headers("Content-Type: application/json")
     @POST("usuarios/login")

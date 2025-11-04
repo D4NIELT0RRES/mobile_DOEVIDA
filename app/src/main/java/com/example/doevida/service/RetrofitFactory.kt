@@ -1,7 +1,7 @@
 package com.example.doevida.service
 
 import android.content.Context
-import com.example.doevida.util.TokenManager
+import com.example.doevida.util.TokenManager // <- IMPORTAÇÃO ESSENCIAL ADICIONADA
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -12,17 +12,15 @@ class RetrofitFactory(private val context: Context) {
 
     private val BASE_URL = "http://10.0.2.2:8080/v1/doevida/"
 
-    // Interceptor para adicionar o token de autorização
     private val authInterceptor = Interceptor { chain ->
         val token = TokenManager(context).getToken()
-        val requestBuilder = chain.request().newBuilder()
-        token?.let {
-            requestBuilder.addHeader("Authorization", "Bearer $it")
+        val request = chain.request().newBuilder()
+        if (token != null) {
+            request.addHeader("Authorization", "Bearer $token")
         }
-        chain.proceed(requestBuilder.build())
+        chain.proceed(request.build())
     }
 
-    // Interceptor para logar o corpo das requisições e respostas (MUITO útil para debug)
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }

@@ -309,25 +309,27 @@ fun TelaCadastro(navController: NavController) {
                                     val response = doevidaApi.insert(cadastro)
                                     withContext(Dispatchers.Main) {
                                         if (response.isSuccessful) {
-                                            val novoUsuario = response.body()
-                                            if (novoUsuario != null) {
+                                            val resposta = response.body()
+                                            val usuario = resposta?.usuario
+                                            if (usuario != null) {
                                                 UserDataManager.saveUserData(
                                                     context,
-                                                    id = novoUsuario.id ?: 0,
-                                                    name = novoUsuario.nome,
-                                                    email = novoUsuario.email
+                                                    id = usuario.id ?: 0,
+                                                    name = usuario.nome ?: "",
+                                                    email = usuario.email ?: ""
                                                 )
                                                 Toast.makeText(context, "Cadastro realizado com sucesso!", Toast.LENGTH_LONG).show()
                                                 navController.navigate("tela_home") {
                                                     popUpTo("tela_cadastro") { inclusive = true }
                                                 }
                                             } else {
-                                                Toast.makeText(context, "Erro: Resposta do servidor inválida.", Toast.LENGTH_LONG).show()
+                                                Toast.makeText(context, "Erro: resposta sem usuário.", Toast.LENGTH_LONG).show()
                                             }
                                         } else {
                                             Toast.makeText(context, "Erro: ${response.message()}", Toast.LENGTH_LONG).show()
                                         }
                                     }
+
                                 } catch (e: Exception) {
                                     Log.e("API_Cadastro", "Erro ao cadastrar", e)
                                     withContext(Dispatchers.Main) {
