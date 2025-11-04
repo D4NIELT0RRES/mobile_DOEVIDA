@@ -1,16 +1,15 @@
 package com.example.doevida.service
 
 import android.content.Context
-import com.example.doevida.util.TokenManager // Corrigido para o caminho que você usa
+import com.example.doevida.util.TokenManager
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class RetrofitFactory(private val context: Context) { // Contexto agora é obrigatório
+class RetrofitFactory(private val context: Context) {
 
-    // Use 10.0.2.2 para se conectar ao localhost da sua máquina a partir do emulador Android
     private val BASE_URL = "http://10.0.2.2:8080/v1/doevida/"
 
     // Interceptor para adicionar o token de autorização

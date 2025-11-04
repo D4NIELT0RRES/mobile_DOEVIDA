@@ -8,24 +8,36 @@ import com.example.doevida.model.LoginRequest
 import com.example.doevida.model.LoginResponse
 import com.example.doevida.model.RecuperarSenhaRequest
 import com.example.doevida.model.RecuperarSenhaResponse
+import com.example.doevida.model.RedefinirSenhaRequest
+import com.example.doevida.model.RedefinirSenhaResponse
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.Headers
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 
 interface UserService {
-    @POST("/usuarios")
+    @Headers("Content-Type: application/json")
+    @POST("usuarios")
     suspend fun insert(@Body cadastro: Cadastro): Response<Cadastro>
 
-    @POST("/usuarios/login")
+    @Headers("Content-Type: application/json")
+    @POST("usuarios/login")
     suspend fun login(@Body login: LoginRequest): Response<LoginResponse>
 
-    @PATCH("/usuarios/me/complemento")
+    @Headers("Content-Type: application/json")
+    @PATCH("usuarios/me/complemento")
     suspend fun completarPerfil(@Body complemento: ComplementoPerfilRequest): Response<ComplementoPerfilResponse>
 
-    @POST("/agendamentos")
+    @Headers("Content-Type: application/json")
+    @POST("agendamentos")
     suspend fun agendarDoacao(@Body agendamento: AgendamentoRequest): Response<Unit>
 
-    @POST("/usuarios/recuperar-senha") // A rota correta para a recuperação
+    @Headers("Content-Type: application/json")
+    @POST("usuarios/recuperar-senha") // A rota correta para a recuperação
     suspend fun recuperarSenha(@Body request: RecuperarSenhaRequest): Response<RecuperarSenhaResponse>
+
+    @Headers("Content-Type: application/json")
+    @POST("usuarios/redefinir-senha")
+    suspend fun redefinirSenha(@Body request: RedefinirSenhaRequest): Response<RedefinirSenhaResponse>
 }
