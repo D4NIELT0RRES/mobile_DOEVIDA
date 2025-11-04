@@ -49,7 +49,7 @@ fun TelaPerfil(navController: NavController) {
                     thickness = 1.dp,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp) // deixa alinhado com o conteúdo da tela
+                        .padding(horizontal = 16.dp)
                 )
                 MenuInferior(navController)
             }

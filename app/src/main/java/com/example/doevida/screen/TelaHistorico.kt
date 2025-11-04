@@ -9,10 +9,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -21,25 +22,41 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
-import com.example.doevida.model.Doacao
+import com.example.doevida.model.AgendamentoItem
+import com.example.doevida.service.RetrofitFactory
+import com.example.doevida.util.UserDataManager
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun TelaHistorico(navController: NavController) {
+    val context = LocalContext.current
+    var historico by remember { mutableStateOf<List<AgendamentoItem>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
 
-    //tirar dps
-    val doacoes = listOf(
-        Doacao("Doação 04", "Hospital centra", "05/07/2025", "09:00", "Em espera"),
-        Doacao("Doação 03", "Hospital Regional", "06/05/2025", "11:00", "Concluído"),
-        Doacao("Doação 02", "Hospital do Servidor Público Municipal – Aclimação", "07/01/2025", "12:00", "Concluído"),
-        Doacao("Doação 01", "Centro médico", "09/10/2024", "10:00", "Concluído")
-    )
+    LaunchedEffect(Unit) {
+        val userId = UserDataManager.getUserId(context)
+        if (userId != 0) {
+            try {
+                val response = RetrofitFactory(context).getUserService().getHistorico(userId)
+                if (response.isSuccessful) {
+                    historico = response.body()?.agendamentos ?: emptyList()
+                }
+            } catch (e: Exception) {
+                // Tratar erro de conexão
+            } finally {
+                isLoading = false
+            }
+        } else {
+            isLoading = false // Usuário não logado
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(color = Color(0xFF990410))
     ) {
-        // topo
         TopBar(navController)
 
         Box(
@@ -48,16 +65,26 @@ fun TelaHistorico(navController: NavController) {
                 .background(Color.White, RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
                 .padding(16.dp)
         ) {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(doacoes) { doacao ->
-                    DoacaoCard(doacao)
+            if (isLoading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            } else if (historico.isEmpty()) {
+                Text(
+                    text = "Nenhum agendamento encontrado.",
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            } else {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(historico) { agendamento ->
+                        DoacaoCard(agendamento)
+                    }
                 }
             }
         }
     }
 }
+
 //-------------------------------------
 @Composable
 fun TopBar(navController: NavController) {
@@ -67,7 +94,6 @@ fun TopBar(navController: NavController) {
             .padding(horizontal = 20.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -99,7 +125,7 @@ fun TopBar(navController: NavController) {
 
         OutlinedTextField(
             value = "",
-            onValueChange = {},
+            onValueChange = { },
             placeholder = { Text("Find Seekers", color = Color.Gray) },
             leadingIcon = {
                 Icon(
@@ -123,15 +149,33 @@ fun TopBar(navController: NavController) {
         )
     }
 }
+
 //-------------------------------------
 @Composable
-fun DoacaoCard(doacao: Doacao) {
+fun DoacaoCard(agendamento: AgendamentoItem) {
+    val dataFormatada = remember(agendamento.dataAgendamento) {
+        try {
+            LocalDate.parse(agendamento.dataAgendamento.substringBefore("T")).format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+        } catch (e: Exception) {
+            agendamento.dataAgendamento
+        }
+    }
+    val horaFormatada = remember(agendamento.horarioAgendamento) {
+        try {
+            // Extrai a parte da hora (HH:mm) de uma string de tempo, que pode ser "HH:mm:ss" ou "YYYY-MM-DDTHH:mm:ss"
+            val timePart = agendamento.horarioAgendamento.substringAfterLast('T') // Pega o que vem depois do 'T', ou a string inteira se não houver 'T'
+            timePart.substring(0, 5) // Pega os 5 primeiros caracteres (HH:mm)
+        } catch (e: Exception) {
+            agendamento.horarioAgendamento // Em caso de erro, mostra a string original
+        }
+    }
+
     Card(
         shape = RoundedCornerShape(12.dp),
         modifier = Modifier
             .fillMaxWidth()
             .border(
-                width = 1.dp, // espessura da borda
+                width = 1.dp,
                 color = Color(0xFFBDBDBD),
                 shape = RoundedCornerShape(12.dp)
             ),
@@ -145,16 +189,22 @@ fun DoacaoCard(doacao: Doacao) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = doacao.titulo,
+                    text = "Doação ${agendamento.id}",
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )
 
-                // Status
-                val corStatus = when (doacao.status) {
-                    "Concluído" -> Color(0xFF549073)
-                    else -> Color(0xFFB72C2C)
+                val corStatus = when (agendamento.status) {
+                    "CONCLUIDO" -> Color(0xFF549073)
+                    "AGENDADO" -> Color(0xFFB72C2C)
+                    else -> Color.Gray
                 }
+                val textoStatus = when (agendamento.status) {
+                    "CONCLUIDO" -> "Concluído"
+                    "AGENDADO" -> "Em espera"
+                    else -> agendamento.status
+                }
+
 
                 Box(
                     modifier = Modifier
@@ -162,7 +212,7 @@ fun DoacaoCard(doacao: Doacao) {
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = doacao.status,
+                        text = textoStatus,
                         color = Color.White,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold
@@ -172,12 +222,13 @@ fun DoacaoCard(doacao: Doacao) {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(text = "Local: ${doacao.local}", fontWeight = FontWeight.SemiBold)
-            Text(text = "Dia: ${doacao.data}")
-            Text(text = "Horário: ${doacao.horario}")
+            Text(text = "Local: ${agendamento.hospital?.nome}", fontWeight = FontWeight.SemiBold)
+            Text(text = "Dia: $dataFormatada")
+            Text(text = "Horário: $horaFormatada")
         }
     }
 }
+
 //-------------------------------------
 @Preview
 @Composable

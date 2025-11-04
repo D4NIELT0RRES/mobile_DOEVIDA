@@ -16,7 +16,7 @@ data class AgendamentoItem(
     val horarioAgendamento: String,
     @SerializedName("status")
     val status: String,
-    @SerializedName("tbl_hospital") // Corrigido para o nome mais provável do backend
+    @SerializedName("hospital")
     val hospital: HospitalAgendamentoInfo?
 )
 
