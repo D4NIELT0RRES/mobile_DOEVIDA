@@ -237,7 +237,7 @@ fun CardsHospitais(
                     color = Color.Black
                 )
                 Text(
-                    text = hospital.endereco, // Já tem tratamento de null na propriedade computada
+                    text = hospital.endereco,
                     fontSize = 14.sp,
                     color = Color.Gray
                 )

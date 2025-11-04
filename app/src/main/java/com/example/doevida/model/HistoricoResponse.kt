@@ -16,11 +16,6 @@ data class AgendamentoItem(
     val horarioAgendamento: String,
     @SerializedName("status")
     val status: String,
-    @SerializedName("hospital")
-    val hospital: HospitalAgendamentoInfo?
-)
-
-data class HospitalAgendamentoInfo(
-    @SerializedName("nome")
-    val nome: String
+    @SerializedName("nome_hospital") // Campo atualizado para corresponder ao JSON
+    val nomeHospital: String? // O nome do hospital agora é uma String direta
 )

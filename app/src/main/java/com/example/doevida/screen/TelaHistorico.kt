@@ -222,7 +222,7 @@ fun DoacaoCard(agendamento: AgendamentoItem) {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(text = "Local: ${agendamento.hospital?.nome}", fontWeight = FontWeight.SemiBold)
+            Text(text = "Local: ${agendamento.nomeHospital ?: "Não informado"}", fontWeight = FontWeight.SemiBold)
             Text(text = "Dia: $dataFormatada")
             Text(text = "Horário: $horaFormatada")
         }
