@@ -1,6 +1,7 @@
 package com.example.doevida.screen
 
 import android.util.Log
+import android.util.Patterns
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -27,9 +28,11 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,8 +48,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
 import com.example.doevida.model.LoginRequest
 import com.example.doevida.service.RetrofitFactory
-import com.example.doevida.service.SharedPreferencesUtils
 import com.example.doevida.util.TokenManager
+import com.example.doevida.util.UserDataManager // Import correto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -57,8 +60,28 @@ fun TelaLogin(navController: NavController) {
     val login = remember { mutableStateOf("") }
     val senha = remember { mutableStateOf("") }
 
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var senhaError by remember { mutableStateOf<String?>(null) }
+
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+
+    fun validarCampos(): Boolean {
+        emailError = when {
+            login.value.isBlank() -> "Campo obrigatório"
+            login.value.contains("@") && !Patterns.EMAIL_ADDRESS.matcher(login.value).matches() ->
+                "Formato de e-mail inválido"
+            else -> null
+        }
+
+        senhaError = when {
+            senha.value.isBlank() -> "Campo obrigatório"
+            senha.value.length < 6 -> "Senha deve ter no mínimo 8 caracteres"
+            else -> null
+        }
+
+        return emailError == null && senhaError == null
+    }
 
     Box(
         modifier = Modifier
@@ -137,6 +160,13 @@ fun TelaLogin(navController: NavController) {
                     )
                 }
             )
+            if (emailError != null) {
+                Text(emailError!!,
+                    color = Color.Red,
+                    fontSize = 12.sp,
+                    modifier = Modifier
+                        .align(Alignment.Start))
+            }
 
             Text(
                 text = "Digite sua Senha",
@@ -173,6 +203,13 @@ fun TelaLogin(navController: NavController) {
                     )
                 }
             )
+            if (senhaError != null) {
+                Text(senhaError!!,
+                    color = Color.Red,
+                    fontSize = 12.sp,
+                    modifier = Modifier
+                        .align(Alignment.Start))
+            }
 
             Text(
                 text = "Esqueci minha senha?",
@@ -189,62 +226,45 @@ fun TelaLogin(navController: NavController) {
 
             Button(
                 onClick = {
-                    val request = if (login.value.contains("@")) {
-                        LoginRequest(email = login.value, username = null, senha = senha.value)
-                    } else {
-                        LoginRequest(email = null, username = login.value, senha = senha.value)
-                    }
+                    if (validarCampos()) {
+                        val request = if (login.value.contains("@")) {
+                            LoginRequest(email = login.value, username = null, senha = senha.value)
+                        } else {
+                            LoginRequest(email = null, username = login.value, senha = senha.value)
+                        }
 
-                    scope.launch(Dispatchers.IO) {
-                        try {
-                            val response = RetrofitFactory(context).getUserService().login(request)
+                        scope.launch(Dispatchers.IO) {
+                            try {
+                                val response = RetrofitFactory(context).getUserService().login(request)
+                                withContext(Dispatchers.Main) {
+                                    if (response.isSuccessful) {
+                                        val body = response.body()
+                                        if (body?.usuario != null && body.token != null) {
+                                            UserDataManager.saveUserData(
+                                                context,
+                                                id = body.usuario.id,
+                                                name = body.usuario.nome ?: "",
+                                                email = body.usuario.email ?: ""
+                                            )
+                                            TokenManager(context).saveToken(body.token)
 
-                            withContext(Dispatchers.Main) {
-                                if (response.isSuccessful) {
-                                    val body = response.body()
-                                    if (body?.usuario != null && body.token != null) {
-                                        // Salva os dados do usuário usando SharedPreferencesUtils
-                                        SharedPreferencesUtils.saveUserData(
-                                            context = context,
-                                            userId = body.usuario.id,
-                                            userName = body.usuario.nome ?: "",
-                                            userEmail = body.usuario.email ?: ""
-                                        )
+                                            Toast.makeText(context, "Login realizado com sucesso!", Toast.LENGTH_LONG).show()
 
-                                        TokenManager(context).saveToken(body.token)
-
-                                        Toast.makeText(
-                                            context,
-                                            "Login realizado com sucesso!",
-                                            Toast.LENGTH_LONG
-                                        ).show()
-
-                                        navController.navigate("tela_home") {
-                                            popUpTo("tela_login") { inclusive = true }
+                                            navController.navigate("tela_home") {
+                                                popUpTo("tela_login") { inclusive = true }
+                                            }
+                                        } else {
+                                            Toast.makeText(context, "Resposta inválida do servidor.", Toast.LENGTH_LONG).show()
                                         }
                                     } else {
-                                        Toast.makeText(
-                                            context,
-                                            "Resposta inválida do servidor.",
-                                            Toast.LENGTH_LONG
-                                        ).show()
+                                        Toast.makeText(context, "Falha no login: ${response.code()}", Toast.LENGTH_LONG).show()
                                     }
-                                } else {
-                                    Toast.makeText(
-                                        context,
-                                        "Falha no login: ${response.code()}",
-                                        Toast.LENGTH_LONG
-                                    ).show()
                                 }
-                            }
-                        } catch (e: Exception) {
-                            withContext(Dispatchers.Main) {
-                                Log.e("TelaLogin", "Erro ao conectar", e)
-                                Toast.makeText(
-                                    context,
-                                    "Erro ao conectar. Verifique sua conexão.",
-                                    Toast.LENGTH_LONG
-                                ).show()
+                            } catch (e: Exception) {
+                                withContext(Dispatchers.Main) {
+                                    Log.e("TelaLogin", "Erro ao conectar", e)
+                                    Toast.makeText(context, "Erro ao conectar. Verifique sua conexão.", Toast.LENGTH_LONG).show()
+                                }
                             }
                         }
                     }

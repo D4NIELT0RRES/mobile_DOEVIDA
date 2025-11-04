@@ -43,7 +43,6 @@ fun TelaHistorico(navController: NavController) {
                     historico = response.body()?.agendamentos ?: emptyList()
                 }
             } catch (e: Exception) {
-                // Tratar erro de conexão
             } finally {
                 isLoading = false
             }

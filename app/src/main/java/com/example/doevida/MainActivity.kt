@@ -23,6 +23,7 @@ import com.example.doevida.screen.TelaLogin
 import com.example.doevida.screen.TelaProtocoloAgendamento
 import com.example.doevida.screen.TelaRecuperacaoEmail
 import com.example.doevida.screen.TelaRedefinirSenha
+import com.example.doevida.screen.TelaSplash
 import com.example.doevida.ui.theme.DoevidaTheme
 
 class MainActivity : ComponentActivity() {
@@ -42,8 +43,11 @@ fun AppNavigation() {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = "tela_inicial"
+        startDestination = "splash"
     ) {
+        composable("splash") {
+            TelaSplash(navController)
+        }
         composable("tela_inicial") {
             TelaInicial(navController)
         }
