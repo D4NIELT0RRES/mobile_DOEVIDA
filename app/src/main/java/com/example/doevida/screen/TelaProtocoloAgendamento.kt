@@ -71,11 +71,14 @@ fun TelaProtocoloAgendamento(
     fun salvarAgendamento() {
         isLoading = true
         scope.launch {
+            val horarioComSegundos = "$horarioSelecionado:00"
+
             val request = AgendamentoRequest(
                 id_hospital = hospitalId,
-                data_agendamento = dataSelecionada,
-                horario_agendamento = horarioSelecionado
+                data = dataSelecionada,
+                hora = horarioComSegundos
             )
+
             try {
                 val response = RetrofitFactory(context).getUserService().agendarDoacao(request)
                 if (response.isSuccessful) {

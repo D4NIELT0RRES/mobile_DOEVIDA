@@ -4,6 +4,7 @@ import com.example.doevida.model.AgendamentoRequest
 import com.example.doevida.model.Cadastro
 import com.example.doevida.model.ComplementoPerfilRequest
 import com.example.doevida.model.ComplementoPerfilResponse
+import com.example.doevida.model.HistoricoResponse
 import com.example.doevida.model.LoginRequest
 import com.example.doevida.model.LoginResponse
 import com.example.doevida.model.RecuperarSenhaRequest
@@ -12,9 +13,11 @@ import com.example.doevida.model.RedefinirSenhaRequest
 import com.example.doevida.model.RedefinirSenhaResponse
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.PATCH
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 interface UserService {
     @Headers("Content-Type: application/json")
@@ -40,4 +43,8 @@ interface UserService {
     @Headers("Content-Type: application/json")
     @POST("usuarios/redefinir-senha")
     suspend fun redefinirSenha(@Body request: RedefinirSenhaRequest): Response<RedefinirSenhaResponse>
+
+    @Headers("Content-Type: application/json")
+    @GET("usuarios/{id}/agendamentos")
+    suspend fun getHistorico(@Path("id") id: Int): Response<HistoricoResponse>
 }

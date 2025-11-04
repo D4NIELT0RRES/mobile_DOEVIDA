@@ -309,11 +309,20 @@ fun TelaCadastro(navController: NavController) {
                                     val response = doevidaApi.insert(cadastro)
                                     withContext(Dispatchers.Main) {
                                         if (response.isSuccessful) {
-                                            // PADRONIZADO: Usando UserDataManager
-                                            UserDataManager.saveUser(context, nomeCompleto, email)
-                                            Toast.makeText(context, "Cadastro realizado com sucesso!", Toast.LENGTH_LONG).show()
-                                            navController.navigate("tela_home") {
-                                                popUpTo("tela_cadastro") { inclusive = true }
+                                            val novoUsuario = response.body()
+                                            if (novoUsuario != null) {
+                                                UserDataManager.saveUserData(
+                                                    context,
+                                                    id = novoUsuario.id ?: 0,
+                                                    name = novoUsuario.nome,
+                                                    email = novoUsuario.email
+                                                )
+                                                Toast.makeText(context, "Cadastro realizado com sucesso!", Toast.LENGTH_LONG).show()
+                                                navController.navigate("tela_home") {
+                                                    popUpTo("tela_cadastro") { inclusive = true }
+                                                }
+                                            } else {
+                                                Toast.makeText(context, "Erro: Resposta do servidor inválida.", Toast.LENGTH_LONG).show()
                                             }
                                         } else {
                                             Toast.makeText(context, "Erro: ${response.message()}", Toast.LENGTH_LONG).show()
