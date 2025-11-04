@@ -28,7 +28,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
 import com.example.doevida.model.Cadastro
 import com.example.doevida.service.RetrofitFactory
-import com.example.doevida.util.UserDataManager
+import com.example.doevida.service.SharedPreferencesUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -312,14 +312,14 @@ fun TelaCadastro(navController: NavController) {
                                             val resposta = response.body()
                                             val usuario = resposta?.usuario
                                             if (usuario != null) {
-                                                UserDataManager.saveUserData(
-                                                    context,
-                                                    id = usuario.id ?: 0,
-                                                    name = usuario.nome ?: "",
-                                                    email = usuario.email ?: ""
+                                                SharedPreferencesUtils.saveUserData(
+                                                    context = context,
+                                                    userId = usuario.id ?: 0,
+                                                    userName = usuario.nome ?: "",
+                                                    userEmail = usuario.email ?: ""
                                                 )
                                                 Toast.makeText(context, "Cadastro realizado com sucesso!", Toast.LENGTH_LONG).show()
-                                                navController.navigate("tela_home") {
+                                                navController.navigate("tela_login") {
                                                     popUpTo("tela_cadastro") { inclusive = true }
                                                 }
                                             } else {

@@ -45,8 +45,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
 import com.example.doevida.model.LoginRequest
 import com.example.doevida.service.RetrofitFactory
+import com.example.doevida.service.SharedPreferencesUtils
 import com.example.doevida.util.TokenManager
-import com.example.doevida.util.UserDataManager // Import correto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -203,12 +203,12 @@ fun TelaLogin(navController: NavController) {
                                 if (response.isSuccessful) {
                                     val body = response.body()
                                     if (body?.usuario != null && body.token != null) {
-                                        // Salva os dados do usuário, incluindo o ID
-                                        UserDataManager.saveUserData(
+                                        // Salva os dados do usuário usando SharedPreferencesUtils
+                                        SharedPreferencesUtils.saveUserData(
                                             context = context,
-                                            id = body.usuario.id,
-                                            name = body.usuario.nome ?: "",
-                                            email = body.usuario.email ?: ""
+                                            userId = body.usuario.id,
+                                            userName = body.usuario.nome ?: "",
+                                            userEmail = body.usuario.email ?: ""
                                         )
 
                                         TokenManager(context).saveToken(body.token)
