@@ -37,3 +37,13 @@ plugins {
     alias(libs.plugins.androidx.room)
 }
 
+## 📱 Funcionalidades Principais
+
+- Cadastro e login de usuários
+- Consulta e cadastro de doações de sangue
+- Visualização de eventos relacionados à doação
+- Interface reativa e intuitiva com **Jetpack Compose**
+- Persistência local de dados com **Room Database**
+- Comunicação com backend via **Retrofit**
+
+
