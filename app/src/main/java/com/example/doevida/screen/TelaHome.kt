@@ -40,32 +40,25 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.doevida.service.SharedPreferencesUtils
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
+import com.example.doevida.components.MenuInferior
 
 
 @Composable
 fun TelaHome(navController: NavController) {
-
-    // Declaração de variáveis para armazenar o nome e o e-mail do usuário
-
     val userName = remember { mutableStateOf("") }
     val userEmail = remember { mutableStateOf("") }
-
-    // Recuperando os dados do usuário dos SharedPreferences
     val context = LocalContext.current
 
-
-    // Usando LaunchedEffect para carregar os dados assim que a TelaHome for composta
+    // Carrega os dados do usuário ao abrir a tela
     LaunchedEffect(Unit) {
         userName.value = SharedPreferencesUtils.getUserName(context)
         userEmail.value = SharedPreferencesUtils.getUserEmail(context)
-        Log.d("TelaHome", "Nome de usuário carregado: ${userName.value}")
-        Log.d("TelaHome", "E-mail do usuário carregado: ${userEmail.value}")
+        Log.d("TelaHome", "Nome: ${userName.value}")
+        Log.d("TelaHome", "Email: ${userEmail.value}")
     }
 
     Scaffold(
-        bottomBar = {
-            BarraDeNavegacao(navController)
-        }
+        bottomBar = { MenuInferior(navController) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -232,7 +225,7 @@ fun TelaHome(navController: NavController) {
                     )
                 }
 
-                    Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.weight(1f))
 
                 HorizontalDivider(
                     modifier = Modifier
@@ -279,71 +272,6 @@ fun CardButton(text: String, imageRes: Int, navController: NavController, rota: 
     }
 }
 //-------------------------------------
-@Composable
-fun BarraDeNavegacao(navController: NavController) {
-    var selectedItem by remember { mutableStateOf("home") }
-
-    NavigationBar(
-        containerColor = Color.White
-    ) {
-        val items = listOf(
-            "home" to Icons.Default.Home,
-            "noticias" to Icons.Default.Newspaper,
-            "profile" to Icons.Default.Person
-        )
-
-        items.forEach { (route, icon) ->
-            NavigationBarItem(
-                selected = selectedItem == route,
-                onClick = {
-                    selectedItem = route
-                    navController.navigate(route)
-                },
-                icon = {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                imageVector = icon,
-                                contentDescription = route,
-                                tint = if (selectedItem == route)
-                                    Color.White
-                                else Color.Black
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-
-                            Text(
-                                text = route.replaceFirstChar { it.uppercase() },
-                                color = if (selectedItem == route)
-                                    Color.White
-                                else Color.Black,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-
-                        if (selectedItem == route) {
-
-                            Spacer(modifier = Modifier.height(4.dp))
-                        }
-                    }
-                },
-                alwaysShowLabel = false,
-                label = {
-                    Spacer(modifier = Modifier.height(0.dp)) },
-                colors = NavigationBarItemDefaults.colors(
-                    indicatorColor = Color(0xFF990410)
-                )
-            )
-        }
-    }
-}
-
 @Preview(showBackground = true)
 @Composable
 private fun TelaHomePreview() {

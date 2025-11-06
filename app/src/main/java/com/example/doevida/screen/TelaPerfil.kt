@@ -27,22 +27,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.doevida.components.MenuInferior
 import com.example.doevida.service.SharedPreferencesUtils
 
 @Composable
 fun TelaPerfil(navController: NavController) {
     val userName = remember { mutableStateOf("") }
-
     val context = LocalContext.current
 
-    // Usando LaunchedEffect para carregar os dados assim que a TelaHome for composta
     LaunchedEffect(Unit) {
         userName.value = SharedPreferencesUtils.getUserName(context)
-        Log.d("TelaHome", "Nome de usuário carregado: ${userName.value}")
     }
 
     Scaffold(
-        bottomBar = {
+        bottomBar = { MenuInferior(navController) }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+                .padding(paddingValues)
+        ) {
             Column {
                 Divider(
                     color = Color(0xFFD9D9D9),
@@ -51,10 +56,8 @@ fun TelaPerfil(navController: NavController) {
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
                 )
-                MenuInferior(navController)
             }
         }
-    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -148,7 +151,9 @@ fun TelaPerfil(navController: NavController) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { /* ação ao clicar em Certificados */ }
+                    .clickable {
+                        navController.navigate(route = "tela_certificado")
+                    }
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -200,72 +205,6 @@ fun TelaPerfil(navController: NavController) {
                     fontSize = 15.sp
                 )
             }
-        }
-    }
-}
-//-------------------------------------
-@Composable
-fun MenuInferior(navController: NavController) {
-    var selectedItem by remember { mutableStateOf("profile") }
-
-    NavigationBar(
-        containerColor = Color.White
-    ) {
-        val items = listOf(
-            "home" to Icons.Default.Home,
-            "noticias" to Icons.Default.Newspaper,
-            "profile" to Icons.Default.Person
-        )
-
-        items.forEach { (route, icon) ->
-            NavigationBarItem(
-                selected = selectedItem == route,
-                onClick = {
-                    selectedItem = route
-                    navController.navigate(route)
-                },
-                icon = {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                imageVector = icon,
-                                contentDescription = route,
-                                tint = if (selectedItem == route)
-                                    Color.White
-                                else Color.Black
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-
-                            Text(
-                                text = route.replaceFirstChar { it.uppercase() },
-                                color = if (selectedItem == route)
-                                    Color.White
-                                else Color.Black,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-
-                        if (selectedItem == route) {
-
-                            Spacer(modifier = Modifier.height(4.dp))
-                        }
-                    }
-                },
-                alwaysShowLabel = false,
-                label = {
-                    Spacer(modifier = Modifier.height(0.dp)) },
-
-                colors = NavigationBarItemDefaults.colors(
-                    indicatorColor = Color(0xFF990410)
-                )
-            )
         }
     }
 }
@@ -358,72 +297,6 @@ fun EditableFieldStyled(
                     color = Color.Black,
                     fontSize = 14.sp)
             }
-        }
-    }
-}
-//-------------------------------------
-@Composable
-fun BarraInterior(navController: NavController) {
-
-    var selectedItem by remember { mutableStateOf("home") }
-
-    NavigationBar(
-        containerColor = Color.White
-    ) {
-        val items = listOf(
-            "home" to Icons.Default.Home,
-            "noticias" to Icons.Default.Newspaper,
-            "profile" to Icons.Default.Person
-        )
-
-        items.forEach { (route, icon) ->
-            NavigationBarItem(
-                selected = selectedItem == route,
-                onClick = {
-                    selectedItem = route
-                    navController.navigate(route)
-                },
-                icon = {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                imageVector = icon,
-                                contentDescription = route,
-                                tint = if (selectedItem == route)
-                                    Color.White
-                                else Color.Black
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-
-                            Text(
-                                text = route.replaceFirstChar { it.uppercase() },
-                                color = if (selectedItem == route)
-                                    Color.White
-                                else Color.Black,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-
-                        if (selectedItem == route) {
-
-                            Spacer(modifier = Modifier.height(4.dp))
-                        }
-                    }
-                },
-                alwaysShowLabel = false,
-                label = {
-                    Spacer(modifier = Modifier.height(0.dp)) },
-                colors = NavigationBarItemDefaults.colors(
-                    indicatorColor = Color(0xFF990410)
-                )
-            )
         }
     }
 }

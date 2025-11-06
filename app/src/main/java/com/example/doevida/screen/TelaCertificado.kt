@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.doevida.components.MenuInferior
 import com.example.doevida.model.HospitaisCards
 import com.example.doevida.service.SharedPreferencesUtils
 
@@ -214,3 +215,4 @@ private fun TelaCertificadoPreview() {
     val navController = rememberNavController()
     TelaCertificado(navController = navController)
 }
+

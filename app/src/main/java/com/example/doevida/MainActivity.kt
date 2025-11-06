@@ -13,6 +13,7 @@ import androidx.navigation.navArgument
 import com.example.doevida.screen.TelaAgendamento
 import com.example.doevida.screen.TelaBancodeSangue
 import com.example.doevida.screen.TelaCadastro
+import com.example.doevida.screen.TelaCertificado
 import com.example.doevida.screen.TelaDetalheHospital
 import com.example.doevida.screen.TelaHistorico
 import com.example.doevida.screen.TelaHome
@@ -20,6 +21,7 @@ import com.example.doevida.screen.TelaHospitais
 import com.example.doevida.screen.TelaInformacaoDoDoador
 import com.example.doevida.screen.TelaInicial
 import com.example.doevida.screen.TelaLogin
+import com.example.doevida.screen.TelaPerfil
 import com.example.doevida.screen.TelaProtocoloAgendamento
 import com.example.doevida.screen.TelaRecuperacaoEmail
 import com.example.doevida.screen.TelaRedefinirSenha
@@ -43,7 +45,7 @@ fun AppNavigation() {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = "splash"
+        startDestination = "tela_home"
     ) {
         composable("splash") {
             TelaSplash(navController)
@@ -115,6 +117,12 @@ fun AppNavigation() {
                 dataSelecionada = data,
                 horarioSelecionado = horario // Novo argumento
             )
+        }
+        composable("tela_perfil") {
+            TelaPerfil(navController)
+        }
+        composable("tela_certificado") {
+            TelaCertificado(navController)
         }
     }
 }
