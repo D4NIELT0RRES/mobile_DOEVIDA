@@ -25,6 +25,7 @@ import com.example.doevida.screen.TelaPerfil
 import com.example.doevida.screen.TelaProtocoloAgendamento
 import com.example.doevida.screen.TelaRecuperacaoEmail
 import com.example.doevida.screen.TelaRedefinirSenha
+import com.example.doevida.screen.TelaRegistrarDoacao
 import com.example.doevida.screen.TelaSplash
 import com.example.doevida.ui.theme.DoevidaTheme
 
@@ -123,6 +124,9 @@ fun AppNavigation() {
         }
         composable("tela_certificado") {
             TelaCertificado(navController)
+        }
+        composable("tela_registrar_doacao") {
+            TelaRegistrarDoacao(navController)
         }
     }
 }

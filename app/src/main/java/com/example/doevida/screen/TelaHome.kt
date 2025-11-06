@@ -49,7 +49,6 @@ fun TelaHome(navController: NavController) {
     val userEmail = remember { mutableStateOf("") }
     val context = LocalContext.current
 
-    // Carrega os dados do usuário ao abrir a tela
     LaunchedEffect(Unit) {
         userName.value = SharedPreferencesUtils.getUserName(context)
         userEmail.value = SharedPreferencesUtils.getUserEmail(context)
@@ -221,7 +220,7 @@ fun TelaHome(navController: NavController) {
                         "Registrar Doação",
                         R.drawable.doarsangue,
                         navController,
-                        " " // arrumar dps de pronto
+                        "tela_registrar_doacao"
                     )
                 }
 
