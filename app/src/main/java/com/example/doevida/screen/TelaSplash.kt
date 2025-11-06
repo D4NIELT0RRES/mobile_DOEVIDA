@@ -26,33 +26,29 @@ fun TelaSplash(navController: NavController) {
 
 @Composable
 private fun TelaSplashContent(navController: NavController) {
-    val scale = remember { Animatable(0.6f) }
+    val scale = remember { Animatable(0.8f) }
     val alpha = remember { Animatable(0f) }
 
     LaunchedEffect(Unit) {
+
         alpha.animateTo(
             targetValue = 1f,
-            animationSpec = tween(durationMillis = 600)
+            animationSpec = tween(durationMillis = 800)
         )
 
         scale.animateTo(
-            targetValue = 1.2f,
+            targetValue = 1.1f,
             animationSpec = tween(
-                durationMillis = 1200,
+                durationMillis = 1000,
                 easing = { overshootInterpolator(it) }
             )
         )
 
-        delay(800)
-
-        scale.animateTo(
-            targetValue = 6f,
-            animationSpec = tween(durationMillis = 600)
-        )
+        delay(1000)
 
         alpha.animateTo(
             targetValue = 0f,
-            animationSpec = tween(durationMillis = 400)
+            animationSpec = tween(durationMillis = 600)
         )
 
         navController.navigate("tela_inicial") {

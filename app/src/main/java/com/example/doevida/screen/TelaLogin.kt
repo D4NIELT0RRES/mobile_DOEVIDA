@@ -49,7 +49,7 @@ import com.example.doevida.R
 import com.example.doevida.model.LoginRequest
 import com.example.doevida.service.RetrofitFactory
 import com.example.doevida.util.TokenManager
-import com.example.doevida.util.UserDataManager // Import correto
+import com.example.doevida.util.UserDataManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -76,7 +76,7 @@ fun TelaLogin(navController: NavController) {
 
         senhaError = when {
             senha.value.isBlank() -> "Campo obrigatório"
-            senha.value.length < 6 -> "Senha deve ter no mínimo 8 caracteres"
+            senha.value.length < 8 -> "Senha deve ter no mínimo 8 caracteres"
             else -> null
         }
 
@@ -240,6 +240,7 @@ fun TelaLogin(navController: NavController) {
                                     if (response.isSuccessful) {
                                         val body = response.body()
                                         if (body?.usuario != null && body.token != null) {
+                                            senhaError = null
                                             UserDataManager.saveUserData(
                                                 context,
                                                 id = body.usuario.id,
@@ -254,16 +255,20 @@ fun TelaLogin(navController: NavController) {
                                                 popUpTo("tela_login") { inclusive = true }
                                             }
                                         } else {
-                                            Toast.makeText(context, "Resposta inválida do servidor.", Toast.LENGTH_LONG).show()
+                                            senhaError = "Erro inesperado. Tente novamente."
                                         }
                                     } else {
-                                        Toast.makeText(context, "Falha no login: ${response.code()}", Toast.LENGTH_LONG).show()
+                                        when (response.code()) {
+                                            401 -> senhaError = "Senha incorreta"
+                                            403 -> senhaError = "Acesso negado"
+                                            else -> senhaError = "Erro ao fazer login: ${response.code()}"
+                                        }
                                     }
                                 }
                             } catch (e: Exception) {
                                 withContext(Dispatchers.Main) {
                                     Log.e("TelaLogin", "Erro ao conectar", e)
-                                    Toast.makeText(context, "Erro ao conectar. Verifique sua conexão.", Toast.LENGTH_LONG).show()
+                                    senhaError = "Erro ao conectar. Verifique sua conexão."
                                 }
                             }
                         }
