@@ -36,6 +36,8 @@ plugins {
     id("com.google.devtools.ksp") // KSP versão 2.0.21-1.0.27
     alias(libs.plugins.androidx.room)
 }
+```
+---
 
 ## 📱 Funcionalidades Principais
 
