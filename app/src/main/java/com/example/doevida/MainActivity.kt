@@ -15,12 +15,14 @@ import com.example.doevida.screen.TelaBancodeSangue
 import com.example.doevida.screen.TelaCadastro
 import com.example.doevida.screen.TelaCertificado
 import com.example.doevida.screen.TelaDetalheHospital
+import com.example.doevida.screen.TelaDetalheNoticia
 import com.example.doevida.screen.TelaHistorico
 import com.example.doevida.screen.TelaHome
 import com.example.doevida.screen.TelaHospitais
 import com.example.doevida.screen.TelaInformacaoDoDoador
 import com.example.doevida.screen.TelaInicial
 import com.example.doevida.screen.TelaLogin
+import com.example.doevida.screen.TelaNoticias
 import com.example.doevida.screen.TelaPerfil
 import com.example.doevida.screen.TelaProtocoloAgendamento
 import com.example.doevida.screen.TelaRecuperacaoEmail
@@ -127,6 +129,16 @@ fun AppNavigation() {
         }
         composable("tela_registrar_doacao") {
             TelaRegistrarDoacao(navController)
+        }
+        composable("tela_noticias") {
+            TelaNoticias(navController)
+        }
+        composable(
+            route = "tela_detalhe_noticia/{noticiaId}",
+            arguments = listOf(navArgument("noticiaId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val noticiaId = backStackEntry.arguments?.getInt("noticiaId") ?: 0
+            TelaDetalheNoticia(navController, noticiaId)
         }
     }
 }
