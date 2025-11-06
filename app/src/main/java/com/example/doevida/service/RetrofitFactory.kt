@@ -1,7 +1,7 @@
 package com.example.doevida.service
 
 import android.content.Context
-import com.example.doevida.util.TokenManager // <- IMPORTAÇÃO ESSENCIAL ADICIONADA
+import com.example.doevida.util.TokenManager
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -12,13 +12,20 @@ class RetrofitFactory(private val context: Context) {
 
     private val BASE_URL = "http://10.0.2.2:8080/v1/doevida/"
 
+    // Interceptor inteligente que só adiciona o token em rotas privadas
     private val authInterceptor = Interceptor { chain ->
-        val token = TokenManager(context).getToken()
-        val request = chain.request().newBuilder()
-        if (token != null) {
-            request.addHeader("Authorization", "Bearer $token")
+        val request = chain.request()
+        val requestBuilder = request.newBuilder()
+
+        // Verifica se a rota NÃO é pública
+        if (!request.url.pathSegments.contains("login") && !request.url.pathSegments.contains("usuario")) {
+            val token = TokenManager(context).getToken()
+            if (token != null) {
+                requestBuilder.addHeader("Authorization", "Bearer $token")
+            }
         }
-        chain.proceed(request.build())
+        
+        chain.proceed(requestBuilder.build())
     }
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
@@ -27,7 +34,7 @@ class RetrofitFactory(private val context: Context) {
 
     private val client = OkHttpClient.Builder()
         .addInterceptor(authInterceptor)
-        .addInterceptor(loggingInterceptor) // Adiciona o logging interceptor
+        .addInterceptor(loggingInterceptor)
         .build()
 
     private val retrofit = Retrofit.Builder()
