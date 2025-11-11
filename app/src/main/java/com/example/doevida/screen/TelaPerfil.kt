@@ -1,6 +1,6 @@
 package com.example.doevida.screen
 
-import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -30,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
+import com.example.doevida.components.InfoRow
 import com.example.doevida.components.MenuInferior
 import com.example.doevida.service.SharedPreferencesUtils
 
@@ -136,19 +138,6 @@ fun UserInfoCard() {
 }
 
 @Composable
-fun InfoRow(label: String, value: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(text = label, fontWeight = FontWeight.SemiBold, color = Color.Gray, fontSize = 14.sp)
-        Text(text = value, fontWeight = FontWeight.Normal, color = Color.DarkGray, fontSize = 14.sp)
-    }
-}
-
-
-@Composable
 fun OptionsMenu(navController: NavController) {
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         Text(
@@ -165,18 +154,17 @@ fun OptionsMenu(navController: NavController) {
             elevation = CardDefaults.cardElevation(4.dp)
         ) {
             Column {
-                OptionItem("Certificados", Icons.Default.painterResource(id = R.drawable.certificado), onClick = {
+                OptionItem("Certificados", painterResource(id = R.drawable.doarsangue), onClick = {
                     navController.navigate("tela_certificado")
                 })
                 Divider(color = Color.LightGray.copy(alpha = 0.5f), thickness = 1.dp, modifier = Modifier.padding(horizontal = 16.dp))
-                // Adicione mais itens de opção aqui se necessário
             }
         }
     }
 }
 
 @Composable
-fun OptionItem(title: String, icon: ImageVector, onClick: () -> Unit) {
+fun OptionItem(title: String, icon: Painter, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -184,7 +172,7 @@ fun OptionItem(title: String, icon: ImageVector, onClick: () -> Unit) {
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(imageVector = icon, contentDescription = title, tint = Color(0xFF990410))
+        Icon(painter = icon, contentDescription = title, tint = Color(0xFF990410))
         Spacer(modifier = Modifier.width(16.dp))
         Text(text = title, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = Color.DarkGray)
         Spacer(modifier = Modifier.weight(1f))

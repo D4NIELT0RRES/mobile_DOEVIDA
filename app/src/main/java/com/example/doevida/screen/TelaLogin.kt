@@ -115,13 +115,7 @@ fun TelaLogin(navController: NavController) {
                     .size(150.dp)
             )
 
-            Text(
-                text = "Login",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                color = primaryColor,
-                modifier = Modifier.padding(bottom = 24.dp)
-            )
+            Spacer(modifier = Modifier.height(30.dp))
 
             OutlinedTextField(
                 value = login,

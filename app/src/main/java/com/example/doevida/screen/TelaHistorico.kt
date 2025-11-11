@@ -144,7 +144,7 @@ fun EmptyState() {
         verticalArrangement = Arrangement.Center
     ) {
         Image(
-            painter = painterResource(id = R.drawable.historico_vazio),
+            painter = painterResource(id = R.drawable.doarsangue),
             contentDescription = "Histórico Vazio",
             modifier = Modifier.size(150.dp)
         )

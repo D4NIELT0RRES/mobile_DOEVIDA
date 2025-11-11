@@ -42,9 +42,9 @@ data class Noticia(
 )
 
 val noticiasDestacadas = listOf(
-    Noticia(1, "Doe Sangue, Salve Vidas: A Importância da Doação Regular", "Campanha", "sindalesc.org.br", R.drawable.noticia_image_1, "Conteúdo da notícia 1...", "Redação", R.drawable.hospitais),
-    Noticia(2, "Banco de sangue registra movimentação de bolsas para atender hospitais", "Urgente", "g1.globo.com", R.drawable.noticia_image_2, "A Câmara Municipal de Barueri encerrou a campanha Junho Vermelho...", "Prefeitura de Barueri", R.drawable.hospitais),
-    Noticia(3, "Novas regras para doação de sangue entram em vigor", "Saúde", "saude.gov.br", R.drawable.noticia_image_3, "Conteúdo da notícia 3...", "Ministério da Saúde", R.drawable.hospitais)
+    Noticia(1, "Doe Sangue, Salve Vidas: A Importância da Doação Regular", "Campanha", "sindalesc.org.br", R.drawable.foto1, "Conteúdo da notícia 1...", "Redação", R.drawable.hospitais),
+    Noticia(2, "Banco de sangue registra movimentação de bolsas para atender hospitais", "Urgente", "g1.globo.com", R.drawable.foto2, "A Câmara Municipal de Barueri encerrou a campanha Junho Vermelho...", "Prefeitura de Barueri", R.drawable.hospitais),
+    Noticia(3, "Novas regras para doação de sangue entram em vigor", "Saúde", "saude.gov.br", R.drawable.foto3, "Conteúdo da notícia 3...", "Ministério da Saúde", R.drawable.hospitais)
 )
 
 val noticiasRecomendadas = listOf(

@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.doevida.components.InfoRow
 import com.example.doevida.model.AgendamentoRequest
 import com.example.doevida.model.HospitaisCards
 import com.example.doevida.service.RetrofitFactory
@@ -42,7 +43,6 @@ fun TelaProtocoloAgendamento(navController: NavController, hospitalId: Int, data
     var isLoading by remember { mutableStateOf(false) }
     var agendamentoProtocolo by remember { mutableStateOf<String?>(null) }
 
-    // Formatando a data para exibição
     val dataFormatada = remember(dataSelecionada) {
         try {
             LocalDate.parse(dataSelecionada).format(DateTimeFormatter.ofPattern("dd 'de' MMMM 'de' yyyy", Locale("pt", "BR")))
@@ -50,7 +50,7 @@ fun TelaProtocoloAgendamento(navController: NavController, hospitalId: Int, data
     }
 
     fun salvarAgendamento() {
-        if (agendamentoProtocolo != null) { // Evita agendar duas vezes
+        if (agendamentoProtocolo != null) {
             navController.navigate("tela_home") { popUpTo(0) }
             return
         }
@@ -61,7 +61,7 @@ fun TelaProtocoloAgendamento(navController: NavController, hospitalId: Int, data
             try {
                 val response = RetrofitFactory(context).getUserService().agendarDoacao(request)
                 if (response.isSuccessful) {
-                    agendamentoProtocolo = response.body()?.agendamento?.id.toString() // Simulação
+                    agendamentoProtocolo = "#${(1000..9999).random()}" 
                     Toast.makeText(context, "Agendamento confirmado com sucesso!", Toast.LENGTH_SHORT).show()
                 } else {
                     Toast.makeText(context, "Erro ao confirmar agendamento: ${response.code()}", Toast.LENGTH_SHORT).show()
@@ -79,7 +79,7 @@ fun TelaProtocoloAgendamento(navController: NavController, hospitalId: Int, data
             try {
                 val response = RetrofitFactory(context).getHospitalService().getHospitalById(hospitalId)
                 if (response.isSuccessful) hospital = response.body()?.hospital
-            } catch (e: Exception) { /* Tratar erro de busca do hospital */ }
+            } catch (e: Exception) { }
         }
     }
 
@@ -92,10 +92,8 @@ fun TelaProtocoloAgendamento(navController: NavController, hospitalId: Int, data
             modifier = Modifier.fillMaxSize().padding(it).verticalScroll(rememberScrollState()).padding(16.dp)
         ) {
             if (agendamentoProtocolo == null) {
-                // Tela de confirmação antes de gerar o protocolo
                 ReviewDetails(hospital, dataFormatada, horarioSelecionado)
             } else {
-                // Tela de sucesso após gerar o protocolo
                 SuccessDetails(hospital, dataFormatada, horarioSelecionado, agendamentoProtocolo!!)
             }
         }
@@ -145,23 +143,51 @@ fun AppointmentSummaryCard(hospital: HospitaisCards?, data: String, horario: Str
 }
 
 @Composable
-fun InfoRow(label: String, value: String) {
-    Column(Modifier.padding(vertical = 4.dp)) {
-        Text(label, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color(0xFF990410))
-        Text(value, fontSize = 16.sp, color = Color.DarkGray)
+fun InfoCard(
+    icon: ImageVector,
+    title: String,
+    iconContentDescription: String?,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(2.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(icon, contentDescription = iconContentDescription, tint = Color(0xFF990410))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.DarkGray)
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            content()
+        }
     }
 }
 
 @Composable
 fun InstructionsCard() {
+    val instructions = listOf(
+        "Beba bastante água antes de doar.",
+        "Esteja bem alimentado, evitando comidas gordurosas.",
+        "Leve um documento oficial com foto.",
+        "Durma bem na noite anterior."
+    )
     InfoCard(
         icon = Icons.Default.Info,
         title = "Prepare-se para a doação",
+        iconContentDescription = "Ícone de informação",
         content = {
-            Text("• Beba bastante água antes de doar.", fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp))
-            Text("• Esteja bem alimentado, evitando comidas gordurosas.", fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp))
-            Text("• Leve um documento oficial com foto.", fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp))
-            Text("• Durma bem na noite anterior.", fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp))
+            instructions.forEach { instruction ->
+                Text(
+                    text = "• $instruction",
+                    fontSize = 14.sp,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
         }
     )
 }

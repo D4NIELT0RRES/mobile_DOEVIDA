@@ -48,7 +48,7 @@ fun AppNavigation() {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = "tela_home"
+        startDestination = "tela_inicial"
     ) {
         composable("splash") {
             TelaSplash(navController)

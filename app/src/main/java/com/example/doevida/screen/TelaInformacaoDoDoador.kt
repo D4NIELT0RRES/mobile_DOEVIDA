@@ -112,7 +112,7 @@ fun TelaInformacaoDoDoador(navController: NavController, hospitalId: Int, data: 
             FormField(label = "CPF", value = cpf, onValueChange = { if (it.length <= 11) cpf = it.filter { c -> c.isDigit() } }, keyboardType = KeyboardType.Number, visualTransformation = CpfVisualTransformation(), error = cpfError)
             FormField(label = "Data de Nascimento", value = dataDeNascimento, onValueChange = { if (it.length <= 8) dataDeNascimento = it.filter { c -> c.isDigit() } }, keyboardType = KeyboardType.Number, visualTransformation = DateVisualTransformation(), error = dataNascimentoError)
             FormField(label = "Celular", value = celular, onValueChange = { if (it.length <= 11) celular = it.filter { c -> c.isDigit() } }, keyboardType = KeyboardType.Phone, visualTransformation = PhoneVisualTransformation(), error = celularError)
-            FormField(label = "CEP", value = cep, onValueChange = { if (it.length <= 8) cep = it.filter { c -> c.isDigit() } }, keyboardType = KeyboardType.Number, error = cepError)
+            FormField(label = "CEP", value = cep, onValueChange = { if (it.length <= 8) cep = it.filter { c -> c.isDigit() } }, keyboardType = KeyboardType.Number, visualTransformation = CepVisualTransformation(), error = cepError)
 
             Spacer(modifier = Modifier.weight(1f))
 
@@ -246,6 +246,28 @@ class PhoneVisualTransformation : VisualTransformation {
                 if (offset <= 7) return offset - 3
                 if (offset <= 12) return offset - 4
                 return offset - 5
+            }
+        }
+        return TransformedText(AnnotatedString(out), mapping)
+    }
+}
+
+class CepVisualTransformation : VisualTransformation {
+    override fun filter(text: AnnotatedString): TransformedText {
+        val trimmed = if (text.text.length >= 8) text.text.substring(0..7) else text.text
+        val out = buildString {
+            trimmed.forEachIndexed { index, char ->
+                append(char)
+                if (index == 4) append("-")
+            }
+        }
+        val mapping = object : OffsetMapping {
+            override fun originalToTransformed(offset: Int): Int {
+                return if (offset <= 4) offset else offset + 1
+            }
+
+            override fun transformedToOriginal(offset: Int): Int {
+                return if (offset <= 5) offset else offset - 1
             }
         }
         return TransformedText(AnnotatedString(out), mapping)
