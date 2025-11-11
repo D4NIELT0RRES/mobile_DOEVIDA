@@ -2,7 +2,6 @@ package com.example.doevida.screen
 
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -95,12 +94,31 @@ fun TelaInformacaoDoDoador(navController: NavController, hospitalId: Int, data: 
 
     Scaffold(
         topBar = { TopBarInformacao(navController) },
-        containerColor = Color.White
-    ) {
+        containerColor = Color.White,
+        bottomBar = {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Button(
+                    onClick = { completarPerfil() },
+                    enabled = !isLoading,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF990410)),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                    } else {
+                        Text("Confirmar Dados", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    }
+                }
+            }
+        }
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it)
+                .padding(paddingValues)
                 .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -114,21 +132,7 @@ fun TelaInformacaoDoDoador(navController: NavController, hospitalId: Int, data: 
             FormField(label = "Celular", value = celular, onValueChange = { if (it.length <= 11) celular = it.filter { c -> c.isDigit() } }, keyboardType = KeyboardType.Phone, visualTransformation = PhoneVisualTransformation(), error = celularError)
             FormField(label = "CEP", value = cep, onValueChange = { if (it.length <= 8) cep = it.filter { c -> c.isDigit() } }, keyboardType = KeyboardType.Number, visualTransformation = CepVisualTransformation(), error = cepError)
 
-            Spacer(modifier = Modifier.weight(1f))
-
-            Button(
-                onClick = { completarPerfil() },
-                enabled = !isLoading,
-                modifier = Modifier.fillMaxWidth().height(52.dp).padding(bottom = 16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF990410)),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-                } else {
-                    Text("Confirmar Dados", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                }
-            }
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
@@ -153,7 +157,9 @@ private fun FormField(label: String, value: String, onValueChange: (String) -> U
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
         isError = error != null,
         supportingText = { if (error != null) Text(error, color = MaterialTheme.colorScheme.error) },
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
@@ -224,6 +230,11 @@ class DateVisualTransformation : VisualTransformation {
 
 class PhoneVisualTransformation : VisualTransformation {
     override fun filter(text: AnnotatedString): TransformedText {
+        // Handle empty text case to prevent crash
+        if (text.text.isEmpty()) {
+            return TransformedText(AnnotatedString(""), OffsetMapping.Identity)
+        }
+
         val trimmed = if (text.text.length >= 11) text.text.substring(0..10) else text.text
         val out = buildString {
             when (trimmed.length) {
@@ -235,22 +246,23 @@ class PhoneVisualTransformation : VisualTransformation {
         }
         val mapping = object : OffsetMapping {
             override fun originalToTransformed(offset: Int): Int {
+                if (offset == 0) return 0
                 if (offset <= 2) return offset + 1
                 if (offset <= 6) return offset + 3
-                if (offset <= 10) return offset + 4
-                return offset + 5
+                return offset + 4
             }
 
             override fun transformedToOriginal(offset: Int): Int {
-                if (offset <= 2) return offset - 1
-                if (offset <= 7) return offset - 3
-                if (offset <= 12) return offset - 4
-                return offset - 5
+                if (offset <= 1) return 0
+                if (offset <= 3) return offset - 1
+                if (offset <= 10) return offset - 3
+                return offset - 4
             }
         }
         return TransformedText(AnnotatedString(out), mapping)
     }
 }
+
 
 class CepVisualTransformation : VisualTransformation {
     override fun filter(text: AnnotatedString): TransformedText {

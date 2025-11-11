@@ -48,12 +48,11 @@ fun TelaHistorico(navController: NavController) {
                     historico = response.body()?.agendamentos ?: emptyList()
                 }
             } catch (e: Exception) {
-                // Tratar erro de conexão
             } finally {
                 isLoading = false
             }
         } else {
-            isLoading = false // Usuário não logado
+            isLoading = false
         }
     }
 
@@ -110,7 +109,7 @@ fun TopBarHistorico(navController: NavController) {
         },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Color.White,
-            titleContentColor = Color(0xFF990410)
+            titleContentColor = Color(0xFFB03940)
         )
     )
 }
@@ -183,7 +182,7 @@ fun DoacaoCard(agendamento: AgendamentoItem) {
     ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(
-                painter = painterResource(R.drawable.doarsangue),
+                painter = painterResource(R.drawable.gota),
                 contentDescription = "Doação",
                 tint = Color(0xFF990410),
                 modifier = Modifier.size(40.dp)
