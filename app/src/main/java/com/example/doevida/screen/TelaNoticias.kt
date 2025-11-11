@@ -18,10 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -30,7 +28,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
 import com.example.doevida.components.MenuInferior
-import com.example.doevida.ui.theme.DoevidaTheme
 
 // --- MOCK DATA ---
 data class Noticia(
@@ -44,11 +41,10 @@ data class Noticia(
     val authorImageUrl: Int
 )
 
-// Mock data atualizado para usar ícones
 val noticiasDestacadas = listOf(
-    Noticia(1, "Doe Sangue, Salve Vidas: A Importância da Doação Regular", "Campanha", "sindalesc.org.br", R.drawable.doarsangue, "Conteúdo da notícia 1...", "Redação", R.drawable.hospitais),
-    Noticia(2, "Banco de sangue registra movimentação de bolsas para atender hospitais", "Urgente", "g1.globo.com", R.drawable.doarsangue, "A Câmara Municipal de Barueri encerrou a campanha Junho Vermelho...", "Prefeitura de Barueri", R.drawable.hospitais),
-    Noticia(3, "Novas regras para doação de sangue entram em vigor", "Saúde", "saude.gov.br", R.drawable.doarsangue, "Conteúdo da notícia 3...", "Ministério da Saúde", R.drawable.hospitais)
+    Noticia(1, "Doe Sangue, Salve Vidas: A Importância da Doação Regular", "Campanha", "sindalesc.org.br", R.drawable.noticia_image_1, "Conteúdo da notícia 1...", "Redação", R.drawable.hospitais),
+    Noticia(2, "Banco de sangue registra movimentação de bolsas para atender hospitais", "Urgente", "g1.globo.com", R.drawable.noticia_image_2, "A Câmara Municipal de Barueri encerrou a campanha Junho Vermelho...", "Prefeitura de Barueri", R.drawable.hospitais),
+    Noticia(3, "Novas regras para doação de sangue entram em vigor", "Saúde", "saude.gov.br", R.drawable.noticia_image_3, "Conteúdo da notícia 3...", "Ministério da Saúde", R.drawable.hospitais)
 )
 
 val noticiasRecomendadas = listOf(
@@ -57,7 +53,6 @@ val noticiasRecomendadas = listOf(
     Noticia(6, "Mpox deixa de ser emergência de saúde internacional, anuncia OMS.", "Curiosidade", "g1.globo.com", R.drawable.bancodesangue, "Conteúdo da notícia 6...", "Redação", R.drawable.hospitais),
 )
 
-// Repositório simples para acessar os dados
 object NoticiaRepository {
     private val allNoticias = noticiasDestacadas + noticiasRecomendadas
     fun getNoticiaById(id: Int): Noticia? {
@@ -65,107 +60,88 @@ object NoticiaRepository {
     }
 }
 
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TelaNoticias(navController: NavController) {
     Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        "Notícias",
-                        fontFamily = FontFamily.Serif,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 32.sp
-                    )
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color(0xFF8B0000),
-                    titleContentColor = Color.White
-                )
-            )
-        },
+        topBar = { NoticiasTopAppBar() },
         bottomBar = { MenuInferior(navController) }
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color.White)
+                .background(Color(0xFFF7F7F7)) // Fundo cinza claro
         ) {
-            // Carrossel de notícias
-            item {
-                val pagerState = rememberPagerState(pageCount = { noticiasDestacadas.size })
-                HorizontalPager(
-                    state = pagerState,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(220.dp),
-                    contentPadding = PaddingValues(horizontal = 32.dp),
-                ) { page ->
-                    NoticiaCardDestaque(noticia = noticiasDestacadas[page], navController = navController)
-                }
-                // Indicador de página
-                Row(
-                    Modifier
-                        .height(50.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    repeat(pagerState.pageCount) { iteration ->
-                        val color = if (pagerState.currentPage == iteration) Color(0xFF990410) else Color.LightGray
-                        Box(
-                            modifier = Modifier
-                                .padding(4.dp)
-                                .clip(CircleShape)
-                                .background(color)
-                                .size(10.dp)
-                        )
-                    }
-                }
-            }
+            item { HighlightsSection(navController = navController) }
+            item { RecommendedSection(navController = navController) }
+        }
+    }
+}
 
-            // Seção de recomendados
-            item {
-                Text(
-                    text = "Recomendados",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = 16.dp, bottom = 16.dp),
-                    color = Color.Black
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun NoticiasTopAppBar() {
+    TopAppBar(
+        title = { Text("Notícias", fontWeight = FontWeight.Bold, fontSize = 24.sp) },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color.White,
+            titleContentColor = Color(0xFF990410),
+            scrolledContainerColor = Color.White
+        ),
+        modifier = Modifier.fillMaxWidth()
+    )
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun HighlightsSection(navController: NavController) {
+    val pagerState = rememberPagerState { noticiasDestacadas.size }
+    Column(modifier = Modifier.background(Color.White).padding(bottom = 16.dp)) {
+        Text(
+            text = "Destaques",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.DarkGray,
+            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 16.dp)
+        )
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            pageSpacing = 12.dp
+        ) { page ->
+            NoticiaDestaqueCard(noticia = noticiasDestacadas[page], navController = navController)
+        }
+        Row(
+            Modifier.fillMaxWidth().padding(top = 16.dp),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            repeat(pagerState.pageCount) { iteration ->
+                val color = if (pagerState.currentPage == iteration) Color(0xFF990410) else Color.LightGray
+                Box(
+                    modifier = Modifier.padding(4.dp).clip(CircleShape).background(color).size(8.dp)
                 )
-            }
-
-            items(noticiasRecomendadas) { noticia ->
-                NoticiaItemRecomendado(noticia = noticia, navController = navController)
-                Spacer(modifier = Modifier.height(8.dp))
             }
         }
     }
 }
 
 @Composable
-fun NoticiaCardDestaque(noticia: Noticia, navController: NavController) {
+fun NoticiaDestaqueCard(noticia: Noticia, navController: NavController) {
     Card(
         modifier = Modifier
-            .padding(horizontal = 8.dp)
-            .fillMaxHeight()
-            .aspectRatio(0.9f)
+            .fillMaxWidth()
+            .height(200.dp)
             .clickable { navController.navigate("tela_detalhe_noticia/${noticia.id}") },
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF0F0F0)) // Fundo cinza claro
+        shape = RoundedCornerShape(16.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             Image(
                 painter = painterResource(id = noticia.imageUrl),
                 contentDescription = noticia.title,
-                contentScale = ContentScale.Fit, // Ajusta a imagem (ícone) para caber
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(32.dp), // Adiciona preenchimento para o ícone não colar nas bordas
-                colorFilter = ColorFilter.tint(Color(0xFF990410)) // Pinta o ícone de vermelho
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
             )
             Box(
                 modifier = Modifier
@@ -173,60 +149,97 @@ fun NoticiaCardDestaque(noticia: Noticia, navController: NavController) {
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.8f)),
-                            startY = 300f // Ajusta o início do gradiente
+                            startY = 300f
                         )
                     )
             )
-            Text(
-                text = noticia.title,
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
+            Column(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .padding(16.dp)
-            )
+            ) {
+                Text(
+                    text = noticia.category.uppercase(),
+                    color = Color.White.copy(alpha = 0.8f),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp
+                )
+                Text(
+                    text = noticia.title,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    maxLines = 2
+                )
+            }
         }
     }
 }
 
 @Composable
-fun NoticiaItemRecomendado(noticia: Noticia, navController: NavController) {
-    Row(
+fun RecommendedSection(navController: NavController) {
+    Column(modifier = Modifier.padding(vertical = 16.dp)) {
+        Text(
+            text = "Recomendados",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.DarkGray,
+            modifier = Modifier.padding(start = 16.dp, bottom = 16.dp)
+        )
+        LazyColumn(
+            modifier = Modifier.heightIn(max = 1000.dp), // Avoid nested scrolling issues
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(noticiasRecomendadas) { noticia ->
+                NoticiaRecomendadoItem(noticia = noticia, navController = navController)
+            }
+        }
+    }
+}
+
+@Composable
+fun NoticiaRecomendadoItem(noticia: Noticia, navController: NavController) {
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { navController.navigate("tela_detalhe_noticia/${noticia.id}") }
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .clickable { navController.navigate("tela_detalhe_noticia/${noticia.id}") },
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(2.dp)
     ) {
-        // Usa Icon em vez de Image para melhor controle de tint e tamanho
-        Icon(
-            painter = painterResource(id = noticia.imageUrl),
-            contentDescription = noticia.title,
-            tint = Color(0xFF990410), // Pinta o ícone de vermelho
-            modifier = Modifier.size(60.dp)
-        )
-        Spacer(modifier = Modifier.width(16.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = noticia.category,
-                color = Color.Gray,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = painterResource(id = noticia.imageUrl),
+                contentDescription = noticia.title,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.size(70.dp).clip(RoundedCornerShape(8.dp))
             )
-            Text(
-                text = noticia.title,
-                color = Color.Black,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                maxLines = 2
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = noticia.source,
-                color = Color(0xFF007BFF), // Cor de link azul
-                fontSize = 12.sp
-            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = noticia.category.uppercase(),
+                    color = Color(0xFF990410),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = noticia.title,
+                    color = Color.DarkGray,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 2
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = noticia.source,
+                    color = Color.Gray,
+                    fontSize = 12.sp
+                )
+            }
         }
     }
 }
@@ -234,7 +247,5 @@ fun NoticiaItemRecomendado(noticia: Noticia, navController: NavController) {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun TelaNoticiasPreview() {
-    DoevidaTheme {
-        TelaNoticias(rememberNavController())
-    }
+    TelaNoticias(rememberNavController())
 }

@@ -1,32 +1,35 @@
 package com.example.doevida.screen
 
 import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.ExitToApp
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Newspaper
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.doevida.R
 import com.example.doevida.components.MenuInferior
 import com.example.doevida.service.SharedPreferencesUtils
 
@@ -45,269 +48,170 @@ fun TelaPerfil(navController: NavController) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White)
                 .padding(paddingValues)
+                .background(Color(0xFFF7F7F7)) // Fundo cinza claro
+                .verticalScroll(rememberScrollState())
         ) {
-            Column {
-                Divider(
-                    color = Color(0xFFD9D9D9),
-                    thickness = 1.dp,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                )
-            }
-        }
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)
-                .padding(paddingValues)
-        ) {
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFF8B0000))
-                    .padding(bottom = 10.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(60.dp)
-                                .clip(CircleShape)
-                                .background(Color.White)
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-
-                        Column {
-                            Text(
-                                text = userName.value,
-                                color = Color.White,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 18.sp
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text(
-                                "Nome de usuário",
-                                color = Color.White,
-                                fontSize = 14.sp
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Divider(
-                        color = Color.White
-                            .copy(alpha = 0.1f), // quase transparente
-                        thickness = 1.dp
-                    )
-
-                    Spacer(
-                        modifier = Modifier.height(12.dp))
-
-                    Text(
-                        "Total de Doações:",
-                        color = Color.White)
-
-                    Spacer(modifier = Modifier.height(18.dp))
-
-                    Text(
-                        "Doações este ano:",
-                        color = Color.White)
+            ProfileHeader(userName.value)
+            Spacer(modifier = Modifier.height(24.dp))
+            UserInfoCard()
+            Spacer(modifier = Modifier.height(24.dp))
+            OptionsMenu(navController = navController)
+            Spacer(modifier = Modifier.height(24.dp))
+            LogoutButton {
+                navController.navigate("tela_inicial") {
+                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
                 }
-
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                        .background(
-                            Color.White,
-                            shape = RoundedCornerShape(
-                                topStart = 50.dp,
-                                topEnd = 50.dp
-                            )
-                        )
-                )
             }
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                Text(
-                    "Dados Pessoais",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF8B0000)
-                )
-                DadosPessoaisCard()
-            }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        navController.navigate(route = "tela_certificado")
-                    }
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Certificados",
-                    fontSize = 20.sp,
-                    color = Color(0xFF8B0000),
-                    fontWeight = FontWeight.Bold
-                )
-                Icon(
-                    imageVector = Icons.Default.KeyboardArrowRight,
-                    modifier = Modifier
-                        .size(25.dp),
-                    contentDescription = "Ir para certificados",
-                    tint = Color(0xFF8B0000)
-                )
-            }
-
-            Divider(
-                color = Color(0xFF8B0000),
-                thickness = 1.dp,
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { /* ação ao clicar em Sair */ }
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ExitToApp,
-                    contentDescription = "Sair",
-                    tint = Color(0xFF8B0000),
-                    modifier = Modifier
-                        .size(27.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "Sair",
-                    color = Color(0xFF8B0000),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp
-                )
-            }
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
-//-------------------------------------
-@Composable
-fun DadosPessoaisCard() {
-    var isEditing by remember { mutableStateOf(false) }
 
-    var nome by remember { mutableStateOf("Rafaella Toscano") }
-    var email by remember { mutableStateOf("rafaella@email.com") }
-    var cpf by remember { mutableStateOf("123.456.789-00") }
-    var cep by remember { mutableStateOf("12345-678") }
-    var dataNascimento by remember { mutableStateOf("01/01/2005") }
-    var celular by remember { mutableStateOf("(11) 91234-5678") }
+@Composable
+fun ProfileHeader(userName: String) {
+    val primaryColor = Color(0xFF990410)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(primaryColor)
+            .padding(vertical = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.logologin), // Usar um avatar do usuário aqui
+            contentDescription = "Avatar do Usuário",
+            modifier = Modifier
+                .size(100.dp)
+                .clip(CircleShape)
+                .border(4.dp, Color.White, CircleShape)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = userName,
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White
+        )
+        Text(
+            text = "Doador de Sangue", // Subtítulo ou status
+            fontSize = 16.sp,
+            color = Color.White.copy(alpha = 0.8f)
+        )
+    }
+}
+
+@Composable
+fun UserInfoCard() {
+    var nome by rememberSaveable { mutableStateOf("Rafaella Toscano") }
+    var email by rememberSaveable { mutableStateOf("rafaella@email.com") }
+    var cpf by rememberSaveable { mutableStateOf("123.456.789-00") }
+    var dataNascimento by rememberSaveable { mutableStateOf("01/01/2005") }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFDADADA))
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .padding(16.dp))
-        {
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                IconButton(onClick = { isEditing = !isEditing }) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Editar Dados Pessoais",
-                        tint = Color(0xFF8B0000),
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            EditableFieldStyled("Nome", nome, { nome = it }, isEditing)
-            EditableFieldStyled("Email", email, { email = it }, isEditing)
-            EditableFieldStyled("CPF", cpf, { cpf = it }, isEditing)
-            EditableFieldStyled("Cep", cep, { cep = it }, isEditing)
-            EditableFieldStyled("Data de Nascimento", dataNascimento, { dataNascimento = it }, isEditing)
-            EditableFieldStyled("Celular", celular, { celular = it }, isEditing)
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Minhas Informações",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.DarkGray
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            InfoRow(label = "Nome", value = nome)
+            Divider(color = Color.LightGray.copy(alpha = 0.5f), thickness = 1.dp, modifier = Modifier.padding(vertical = 8.dp))
+            InfoRow(label = "E-mail", value = email)
+            Divider(color = Color.LightGray.copy(alpha = 0.5f), thickness = 1.dp, modifier = Modifier.padding(vertical = 8.dp))
+            InfoRow(label = "CPF", value = cpf)
+            Divider(color = Color.LightGray.copy(alpha = 0.5f), thickness = 1.dp, modifier = Modifier.padding(vertical = 8.dp))
+            InfoRow(label = "Data de Nascimento", value = dataNascimento)
         }
     }
 }
-//-------------------------------------
+
 @Composable
-fun EditableFieldStyled(
-    label: String,
-    value: String,
-    onValueChange: (String) -> Unit,
-    isEditing: Boolean
-) {
-    Column(
+fun InfoRow(label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text = label, fontWeight = FontWeight.SemiBold, color = Color.Gray, fontSize = 14.sp)
+        Text(text = value, fontWeight = FontWeight.Normal, color = Color.DarkGray, fontSize = 14.sp)
+    }
+}
+
+
+@Composable
+fun OptionsMenu(navController: NavController) {
+    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        Text(
+            text = "Opções",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.DarkGray,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(4.dp)
+        ) {
+            Column {
+                OptionItem("Certificados", Icons.Default.painterResource(id = R.drawable.certificado), onClick = {
+                    navController.navigate("tela_certificado")
+                })
+                Divider(color = Color.LightGray.copy(alpha = 0.5f), thickness = 1.dp, modifier = Modifier.padding(horizontal = 16.dp))
+                // Adicione mais itens de opção aqui se necessário
+            }
+        }
+    }
+}
+
+@Composable
+fun OptionItem(title: String, icon: ImageVector, onClick: () -> Unit) {
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
+            .clickable(onClick = onClick)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        if (isEditing) {
-            OutlinedTextField(
-                value = value,
-                onValueChange = onValueChange,
-                label = { Text(label, color = Color(0xFF8B0000)) },
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(45.dp)
-            )
-        } else {
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(45.dp)
-                    .background(Color(0xFFE0E0E0),
-                        RoundedCornerShape(4.dp))
-                    .padding(horizontal = 8.dp),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                Text(
-                    text = "$label: $value",
-                    color = Color.Black,
-                    fontSize = 14.sp)
-            }
-        }
+        Icon(imageVector = icon, contentDescription = title, tint = Color(0xFF990410))
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(text = title, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = Color.DarkGray)
+        Spacer(modifier = Modifier.weight(1f))
+        Icon(imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Color.Gray)
     }
 }
-//-------------------------------------
-@Preview(showBackground = true)
+
 @Composable
-fun PreviewDadosPessoaisCard() {
-    DadosPessoaisCard()
+fun LogoutButton(onClick: () -> Unit) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .height(52.dp),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(2.dp, Color(0xFF990410).copy(alpha = 0.7f)),
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF990410))
+    ) {
+        Icon(imageVector = Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Sair")
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = "Sair", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+    }
 }
-//-------------------------------------
-@Preview
+
+
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun TelaPerfilPreview() {
     val navController = rememberNavController()

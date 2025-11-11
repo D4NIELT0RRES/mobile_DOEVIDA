@@ -1,20 +1,25 @@
 package com.example.doevida.screen
 
-import android.net.Uri
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -28,277 +33,175 @@ import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
 import com.example.doevida.model.HospitaisCards
 import com.example.doevida.service.RetrofitFactory
+import com.example.doevida.util.abrirNoMaps
+import com.example.doevida.util.ligarPara
 import kotlinx.coroutines.launch
 
-// >>> IMPORTA AS FUNÇÕES DE UTIL
-import com.example.doevida.util.abrirNoMaps
-import com.example.doevida.util.abrirNoMapsPorCEP
-import com.example.doevida.util.ligarPara
-
 @Composable
-fun TelaDetalheHospital(
-    navController: NavController,
-    hospitalId: Int
-) {
+fun TelaDetalheHospital(navController: NavController, hospitalId: Int) {
     var hospital by remember { mutableStateOf<HospitaisCards?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    LaunchedEffect(hospitalId) {
+    fun fetchHospitalDetails() {
+        isLoading = true
+        errorMessage = null
         scope.launch {
             try {
                 val response = RetrofitFactory(context).getHospitalService().getHospitalById(hospitalId)
                 if (response.isSuccessful) {
-                    response.body()?.let { hospitalResponse ->
-                        hospital = hospitalResponse.hospital
-                    }
+                    hospital = response.body()?.hospital
                 } else {
-                    errorMessage = "Erro ao carregar hospital: ${response.code()}"
+                    errorMessage = "Erro ao carregar detalhes: ${response.code()}"
                 }
             } catch (e: Exception) {
-                errorMessage = "Erro de conexão: ${e.message}"
+                errorMessage = "Erro de conexão. Verifique sua internet."
             } finally {
                 isLoading = false
             }
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
+    LaunchedEffect(hospitalId) {
+        fetchHospitalDetails()
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize().background(Color(0xFFF7F7F7))
     ) {
-        // Header
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFF990410))
-                .padding(vertical = 16.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                IconButton(
-                    onClick = { navController.navigate("tela_hospitais") },
-                    modifier = Modifier
-                        .padding(top = 16.dp, start = 16.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.voltar),
-                        contentDescription = "Voltar",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-
-                Text(
-                    text = "Hospital",
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f),
-                    textAlign = TextAlign.Center
-                )
-
-                Box(modifier = Modifier.size(48.dp))
-            }
-        }
-
         when {
             isLoading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = Color(0xFF990410))
-                }
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = Color(0xFF990410))
             }
             errorMessage != null -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = errorMessage!!,
-                            color = Color.Red,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(16.dp)
-                        )
-                        Button(
-                            onClick = {
-                                isLoading = true
-                                errorMessage = null
-                                scope.launch {
-                                    try {
-                                        val response = RetrofitFactory(context).getHospitalService().getHospitalById(hospitalId)
-                                        if (response.isSuccessful) {
-                                            response.body()?.let { hospitalResponse ->
-                                                hospital = hospitalResponse.hospital
-                                            }
-                                        } else {
-                                            errorMessage = "Erro ao carregar hospital: ${response.code()}"
-                                        }
-                                    } catch (e: Exception) {
-                                        errorMessage = "Erro de conexão: ${e.message}"
-                                    } finally {
-                                        isLoading = false
-                                    }
+                ErrorState(message = errorMessage!!, onRetry = { fetchHospitalDetails() })
+            }
+            hospital != null -> {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    item { HospitalDetailHeader(hospital = hospital!!) }
+                    item { ActionButtons(hospital = hospital!!, context = LocalContext.current) }
+                    item { Spacer(modifier = Modifier.height(16.dp)) }
+                    
+                    val horarioAbertura = formatarHorario(hospital!!.horario_abertura)
+                    val horarioFechamento = formatarHorario(hospital!!.horario_fechamento)
+
+                    if (horarioAbertura.isNotBlank() && horarioFechamento.isNotBlank()) {
+                        item {
+                            InfoCard(
+                                icon = Icons.Default.Schedule,
+                                title = "Horário de Funcionamento",
+                                content = {
+                                    Text("$horarioAbertura - $horarioFechamento", fontSize = 14.sp)
+                                    Text("Segunda a Sexta", fontSize = 14.sp, color = Color.Gray)
                                 }
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF990410))
-                        ) { Text("Tentar Novamente") }
+                            )
+                        }
+                    }
+
+                    item {
+                        InfoCard(
+                            icon = Icons.Default.Info,
+                            title = "Informações Adicionais",
+                            content = {
+                                hospital!!.convenios?.let { Text("• Convênios: $it", fontSize = 14.sp) }
+                                hospital!!.capacidade_maxima?.let { Text("• Capacidade: $it pessoas", fontSize = 14.sp) }
+                                Text("• Estacionamento disponível", fontSize = 14.sp)
+                            }
+                        )
                     }
                 }
             }
-            hospital != null -> {
-                val hospitalData = hospital!!
+        }
+        FloatingBackButton(onClick = { navController.popBackStack() })
+    }
+}
 
-                Image(
-                    painter = painterResource(id = R.drawable.hospital),
-                    contentDescription = "Hospital",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(270.dp),
-                    contentScale = ContentScale.Crop
-                )
+@Composable
+private fun HospitalDetailHeader(hospital: HospitaisCards) {
+    Box(modifier = Modifier.fillMaxWidth().height(280.dp)) {
+        Image(
+            painter = painterResource(id = R.drawable.hospital),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+        Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.8f)), startY = 300f)))
+        Column(
+            modifier = Modifier.align(Alignment.BottomStart).padding(16.dp)
+        ) {
+            Text(text = hospital.nomeHospital, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 26.sp, lineHeight = 30.sp)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = hospital.endereco, color = Color.White.copy(alpha = 0.9f), fontSize = 16.sp)
+        }
+    }
+}
 
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp)
-                ) {
-                    item {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 16.dp, bottom = 32.dp)
-                        ) {
-                            Spacer(modifier = Modifier.height(15.dp))
+@Composable
+private fun ActionButtons(hospital: HospitaisCards, context: android.content.Context) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Button(
+            onClick = { abrirNoMaps(context, hospital) },
+            modifier = Modifier.weight(1f).height(50.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF990410))
+        ) {
+            Icon(Icons.Default.LocationOn, contentDescription = null, modifier = Modifier.size(20.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Rota", fontWeight = FontWeight.Bold)
+        }
+        OutlinedButton(
+            onClick = { ligarPara(context, hospital.telefone) },
+            modifier = Modifier.weight(1f).height(50.dp),
+            shape = RoundedCornerShape(12.dp),
+            border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.5f))
+        ) {
+            Icon(Icons.Default.Call, contentDescription = null, modifier = Modifier.size(20.dp), tint = Color(0xFF990410))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Ligar", fontWeight = FontWeight.Bold, color = Color.DarkGray)
+        }
+    }
+}
 
-                            Text(
-                                text = hospitalData.nomeHospital,
-                                fontSize = 25.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Spacer(modifier = Modifier.height(5.dp))
-
-                            Text(
-                                text = hospitalData.endereco,
-                                color = Color.Gray,
-                                fontSize = 16.sp
-                            )
-
-                            Text(
-                                text = hospitalData.telefone,
-                                color = Color.Gray,
-                                fontSize = 16.sp,
-                                modifier = Modifier.padding(bottom = 16.dp)
-                            )
-
-                            Spacer(modifier = Modifier.height(15.dp))
-
-                            OutlinedButton(
-                                onClick = { abrirNoMaps(context, hospitalData) },
-                                modifier = Modifier.fillMaxWidth().height(56.dp).padding(vertical = 4.dp),
-                                shape = RoundedCornerShape(10.dp),
-                                colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White)
-                            ) {
-                                Text(text = "Abrir no Google Maps", color = Color.Black)
-                            }
-
-                            Spacer(modifier = Modifier.height(10.dp))
-
-                            OutlinedButton(
-                                onClick = { ligarPara(context, hospitalData.telefone) },
-                                modifier = Modifier.fillMaxWidth().height(56.dp).padding(vertical = 4.dp),
-                                shape = RoundedCornerShape(10.dp),
-                                colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White)
-                            ) {
-                                Text(text = "Ligar Agora", color = Color.Black)
-                            }
-
-                            Spacer(modifier = Modifier.height(15.dp))
-
-                            if (hospitalData.horario_abertura != null && hospitalData.horario_fechamento != null) {
-                                // >>> FORMATA OS HORÁRIOS ANTES DE EXIBIR
-                                val horarioAbertura = formatarHorario(hospitalData.horario_abertura)
-                                val horarioFechamento = formatarHorario(hospitalData.horario_fechamento)
-
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(top = 24.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Schedule,
-                                        contentDescription = null,
-                                        tint = Color.Black
-                                    )
-                                    Column(modifier = Modifier.padding(start = 8.dp)) {
-                                        Text(
-                                            text = "Horário de funcionamento",
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 16.sp
-                                        )
-                                        // >>> USA AS VARIÁVEIS FORMATADAS
-                                        Text(
-                                            text = "$horarioAbertura - $horarioFechamento\nSegunda a sexta",
-                                            fontSize = 14.sp
-                                        )
-                                    }
-                                }
-                                Spacer(modifier = Modifier.height(15.dp))
-                            }
-
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Info,
-                                    contentDescription = null,
-                                    tint = Color.Black
-                                )
-                                Column(modifier = Modifier.padding(start = 8.dp)) {
-                                    Text(
-                                        text = "Informações adicionais",
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 16.sp
-                                    )
-                                    hospitalData.convenios?.let { convenios ->
-                                        Text(text = "• Convênios: $convenios", fontSize = 14.sp)
-                                    }
-                                    hospitalData.capacidade_maxima?.let { capacidade ->
-                                        Text(text = "• Capacidade máxima: $capacidade pessoas", fontSize = 14.sp)
-                                    }
-                                    Text(text = "• Estacionamento disponível", fontSize = 14.sp)
-                                }
-                            }
-                        }
-                    }
-                }
+@Composable
+fun InfoCard(icon: ImageVector, title: String, content: @Composable ColumnScope.() -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(2.dp)
+    ) {
+        Row(modifier = Modifier.padding(16.dp)) {
+            Icon(imageVector = icon, contentDescription = null, tint = Color(0xFF990410), modifier = Modifier.padding(top = 4.dp))
+            Spacer(modifier = Modifier.width(16.dp))
+            Column {
+                Text(text = title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.DarkGray)
+                Spacer(modifier = Modifier.height(4.dp))
+                content()
             }
         }
     }
 }
 
-// Função auxiliar para formatar o horário
-private fun formatarHorario(horarioISO: String?): String {
-    if (horarioISO.isNullOrBlank() || !horarioISO.contains("T")) {
-        return "" // Retorna vazio se o formato for inválido
+@Composable
+private fun FloatingBackButton(onClick: () -> Unit) {
+    IconButton(
+        onClick = onClick,
+        modifier = Modifier.padding(16.dp).background(Color.Black.copy(alpha = 0.4f), CircleShape).size(40.dp)
+    ) {
+        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar", tint = Color.White)
     }
+}
+
+private fun formatarHorario(horarioISO: String?): String {
+    if (horarioISO.isNullOrBlank() || !horarioISO.contains("T")) return ""
     return try {
-        // Pega a string após o 'T' e extrai as 5 primeiras posições (HH:mm)
         horarioISO.substringAfter('T').take(5)
     } catch (e: Exception) {
-        // Em caso de qualquer erro na manipulação da string, retorna vazio
         ""
     }
 }
@@ -306,8 +209,5 @@ private fun formatarHorario(horarioISO: String?): String {
 @Preview(showSystemUi = true)
 @Composable
 private fun TelaDetalheHospitalPreview() {
-    TelaDetalheHospital(
-        navController = rememberNavController(),
-        hospitalId = 1
-    )
+    TelaDetalheHospital(navController = rememberNavController(), hospitalId = 1)
 }

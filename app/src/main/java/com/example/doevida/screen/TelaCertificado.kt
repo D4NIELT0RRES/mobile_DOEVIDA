@@ -1,218 +1,150 @@
 package com.example.doevida.screen
 
-import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.ExitToApp
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Newspaper
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.doevida.R
 import com.example.doevida.components.MenuInferior
-import com.example.doevida.model.HospitaisCards
-import com.example.doevida.service.SharedPreferencesUtils
 
+data class DonationCertificate(
+    val id: Int,
+    val hospitalName: String,
+    val donationDate: String
+)
+
+val userCertificates = listOf(
+    DonationCertificate(1, "Hospital das Clínicas", "15 de Janeiro, 2024"),
+    DonationCertificate(2, "Hospital Santa Casa", "28 de Outubro, 2023"),
+    DonationCertificate(3, "Hemocentro de São Paulo", "14 de Junho, 2023")
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TelaCertificado(navController: NavController) {
-    val userName = remember { mutableStateOf("") }
-
-    val context = LocalContext.current
-
-    // Usando LaunchedEffect para carregar os dados assim que a TelaHome for composta
-    LaunchedEffect(Unit) {
-        userName.value = SharedPreferencesUtils.getUserName(context)
-        Log.d("TelaHome", "Nome de usuário carregado: ${userName.value}")
-    }
-
     Scaffold(
-        bottomBar = {
-            MenuInferior(navController)
-        }
-    ) { paddingValues ->
+        topBar = { TopBarCertificado(navController) },
+        bottomBar = { MenuInferior(navController) },
+        containerColor = Color(0xFFF7F7F7)
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White)
-                .padding(paddingValues)
+                .padding(it)
         ) {
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFF8B0000))
-                    .padding(bottom = 10.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
+            if (userCertificates.isEmpty()) {
+                EmptyStateCertificado()
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(60.dp)
-                                .clip(CircleShape)
-                                .background(Color.White)
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-
-                        Column {
-                            Text(
-                                text = userName.value,
-                                color = Color.White,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 18.sp
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text(
-                                "Nome de usuário",
-                                color = Color.White,
-                                fontSize = 14.sp
-                            )
-                        }
+                    items(userCertificates) { certificate ->
+                        CertificateCard(certificate = certificate, onExibirClick = {
+                            // Ação para exibir o certificado em detalhes
+                        })
                     }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Divider(
-                        color = Color.White
-                            .copy(alpha = 0.1f), // quase transparente
-                        thickness = 1.dp
-                    )
-
-
-                    Spacer(
-                        modifier = Modifier.height(12.dp)
-                    )
-
-                    Text(
-                        "Total de Doações:",
-                        color = Color.White
-                    )
-
-                    Spacer(modifier = Modifier.height(18.dp))
-
-                    Text(
-                        "Doações este ano:",
-                        color = Color.White
-                    )
                 }
-
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                        .background(
-                            Color.White,
-                            shape = RoundedCornerShape(
-                                topStart = 50.dp,
-                                topEnd = 50.dp
-                            )
-                        )
-                )
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CardsCertificado(
-    nome: String = "Nome da Competência:",
-    organizacao: String = "Organização emissora:",
-    data: String = "Data de emissão:",
-    onExibirClick: () -> Unit = {}
-) {
+fun TopBarCertificado(navController: NavController) {
+    TopAppBar(
+        title = { Text("Meus Certificados", fontWeight = FontWeight.Bold) },
+        navigationIcon = {
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White, titleContentColor = Color(0xFF990410))
+    )
+}
 
-    val corTexto = Color(0xFF8B0000)
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(120.dp)
-            .padding(horizontal = 12.dp,
-                vertical = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xC6FFFFFF)),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+@Composable
+fun EmptyStateCertificado() {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Text(
-                    text = nome,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = corTexto
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(
-                    text = organizacao,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = corTexto
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(
-                    text = data,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = corTexto
-                )
-            }
+        Image(
+            painter = painterResource(id = R.drawable.doarsangue), // Ícone/imagem para estado vazio
+            contentDescription = "Nenhum Certificado",
+            modifier = Modifier.size(150.dp)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "Nenhum Certificado",
+            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+            color = Color.DarkGray
+        )
+        Text(
+            text = "Seus certificados de doação aparecerão aqui.",
+            fontSize = 14.sp,
+            color = Color.Gray,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 4.dp)
+        )
+    }
+}
 
-            Button(
-                onClick = { onExibirClick() },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(12.dp)
-                    .height(36.dp)
-                    .width(90.dp),
-                shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8B0000))
-            ) {
-                Text(
-                    text = "Exibir",
-                    color = Color.White,
-                    fontSize = 14.sp
-                )
+@Composable
+fun CertificateCard(certificate: DonationCertificate, onExibirClick: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(2.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.WorkspacePremium,
+                contentDescription = "Certificado",
+                tint = Color(0xFF990410),
+                modifier = Modifier.size(40.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(certificate.hospitalName, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.DarkGray)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text("Doação em: ${certificate.donationDate}", fontSize = 14.sp, color = Color.Gray)
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            TextButton(onClick = onExibirClick) {
+                Text("Ver", fontWeight = FontWeight.Bold, color = Color(0xFF990410))
             }
         }
     }
 }
 
-@Preview
-@Composable
-fun CardsCertificadoPreview() {
-    CardsCertificado()
-}
-
-@Preview
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun TelaCertificadoPreview() {
-    val navController = rememberNavController()
-    TelaCertificado(navController = navController)
+    TelaCertificado(navController = rememberNavController())
 }
-

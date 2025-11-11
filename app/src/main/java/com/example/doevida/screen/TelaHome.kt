@@ -1,59 +1,43 @@
 package com.example.doevida.screen
 
-
 import android.util.Log
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.material.icons.filled.Newspaper
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.doevida.service.SharedPreferencesUtils
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextOverflow
 import com.example.doevida.components.MenuInferior
-
+import com.example.doevida.service.SharedPreferencesUtils
 
 @Composable
 fun TelaHome(navController: NavController) {
     val userName = remember { mutableStateOf("") }
-    val userEmail = remember { mutableStateOf("") }
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         userName.value = SharedPreferencesUtils.getUserName(context)
-        userEmail.value = SharedPreferencesUtils.getUserEmail(context)
         Log.d("TelaHome", "Nome: ${userName.value}")
-        Log.d("TelaHome", "Email: ${userEmail.value}")
     }
 
     Scaffold(
@@ -62,216 +46,169 @@ fun TelaHome(navController: NavController) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White)
                 .padding(paddingValues)
+                .background(Color(0xFFF7F7F7)) // Fundo levemente cinza
+                .verticalScroll(rememberScrollState())
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.White)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color(0xFF990410))
-                        .padding(16.dp)
-                ) {
-                    Column {
-                        ListItem(
-                            leadingContent = {
-                                Box(
-                                    Modifier
-                                        .size(55.dp)
-                                        .clip(CircleShape)
-                                        .background(Color.White)
-                                )
-                            },
-                            headlineContent = {
-                                Text(
-                                    text = userName.value,
-                                    color = Color.White,
-                                    fontSize = 16.sp,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            },
-                            supportingContent = {
-                                Text(
-                                    text = userEmail.value,
-                                    color = Color.White.copy(alpha = 0.85f),
-                                    fontSize = 12.sp,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                        )
-                        Spacer(modifier = Modifier.height(20.dp))
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 16.dp),
-                                contentAlignment = Alignment.Center
-                            ){
-                                Row (
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                ){
-                                    Box(
-                                        modifier = Modifier
-                                            .size(70.dp)
-                                            .border(
-                                                width = 3.dp,
-                                                color = Color.White,
-                                                shape = CircleShape
-                                            )
-                                            .clip(CircleShape),
-                                        contentAlignment = Alignment.Center
-                                    ){
-                                        Text(
-                                            text = "13",
-                                            color = Color.White,
-                                            fontSize = 36.sp,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    }
-                                    Text(
-                                        text = "Dias restantes para\na próxima doação",
-                                        color = Color.White,
-                                        fontSize = 16.sp
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(50.dp))
-
-                //barra de pesquisa
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = {},
-                    placeholder = { Text("Find Seekers") },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "Search",
-                            tint = Color(0xFF990410)
-                        )
-                    },
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                )
-
-
-                Spacer(modifier = Modifier.height(50.dp))
-
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        CardButton(
-                            "Doar Sangue",
-                            R.drawable.doarsangue,
-                            navController,
-                            "tela_agendamento"
-                        )
-                        CardButton(
-                            "Hospitais",
-                            R.drawable.hospitais,
-                            navController,
-                            "tela_hospitais"
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        CardButton(
-                            "Banco de Sangue",
-                            R.drawable.bancodesangue,
-                            navController,
-                            "tela_banco_sangue"
-                        )
-                        CardButton(
-                            "Histórico",
-                            R.drawable.historicos,
-                            navController,
-                            "tela_historico"
-                        )
-                    }
-
-                    CardButton(
-                        "Registrar Doação",
-                        R.drawable.doarsangue,
-                        navController,
-                        "tela_registrar_doacao"
-                    )
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                HorizontalDivider(
-                    modifier = Modifier
-                        .padding(
-                            top = 10.dp,
-                            start = 6.dp,
-                            end = 6.dp
-                        ),
-                    color = Color(0xFFD9D9D9)
-                )
+            HomeHeader(userName = userName.value) {
+                navController.navigate("tela_perfil")
             }
+            Spacer(modifier = Modifier.height(16.dp))
+            DonationCountdownCard()
+            Spacer(modifier = Modifier.height(24.dp))
+            ActionsGrid(navController = navController)
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
-//-------------------------------------
+
 @Composable
-fun CardButton(text: String, imageRes: Int, navController: NavController, rota: String) {
+fun HomeHeader(userName: String, onProfileClick: () -> Unit) {
+    val primaryColor = Color(0xFF990410)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, top = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column {
+            Text(text = "Olá,", fontSize = 18.sp, color = Color.Gray)
+            Text(
+                text = userName,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = primaryColor,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+        Image(
+            painter = painterResource(id = R.drawable.logologin), // Usar um avatar do usuário aqui
+            contentDescription = "Perfil",
+            modifier = Modifier
+                .size(55.dp)
+                .clip(CircleShape)
+                .border(2.dp, primaryColor, CircleShape)
+                .clickable(onClick = onProfileClick)
+        )
+    }
+}
+
+@Composable
+fun DonationCountdownCard() {
+    val primaryColor = Color(0xFF990410)
     Card(
         modifier = Modifier
-            .size(width = 150.dp, height = 90.dp)
-            .clickable { navController.navigate(rota) }, //navegação
-        shape = RoundedCornerShape(12.dp),
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = primaryColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 24.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "13", // TODO: Substituir por valor dinâmico
+                color = Color.White,
+                fontSize = 48.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = "dias para a\npróxima doação",
+                color = Color.White.copy(alpha = 0.9f),
+                fontSize = 18.sp,
+                lineHeight = 22.sp
+            )
+        }
+    }
+}
+
+@Composable
+fun ActionsGrid(navController: NavController) {
+    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        Text(
+            text = "Ações Rápidas",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.DarkGray,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            ActionCard("Agendar Doação", R.drawable.doarsangue, "tela_agendamento", navController)
+            ActionCard("Hospitais", R.drawable.hospitais, "tela_hospitais", navController)
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            ActionCard("Banco de Sangue", R.drawable.bancodesangue, "tela_banco_sangue", navController)
+            ActionCard("Histórico", R.drawable.historicos, "tela_historico", navController)
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            ActionCard("Registrar Doação", R.drawable.doarsangue, "tela_registrar_doacao", navController)
+        }
+    }
+}
+
+@Composable
+fun ActionCard(text: String, iconRes: Int, route: String, navController: NavController) {
+    val primaryColor = Color(0xFF990410)
+    val iconBackgroundColor = primaryColor.copy(alpha = 0.1f)
+
+    Card(
+        modifier = Modifier.size(width = 150.dp, height = 120.dp),
+        onClick = { navController.navigate(route) },
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = BorderStroke(1.dp, Color.LightGray)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = painterResource(id = imageRes),
-                contentDescription = text,
-                modifier = Modifier.size(50.dp)
-            )
-
+            Box(
+                modifier = Modifier
+                    .size(50.dp)
+                    .clip(CircleShape)
+                    .background(iconBackgroundColor),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(id = iconRes),
+                    contentDescription = text,
+                    modifier = Modifier.size(28.dp),
+                    tint = primaryColor
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = text,
-                color = Color(0xFFB71C1C),
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
+                color = Color.DarkGray,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center,
+                fontSize = 14.sp
             )
         }
     }
 }
-//-------------------------------------
-@Preview(showBackground = true)
+
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun TelaHomePreview() {
     val navController = rememberNavController()

@@ -3,172 +3,145 @@ package com.example.doevida.screen
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TelaLearnMore() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
+fun TelaLearnMore(navController: NavController) {
+    Scaffold(
+        topBar = { TopBarLearnMore(navController) },
+        containerColor = Color(0xFFF7F7F7)
     ) {
-        // Bolinhas decorativas
-        Box(
-            modifier = Modifier
-                .size(120.dp)
-                .clip(CircleShape)
-                .background(Color(0xFFFFCDD2))
-                .align(Alignment.TopStart)
-                .offset((-40).dp, 60.dp)
-        )
-        Box(
-            modifier = Modifier
-                .size(160.dp)
-                .clip(CircleShape)
-                .background(Color(0xFFFFCDD2))
-                .align(Alignment.TopEnd)
-                .offset(40.dp, 180.dp)
-        )
-        Box(
-            modifier = Modifier
-                .size(100.dp)
-                .clip(CircleShape)
-                .background(Color(0xFFFFCDD2))
-                .align(Alignment.BottomStart)
-                .offset((-30).dp, 20.dp)
-        )
-        Box(
-            modifier = Modifier
-                .size(140.dp)
-                .clip(CircleShape)
-                .background(Color(0xFFFFCDD2))
-                .align(Alignment.BottomEnd)
-                .offset(30.dp, 60.dp)
-        )
-
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(it)
+                .verticalScroll(rememberScrollState())
         ) {
-            // Top vermelho com logo centralizado
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        color = Color(0xFF990410),
-                        shape = RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp)
-                    )
-                    .padding(vertical = 24.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.logolermais),
-                        contentDescription = "Logo",
-                        modifier = Modifier.size(60.dp),
-                        contentScale = ContentScale.Fit
-                    )
-
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "DOEVIDA",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Título "Learn More"
-            Text(
-                text = "Ler mais",
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF990410),
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Imagem central
-            Image(
-                painter = painterResource(id = R.drawable.image), // sua ilustração
-                contentDescription = "Ilustração Doação",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .padding(horizontal = 32.dp),
-                contentScale = ContentScale.Fit
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Texto explicativo com negrito
-            Text(
-                text = buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                        append("O projeto DOEVIDA nasceu da vontade de transformar solidariedade em impacto real. ")
-                    }
-                    append("Percebemos que muitas pessoas têm o desejo de doar sangue, mas nem sempre sabem como, quando ou onde. Foi assim que criamos essa iniciativa para aproximar doadores e hemocentros, tornando o processo mais acessível, humano e eficiente.\n\n")
-                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                        append("Mais do que uma plataforma, somos uma ponte entre quem quer ajudar e quem precisa. ")
-                    }
-                    append("Acreditamos que cada gota conta, e que juntos podemos salvar milhares de vidas.")
-                },
-                fontSize = 16.sp,
-                color = Color.Black,
-                textAlign = TextAlign.Center,
-                lineHeight = 22.sp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Frase final em vermelho
-            Text(
-                text = "\"Uma atitude salva até quatro vidas, seja você essa atitude.\"",
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF990410),
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
+            HeaderImage()
+            Spacer(modifier = Modifier.height(16.dp))
+            Content(navController)
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TopBarLearnMore(navController: NavController) {
+    TopAppBar(
+        title = { Text("Sobre o DOEVIDA", fontWeight = FontWeight.Bold) },
+        navigationIcon = {
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White, titleContentColor = Color(0xFF990410))
+    )
+}
+
+@Composable
+fun HeaderImage() {
+    Image(
+        painter = painterResource(id = R.drawable.image), // Sua ilustração
+        contentDescription = "Ilustração Doação de Sangue",
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)),
+        contentScale = ContentScale.Crop
+    )
+}
+
+@Composable
+fun Content(navController: NavController) {
+    Column(modifier = Modifier.padding(16.dp)) {
+        InfoSection(
+            icon = Icons.Default.Flag,
+            title = "Nossa Missão",
+            text = "O projeto DOEVIDA nasceu para transformar solidariedade em impacto real. Aproximamos doadores e hemocentros, tornando o processo de doação de sangue mais acessível, humano e eficiente."
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        InfoSection(
+            icon = Icons.Default.Favorite,
+            title = "Por Que Doar?",
+            text = "Mais do que uma plataforma, somos uma ponte entre quem quer ajudar e quem precisa. Acreditamos que cada gota conta, e que juntos podemos salvar milhares de vidas. Uma atitude sua pode salvar até quatro pessoas."
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        QuoteSection()
+        Spacer(modifier = Modifier.height(24.dp))
+        ActionButton(navController)
+    }
+}
+
+@Composable
+fun InfoSection(icon: ImageVector, title: String, text: String) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(2.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(imageVector = icon, contentDescription = null, tint = Color(0xFF990410))
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(title, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.DarkGray)
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text, fontSize = 14.sp, color = Color.Gray, lineHeight = 20.sp)
+        }
+    }
+}
+
+@Composable
+fun QuoteSection() {
+    Text(
+        text = "\"Uma atitude salva até quatro vidas, seja você essa atitude.\"",
+        fontSize = 16.sp,
+        fontWeight = FontWeight.SemiBold,
+        color = Color(0xFF990410),
+        textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+    )
+}
+
+@Composable
+fun ActionButton(navController: NavController) {
+    Button(
+        onClick = { navController.navigate("tela_cadastro") },
+        modifier = Modifier.fillMaxWidth().height(52.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF990410)),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Text("Quero Fazer Parte!", fontWeight = FontWeight.Bold, fontSize = 16.sp)
     }
 }
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun TelaLearnMorePreview() {
-    TelaLearnMore()
+    TelaLearnMore(rememberNavController())
 }

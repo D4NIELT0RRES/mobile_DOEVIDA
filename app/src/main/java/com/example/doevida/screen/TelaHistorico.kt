@@ -1,12 +1,13 @@
 package com.example.doevida.screen
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -16,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,12 +29,15 @@ import com.example.doevida.service.RetrofitFactory
 import com.example.doevida.util.UserDataManager
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.* 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TelaHistorico(navController: NavController) {
     val context = LocalContext.current
     var historico by remember { mutableStateOf<List<AgendamentoItem>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
+    var searchQuery by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         val userId = UserDataManager.getUserId(context)
@@ -43,6 +48,7 @@ fun TelaHistorico(navController: NavController) {
                     historico = response.body()?.agendamentos ?: emptyList()
                 }
             } catch (e: Exception) {
+                // Tratar erro de conexão
             } finally {
                 isLoading = false
             }
@@ -51,185 +57,171 @@ fun TelaHistorico(navController: NavController) {
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = Color(0xFF990410))
-    ) {
-        TopBar(navController)
+    val filteredHistorico = if (searchQuery.isEmpty()) {
+        historico
+    } else {
+        historico.filter {
+            it.nomeHospital?.contains(searchQuery, ignoreCase = true) == true ||
+            it.status.contains(searchQuery, ignoreCase = true)
+        }
+    }
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White, RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-                .padding(16.dp)
-        ) {
-            if (isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            } else if (historico.isEmpty()) {
-                Text(
-                    text = "Nenhum agendamento encontrado.",
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            } else {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(historico) { agendamento ->
-                        DoacaoCard(agendamento)
+    Scaffold(
+        topBar = { TopBarHistorico(navController) },
+        content = {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(it)
+                    .background(Color(0xFFF7F7F7))
+            ) {
+                SearchBar(searchQuery) { newQuery -> searchQuery = newQuery }
+
+                if (isLoading) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = Color(0xFF990410))
+                    }
+                } else if (filteredHistorico.isEmpty()) {
+                    EmptyState()
+                } else {
+                    LazyColumn(
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(filteredHistorico) { agendamento ->
+                            DoacaoCard(agendamento)
+                        }
                     }
                 }
             }
         }
-    }
+    )
 }
 
-//-------------------------------------
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(navController: NavController) {
-    Column(
+fun TopBarHistorico(navController: NavController) {
+    TopAppBar(
+        title = { Text("Meu Histórico", fontWeight = FontWeight.Bold, fontSize = 22.sp) },
+        navigationIcon = {
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color.White,
+            titleContentColor = Color(0xFF990410)
+        )
+    )
+}
+
+@Composable
+fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
+    OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        placeholder = { Text("Pesquisar por hospital ou status...") },
+        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Pesquisar") },
+        shape = RoundedCornerShape(12.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(16.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = Color(0xFF990410),
+            unfocusedBorderColor = Color.LightGray,
+            cursorColor = Color(0xFF990410),
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White
+        )
+    )
+}
+
+@Composable
+fun EmptyState() {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            IconButton(
-                onClick = { navController.navigate("tela_home") },
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(top = 16.dp, start = 16.dp)
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.voltar),
-                    contentDescription = "Voltar",
-                    tint = Color.White,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-
-            Text(
-                text = "Histórico de Doação",
-                color = Color.White,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.align(Alignment.Center)
-            )
-        }
-
-        OutlinedTextField(
-            value = "",
-            onValueChange = { },
-            placeholder = { Text("Find Seekers", color = Color.Gray) },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Search",
-                    tint = Color.Gray
-                )
-            },
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp)
-                .height(52.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.White,
-                unfocusedBorderColor = Color.White,
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                cursorColor = Color(0xFFB72C2C)
-            )
+        Image(
+            painter = painterResource(id = R.drawable.historico_vazio),
+            contentDescription = "Histórico Vazio",
+            modifier = Modifier.size(150.dp)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "Nenhuma doação encontrada",
+            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+            color = Color.DarkGray
+        )
+        Text(
+            text = "Seu histórico de doações aparecerá aqui.",
+            fontSize = 14.sp,
+            color = Color.Gray,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 4.dp)
         )
     }
 }
 
-//-------------------------------------
 @Composable
 fun DoacaoCard(agendamento: AgendamentoItem) {
     val dataFormatada = remember(agendamento.dataAgendamento) {
         try {
-            LocalDate.parse(agendamento.dataAgendamento.substringBefore("T")).format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+            LocalDate.parse(agendamento.dataAgendamento.substringBefore("T")).format(DateTimeFormatter.ofPattern("dd MMM yyyy", Locale("pt", "BR")))
         } catch (e: Exception) {
             agendamento.dataAgendamento
-        }
-    }
-    val horaFormatada = remember(agendamento.horarioAgendamento) {
-        try {
-            // Extrai a parte da hora (HH:mm) de uma string de tempo, que pode ser "HH:mm:ss" ou "YYYY-MM-DDTHH:mm:ss"
-            val timePart = agendamento.horarioAgendamento.substringAfterLast('T') // Pega o que vem depois do 'T', ou a string inteira se não houver 'T'
-            timePart.substring(0, 5) // Pega os 5 primeiros caracteres (HH:mm)
-        } catch (e: Exception) {
-            agendamento.horarioAgendamento // Em caso de erro, mostra a string original
         }
     }
 
     Card(
         shape = RoundedCornerShape(12.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(
-                width = 1.dp,
-                color = Color(0xFFBDBDBD),
-                shape = RoundedCornerShape(12.dp)
-            ),
+        modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = "Doação ${agendamento.id}",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
-                )
-
-                val corStatus = when (agendamento.status) {
-                    "CONCLUIDO" -> Color(0xFF549073)
-                    "AGENDADO" -> Color(0xFFB72C2C)
-                    else -> Color.Gray
-                }
-                val textoStatus = when (agendamento.status) {
-                    "CONCLUIDO" -> "Concluído"
-                    "AGENDADO" -> "Em espera"
-                    else -> agendamento.status
-                }
-
-
-                Box(
-                    modifier = Modifier
-                        .background(corStatus, RoundedCornerShape(50))
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = textoStatus,
-                        color = Color.White,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
+        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                painter = painterResource(R.drawable.doarsangue),
+                contentDescription = "Doação",
+                tint = Color(0xFF990410),
+                modifier = Modifier.size(40.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = agendamento.nomeHospital ?: "Local não informado", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(text = "Agendado para: $dataFormatada", fontSize = 14.sp, color = Color.Gray)
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(text = "Local: ${agendamento.nomeHospital ?: "Não informado"}", fontWeight = FontWeight.SemiBold)
-            Text(text = "Dia: $dataFormatada")
-            Text(text = "Horário: $horaFormatada")
+            StatusTag(status = agendamento.status)
         }
     }
 }
 
-//-------------------------------------
-@Preview
+@Composable
+fun StatusTag(status: String) {
+    val (cor, texto) = when (status.uppercase()) {
+        "CONCLUIDO" -> Pair(Color(0xFF4CAF50), "Concluído")
+        "AGENDADO" -> Pair(Color(0xFFFF9800), "Agendado")
+        else -> Pair(Color.Gray, status.replaceFirstChar { it.uppercase() })
+    }
+
+    Box(
+        modifier = Modifier
+            .background(cor.copy(alpha = 0.15f), RoundedCornerShape(50))
+            .padding(horizontal = 10.dp, vertical = 4.dp)
+    ) {
+        Text(
+            text = texto,
+            color = cor,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+    }
+}
+
+@Preview(showBackground = true)
 @Composable
 private fun TelaHistoricoPreview() {
     val navController = rememberNavController()

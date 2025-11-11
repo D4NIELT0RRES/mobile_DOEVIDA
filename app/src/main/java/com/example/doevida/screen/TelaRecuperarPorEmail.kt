@@ -1,41 +1,25 @@
 package com.example.doevida.screen
 
+import android.util.Patterns
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -49,156 +33,112 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TelaRecuperacaoEmail(navController: NavController) {
-    var email by remember { mutableStateOf("") }
-    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
+    var email by rememberSaveable { mutableStateOf("") }
+    var emailError by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(250.dp)
-                .offset(x = (-100).dp, y = (-120).dp)
-                .background(
-                    color = Color(0xFF990410),
-                    shape = CircleShape
-                )
-        )
-
-        IconButton(
-            onClick = { navController.navigate("tela_inicial") },
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(top = 16.dp, start = 16.dp)
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.voltar),
-                contentDescription = "Voltar",
-                tint = Color.White,
-                modifier = Modifier.size(20.dp)
-            )
+    fun validateEmail(): Boolean {
+        emailError = if (email.isBlank() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            "Por favor, insira um e-mail válido."
+        } else {
+            null
         }
+        return emailError == null
+    }
 
+    fun sendRecoveryCode() {
+        if (!validateEmail()) return
+
+        isLoading = true
+        scope.launch {
+            try {
+                val request = RecuperarSenhaRequest(email = email.trim())
+                val response = RetrofitFactory(context).getUserService().recuperarSenha(request)
+                if (response.isSuccessful && response.body()?.status == true) {
+                    Toast.makeText(context, "Código enviado para seu e-mail!", Toast.LENGTH_LONG).show()
+                    navController.navigate("tela_redefinir_senha")
+                } else {
+                    Toast.makeText(context, response.body()?.message ?: "Erro ao enviar e-mail", Toast.LENGTH_LONG).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Erro de conexão. Verifique sua internet.", Toast.LENGTH_LONG).show()
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+    Scaffold(
+        topBar = { TopBarRecuperacao(navController) },
+        containerColor = Color.White
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 32.dp),
+                .padding(it)
+                .padding(horizontal = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Spacer(modifier = Modifier.weight(1f))
+            Image(painter = painterResource(id = R.drawable.logorecuperacao), contentDescription = null, modifier = Modifier.size(150.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Image(
-                painter = painterResource(id = R.drawable.logorecuperacao),
-                contentDescription = "Logo DOEVIDA",
-                modifier = Modifier
-                    .size(180.dp)
-                    .padding(bottom = 32.dp)
-            )
-
-            Spacer(modifier = Modifier.weight(0.5f))
-
-            Text(
-                text = "Digite seu Email",
-                fontSize = 14.sp,
-                color = Color(0xFF990410),
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.align(Alignment.Start)
-            )
+            Text("Recuperar Senha", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            Text("Digite seu e-mail para receber um código de recuperação.", color = Color.Gray, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 4.dp, bottom = 24.dp))
 
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-                    .height(56.dp),
-                placeholder = { Text("Digite seu email", color = Color.White) },
+                label = { Text("E-mail") },
+                modifier = Modifier.fillMaxWidth(),
+                isError = emailError != null,
+                supportingText = { if (emailError != null) Text(emailError!!, color = MaterialTheme.colorScheme.error) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFF990410),
-                    unfocusedContainerColor = Color(0xFF990410),
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
-                    cursorColor = Color.White
-                ),
-                shape = RoundedCornerShape(8.dp),
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.perfil),
-                        contentDescription = "Ícone de usuário",
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
+                    focusedBorderColor = Color(0xFF990410),
+                    unfocusedBorderColor = Color.LightGray,
+                    cursorColor = Color(0xFF990410),
+                    focusedLabelColor = Color(0xFF990410)
+                )
             )
-
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = {
-                    if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()) {
-                        Toast.makeText(context, "Por favor, digite um email válido", Toast.LENGTH_LONG).show()
-                        return@Button
-                    }
-
-                    isLoading = true
-                    coroutineScope.launch {
-                        try {
-                            val request = RecuperarSenhaRequest(email = email.trim())
-                            val response = RetrofitFactory(context).getUserService().recuperarSenha(request)
-
-                            if (response.isSuccessful) {
-                                val body = response.body()
-                                if (body?.status == true) {
-                                    Toast.makeText(context, "Código enviado para seu email!", Toast.LENGTH_LONG).show()
-                                    navController.navigate("tela_redefinir_senha")
-                                } else {
-                                    Toast.makeText(context, body?.message ?: "Erro ao enviar email", Toast.LENGTH_LONG).show()
-                                }
-                            } else {
-                                Toast.makeText(context, "Erro no servidor: ${response.code()}", Toast.LENGTH_LONG).show()
-                            }
-                        } catch (e: Exception) {
-                            Toast.makeText(context, "Erro de conexão. Verifique sua internet.", Toast.LENGTH_LONG).show()
-                        } finally {
-                            isLoading = false
-                        }
-                    }
-                },
+                onClick = { sendRecoveryCode() },
                 enabled = !isLoading,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF990410)
-                ),
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier
-                    .height(48.dp)
-                    .width(200.dp)
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF990410)),
+                shape = RoundedCornerShape(12.dp)
             ) {
                 if (isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
+                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                 } else {
-                    Text(
-                        text = "Enviar Código",
-                        color = Color.White,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Text("Enviar Código", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
             }
-
-            Spacer(modifier = Modifier.weight(0.5f))
         }
     }
 }
 
-@Preview
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TopBarRecuperacao(navController: NavController) {
+    TopAppBar(
+        title = { Text("") },
+        navigationIcon = {
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+    )
+}
+
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun TelaRecuperacaoEmailPreview() {
-    val navController = rememberNavController()
-    TelaRecuperacaoEmail(navController = navController)
+    TelaRecuperacaoEmail(rememberNavController())
 }

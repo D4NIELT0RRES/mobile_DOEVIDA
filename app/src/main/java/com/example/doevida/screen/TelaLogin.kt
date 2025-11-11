@@ -6,40 +6,25 @@ import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -57,27 +42,32 @@ import kotlinx.coroutines.withContext
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TelaLogin(navController: NavController) {
-    val login = remember { mutableStateOf("") }
-    val senha = remember { mutableStateOf("") }
+    var login by rememberSaveable { mutableStateOf("") }
+    var senha by rememberSaveable { mutableStateOf("") }
+    var passwordVisible by rememberSaveable { mutableStateOf(false) }
 
     var emailError by remember { mutableStateOf<String?>(null) }
     var senhaError by remember { mutableStateOf<String?>(null) }
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val primaryColor = Color(0xFF990410)
 
     fun validarCampos(): Boolean {
-        emailError = when {
-            login.value.isBlank() -> "Campo obrigatório"
-            login.value.contains("@") && !Patterns.EMAIL_ADDRESS.matcher(login.value).matches() ->
-                "Formato de e-mail inválido"
-            else -> null
+        emailError = if (login.isBlank()) {
+            "Campo obrigatório"
+        } else if (login.contains("@") && !Patterns.EMAIL_ADDRESS.matcher(login).matches()) {
+            "Formato de e-mail inválido"
+        } else {
+            null
         }
 
-        senhaError = when {
-            senha.value.isBlank() -> "Campo obrigatório"
-            senha.value.length < 8 -> "Senha deve ter no mínimo 8 caracteres"
-            else -> null
+        senhaError = if (senha.isBlank()) {
+            "Campo obrigatório"
+        } else if (senha.length < 8) {
+            "Senha deve ter no mínimo 8 caracteres"
+        } else {
+            null
         }
 
         return emailError == null && senhaError == null
@@ -93,7 +83,7 @@ fun TelaLogin(navController: NavController) {
                 .size(270.dp)
                 .offset(x = (-100).dp, y = (-120).dp)
                 .background(
-                    color = Color(0xFF990410),
+                    color = primaryColor,
                     shape = CircleShape
                 )
         )
@@ -122,115 +112,105 @@ fun TelaLogin(navController: NavController) {
                 painter = painterResource(id = R.drawable.logologin),
                 contentDescription = "Logo DOEVIDA",
                 modifier = Modifier
-                    .size(180.dp)
-                    .padding(bottom = 32.dp)
+                    .size(150.dp)
             )
 
             Text(
-                text = "Digite seu Email ou Usuário",
-                fontSize = 14.sp,
-                color = Color(0xFF990410),
+                text = "Login",
+                fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.align(Alignment.Start)
+                color = primaryColor,
+                modifier = Modifier.padding(bottom = 24.dp)
             )
+
             OutlinedTextField(
-                value = login.value,
-                onValueChange = { login.value = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-                    .height(56.dp),
-                placeholder = { Text("Email ou Usuário", color = Color.White) },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFF990410),
-                    unfocusedContainerColor = Color(0xFF990410),
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
-                    cursorColor = Color.White
-                ),
-                shape = RoundedCornerShape(8.dp),
+                value = login,
+                onValueChange = { login = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Email ou Usuário") },
                 leadingIcon = {
                     Icon(
                         painter = painterResource(id = R.drawable.perfil),
                         contentDescription = "Ícone de usuário",
-                        tint = Color.White,
                         modifier = Modifier.size(24.dp)
                     )
-                }
-            )
-            if (emailError != null) {
-                Text(emailError!!,
-                    color = Color.Red,
-                    fontSize = 12.sp,
-                    modifier = Modifier
-                        .align(Alignment.Start))
-            }
-
-            Text(
-                text = "Digite sua Senha",
-                fontSize = 14.sp,
-                color = Color(0xFF990410),
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.align(Alignment.Start)
-            )
-            OutlinedTextField(
-                value = senha.value,
-                onValueChange = { senha.value = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-                    .height(56.dp),
-                placeholder = { Text("Senha", color = Color.White) },
-                visualTransformation = PasswordVisualTransformation(),
+                },
+                isError = emailError != null,
+                supportingText = {
+                    if (emailError != null) {
+                        Text(emailError!!, color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFF990410),
-                    unfocusedContainerColor = Color(0xFF990410),
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
-                    cursorColor = Color.White
-                ),
-                shape = RoundedCornerShape(8.dp),
+                    focusedBorderColor = primaryColor,
+                    unfocusedBorderColor = Color.Gray,
+                    focusedLabelColor = primaryColor,
+                    cursorColor = primaryColor,
+                    focusedLeadingIconColor = primaryColor
+                )
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = senha,
+                onValueChange = { senha = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Senha") },
                 leadingIcon = {
                     Icon(
                         painter = painterResource(id = R.drawable.senha),
                         contentDescription = "Ícone de senha",
-                        tint = Color.White,
                         modifier = Modifier.size(24.dp)
                     )
-                }
+                },
+                isError = senhaError != null,
+                supportingText = {
+                    if (senhaError != null) {
+                        Text(senhaError!!, color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                trailingIcon = {
+                    val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                    val description = if (passwordVisible) "Esconder senha" else "Mostrar senha"
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(imageVector = image, contentDescription = description)
+                    }
+                },
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = primaryColor,
+                    unfocusedBorderColor = Color.Gray,
+                    focusedLabelColor = primaryColor,
+                    cursorColor = primaryColor,
+                    focusedLeadingIconColor = primaryColor
+                )
             )
-            if (senhaError != null) {
-                Text(senhaError!!,
-                    color = Color.Red,
-                    fontSize = 12.sp,
-                    modifier = Modifier
-                        .align(Alignment.Start))
-            }
 
             Text(
                 text = "Esqueci minha senha?",
-                color = Color(0xFF990410),
+                color = primaryColor,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .align(Alignment.End)
                     .clickable { navController.navigate(route = "tela_recuperacao") }
-                    .padding(top = 8.dp, bottom = 32.dp),
+                    .padding(top = 8.dp),
                 fontSize = 14.sp
             )
 
-            Spacer(modifier = Modifier.height(15.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Button(
                 onClick = {
                     if (validarCampos()) {
-                        val request = if (login.value.contains("@")) {
-                            LoginRequest(email = login.value, username = null, senha = senha.value)
+                        val request = if (login.contains("@")) {
+                            LoginRequest(email = login, username = null, senha = senha)
                         } else {
-                            LoginRequest(email = null, username = login.value, senha = senha.value)
+                            LoginRequest(email = null, username = login, senha = senha)
                         }
 
                         scope.launch(Dispatchers.IO) {
@@ -261,7 +241,7 @@ fun TelaLogin(navController: NavController) {
                                         when (response.code()) {
                                             401 -> senhaError = "Senha incorreta"
                                             403 -> senhaError = "Acesso negado"
-                                            else -> senhaError = "Erro ao fazer login: ${response.code()}"
+                                            else -> senhaError = "Erro ao fazer login: ${'$'}{response.code()}"
                                         }
                                     }
                                 }
@@ -274,13 +254,11 @@ fun TelaLogin(navController: NavController) {
                         }
                     }
                 },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF990410)
-                ),
+                colors = ButtonDefaults.buttonColors(containerColor = primaryColor),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
+                    .fillMaxWidth()
                     .height(48.dp)
-                    .width(130.dp)
             ) {
                 Text(
                     text = "Entrar",
@@ -290,20 +268,24 @@ fun TelaLogin(navController: NavController) {
                 )
             }
 
-            Text(
-                text = "Não tem uma conta?",
-                color = Color(0xFF990410),
-                fontSize = 14.sp,
-                modifier = Modifier.padding(top = 32.dp)
-            )
-            Text(
-                text = "Fazer cadastro",
-                color = Color(0xFF990410),
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                modifier = Modifier
-                    .clickable { navController.navigate(route = "tela_cadastro") }
-            )
+            Row(
+                modifier = Modifier.padding(top = 32.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Não tem uma conta?",
+                    color = primaryColor,
+                    fontSize = 14.sp,
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "Fazer cadastro",
+                    color = primaryColor,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    modifier = Modifier.clickable { navController.navigate(route = "tela_cadastro") }
+                )
+            }
         }
     }
 }
