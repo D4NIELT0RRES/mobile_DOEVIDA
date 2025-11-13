@@ -1,6 +1,7 @@
 package com.example.doevida.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -9,12 +10,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -31,6 +30,19 @@ enum class BloodStatus(val color: Color, val label: String) {
     CRITICAL(Color(0xFFF44336), "Crítico")
 }
 
+data class BloodCompatibilityInfo(val canDonateTo: String, val canReceiveFrom: String)
+
+val bloodCompatibility = mapOf(
+    "A+" to BloodCompatibilityInfo(canDonateTo = "A+, AB+", canReceiveFrom = "A+, A-, O+, O-"),
+    "A-" to BloodCompatibilityInfo(canDonateTo = "A+, A-, AB+, AB-", canReceiveFrom = "A-, O-"),
+    "B+" to BloodCompatibilityInfo(canDonateTo = "B+, AB+", canReceiveFrom = "B+, B-, O+, O-"),
+    "B-" to BloodCompatibilityInfo(canDonateTo = "B+, B-, AB+, AB-", canReceiveFrom = "B-, O-"),
+    "AB+" to BloodCompatibilityInfo(canDonateTo = "AB+", canReceiveFrom = "Todos os tipos"),
+    "AB-" to BloodCompatibilityInfo(canDonateTo = "AB+, AB-", canReceiveFrom = "A-, B-, AB-, O-"),
+    "O+" to BloodCompatibilityInfo(canDonateTo = "A+, B+, AB+, O+", canReceiveFrom = "O+, O-"),
+    "O-" to BloodCompatibilityInfo(canDonateTo = "Todos os tipos", canReceiveFrom = "O-")
+)
+
 val bloodStockLevels = listOf(
     BloodTypeStock("A+", 0.6f, BloodStatus.LOW),
     BloodTypeStock("A-", 0.9f, BloodStatus.STABLE),
@@ -45,6 +57,8 @@ val bloodStockLevels = listOf(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TelaBancodeSangue(navController: NavController) {
+    var selectedStock by remember { mutableStateOf<BloodTypeStock?>(null) }
+
     Scaffold(
         topBar = { TopBarBancoSangue(navController) },
         bottomBar = { BottomBarBancoSangue(navController) },
@@ -58,10 +72,19 @@ fun TelaBancodeSangue(navController: NavController) {
             content = {
                 item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(2) }) { StatusLegend() }
                 items(bloodStockLevels) { stock ->
-                    BloodStockCard(stock = stock)
+                    BloodStockCard(stock = stock, navController = navController) {
+                        selectedStock = stock
+                    }
                 }
             }
         )
+
+        if (selectedStock != null) {
+            val compatibility = bloodCompatibility[selectedStock!!.type]
+            ModalBottomSheet(onDismissRequest = { selectedStock = null }) {
+                BloodTypeDetailsSheet(stock = selectedStock!!, compatibility = compatibility)
+            }
+        }
     }
 }
 
@@ -96,9 +119,9 @@ fun StatusLegend() {
 }
 
 @Composable
-fun BloodStockCard(stock: BloodTypeStock) {
+fun BloodStockCard(stock: BloodTypeStock, navController: NavController, onClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(2.dp)
@@ -132,7 +155,62 @@ fun BloodStockCard(stock: BloodTypeStock) {
                 fontSize = 14.sp,
                 modifier = Modifier.background(stock.status.color.copy(alpha = 0.1f), RoundedCornerShape(50)).padding(horizontal = 12.dp, vertical = 4.dp)
             )
+
+            if (stock.status == BloodStatus.CRITICAL) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Button(
+                    onClick = { navController.navigate("tela_agendamento") },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = BloodStatus.CRITICAL.color,
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(50),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Text("Agendar", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                }
+            }
         }
+    }
+}
+
+@Composable
+fun BloodTypeDetailsSheet(stock: BloodTypeStock, compatibility: BloodCompatibilityInfo?) {
+    Column(
+        modifier = Modifier.padding(24.dp).fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = "Tipo Sanguíneo: ${stock.type}", fontWeight = FontWeight.Bold, fontSize = 22.sp)
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = stock.status.label,
+            color = stock.status.color,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.background(stock.status.color.copy(alpha = 0.1f), RoundedCornerShape(50)).padding(horizontal = 16.dp, vertical = 6.dp)
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+
+        if (compatibility != null) {
+            CompatibilityInfo(label = "Pode doar para", types = compatibility.canDonateTo)
+            Spacer(modifier = Modifier.height(16.dp))
+            CompatibilityInfo(label = "Pode receber de", types = compatibility.canReceiveFrom)
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = "Você sabia? O sangue O- é o doador universal, mas só pode receber de O-. Já o AB+ é o receptor universal.",
+            fontSize = 12.sp,
+            textAlign = TextAlign.Center,
+            color = Color.Gray
+        )
+    }
+}
+
+@Composable
+fun CompatibilityInfo(label: String, types: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(label, fontSize = 14.sp, color = Color.Gray)
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(types, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color(0xFF990410), textAlign = TextAlign.Center)
     }
 }
 

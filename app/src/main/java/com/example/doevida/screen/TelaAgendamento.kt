@@ -30,7 +30,9 @@ import com.example.doevida.components.ChipHorario
 import com.example.doevida.model.HospitaisCards
 import com.example.doevida.service.RetrofitFactory
 import com.example.doevida.util.gerarHorarios
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -41,14 +43,30 @@ fun TelaAgendamento(navController: NavController) {
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     var selectedHospital by remember { mutableStateOf<HospitaisCards?>(null) }
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
     var selectedTime by remember { mutableStateOf<String?>(null) }
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
 
-    val availableTimes = remember(selectedHospital) {
-        runCatching { gerarHorarios(selectedHospital?.horario_abertura, selectedHospital?.horario_fechamento) }.getOrElse { emptyList() }
+    var availableTimes by remember { mutableStateOf<List<String>>(emptyList()) }
+    var isLoadingTimes by remember { mutableStateOf(false) }
+
+    // Gerar horários de forma assíncrona
+    LaunchedEffect(selectedHospital) {
+        if (selectedHospital != null) {
+            isLoadingTimes = true
+            scope.launch {
+                val times = withContext(Dispatchers.Default) {
+                    runCatching { gerarHorarios(selectedHospital?.horario_abertura, selectedHospital?.horario_fechamento) }.getOrElse { emptyList() }
+                }
+                availableTimes = times
+                isLoadingTimes = false
+            }
+        } else {
+            availableTimes = emptyList()
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -86,9 +104,16 @@ fun TelaAgendamento(navController: NavController) {
                 .background(Color(0xFFF7F7F7))
                 .padding(paddingValues)
         ) {
-            item { Step1_SelectHospital(isLoading, errorMessage, listaHospitais, selectedHospital) { selectedHospital = it } }
-            item { Step2_SelectDate(selectedHospital, currentMonth, selectedDate, { currentMonth = it }) { selectedDate = it } }
-            item { Step3_SelectTime(selectedDate, availableTimes, selectedTime) { selectedTime = it } }
+            item { Step1_SelectHospital(isLoading, errorMessage, listaHospitais, selectedHospital) {
+                selectedHospital = it
+                selectedDate = null // Reset date and time when hospital changes
+                selectedTime = null
+            } }
+            item { Step2_SelectDate(selectedHospital, currentMonth, selectedDate, { currentMonth = it }) {
+                selectedDate = it
+                selectedTime = null // Reset time when date changes
+            } }
+            item { Step3_SelectTime(selectedDate, isLoadingTimes, availableTimes, selectedTime) { selectedTime = it } }
         }
     }
 }
@@ -175,10 +200,11 @@ fun Step2_SelectDate(hospital: HospitaisCards?, currentMonth: YearMonth, selecte
 }
 
 @Composable
-fun Step3_SelectTime(date: LocalDate?, times: List<String>, selectedTime: String?, onTimeSelect: (String) -> Unit) {
+fun Step3_SelectTime(date: LocalDate?, isLoading: Boolean, times: List<String>, selectedTime: String?, onTimeSelect: (String) -> Unit) {
     StepContainer(3, "Defina um horário", isVisible = date != null) {
-        if (times.isNotEmpty()) {
-            LazyRow(
+        when {
+            isLoading -> Box(Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+            times.isNotEmpty() -> LazyRow(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -186,8 +212,7 @@ fun Step3_SelectTime(date: LocalDate?, times: List<String>, selectedTime: String
                     ChipHorario(time, selectedTime == time) { onTimeSelect(it) }
                 }
             }
-        } else {
-            Text("Nenhum horário disponível para este dia.", modifier = Modifier.padding(horizontal = 16.dp), color = Color.Gray)
+            else -> Text("Nenhum horário disponível para este dia.", modifier = Modifier.padding(horizontal = 16.dp), color = Color.Gray)
         }
     }
 }

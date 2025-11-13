@@ -1,5 +1,6 @@
 package com.example.doevida.screen
 
+import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -24,8 +26,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.example.doevida.R
 import com.example.doevida.components.MenuInferior
 import com.example.doevida.service.SharedPreferencesUtils
@@ -33,11 +37,15 @@ import com.example.doevida.service.SharedPreferencesUtils
 @Composable
 fun TelaHome(navController: NavController) {
     val userName = remember { mutableStateOf("") }
+    val userProfileImageUri = remember { mutableStateOf<Uri?>(null) } // Novo estado para a imagem
     val context = LocalContext.current
 
+    // LaunchedEffect é ideal para carregar dados que não mudam com frequência na tela.
     LaunchedEffect(Unit) {
         userName.value = SharedPreferencesUtils.getUserName(context)
-        Log.d("TelaHome", "Nome: ${userName.value}")
+        val imageUrl = SharedPreferencesUtils.getUserProfileImage(context)
+        userProfileImageUri.value = imageUrl?.toUri()
+        Log.d("TelaHome", "Nome: ${userName.value}, Imagem: ${imageUrl}")
     }
 
     Scaffold(
@@ -47,12 +55,14 @@ fun TelaHome(navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color(0xFFF7F7F7)) // Fundo levemente cinza
+                .background(Color(0xFFF7F7F7))
                 .verticalScroll(rememberScrollState())
         ) {
-            HomeHeader(userName = userName.value) {
-                navController.navigate("tela_perfil")
-            }
+            HomeHeader(
+                userName = userName.value,
+                profileImageUri = userProfileImageUri.value, // Passa a URI da imagem
+                onProfileClick = { navController.navigate("tela_perfil") }
+            )
             Spacer(modifier = Modifier.height(16.dp))
             DonationCountdownCard()
             Spacer(modifier = Modifier.height(24.dp))
@@ -63,7 +73,7 @@ fun TelaHome(navController: NavController) {
 }
 
 @Composable
-fun HomeHeader(userName: String, onProfileClick: () -> Unit) {
+fun HomeHeader(userName: String, profileImageUri: Uri?, onProfileClick: () -> Unit) {
     val primaryColor = Color(0xFF990410)
     Row(
         modifier = Modifier
@@ -83,14 +93,16 @@ fun HomeHeader(userName: String, onProfileClick: () -> Unit) {
                 overflow = TextOverflow.Ellipsis
             )
         }
-        Image(
-            painter = painterResource(id = R.drawable.logologin), // Usar um avatar do usuário aqui
+        // Substituído Image por AsyncImage para carregar a URL
+        AsyncImage(
+            model = profileImageUri ?: R.drawable.logologin, // Usa a URI, ou o logo como fallback
             contentDescription = "Perfil",
             modifier = Modifier
                 .size(55.dp)
                 .clip(CircleShape)
                 .border(2.dp, primaryColor, CircleShape)
-                .clickable(onClick = onProfileClick)
+                .clickable(onClick = onProfileClick),
+            contentScale = ContentScale.Crop // Garante que a imagem preencha o círculo
         )
     }
 }
