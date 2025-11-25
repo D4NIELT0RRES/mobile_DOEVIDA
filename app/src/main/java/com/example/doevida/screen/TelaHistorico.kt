@@ -1,37 +1,28 @@
 package com.example.doevida.screen
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -41,14 +32,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import coil.compose.AsyncImage
 import com.example.doevida.R
 import com.example.doevida.model.AgendamentoItem
 import com.example.doevida.model.DoacaoManual
 import com.example.doevida.model.HistoricoDoacaoCombinado
 import com.example.doevida.service.RetrofitFactory
 import com.example.doevida.service.SharedPreferencesUtils
-import com.example.doevida.util.UserDataManager
 import com.google.gson.Gson
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -57,7 +46,6 @@ import java.time.format.DateTimeFormatter
 
 fun navigateToDetail(navController: NavController, doacao: HistoricoDoacaoCombinado) {
     val doacaoJson = Gson().toJson(doacao)
-    // Codifica o JSON para que possa ser passado como um único argumento na rota
     val encodedJson = URLEncoder.encode(doacaoJson, StandardCharsets.UTF_8.name())
     navController.navigate("tela_detalhe_doacao/$encodedJson")
 }
@@ -69,12 +57,15 @@ fun TelaHistorico(navController: NavController) {
     var historico by remember { mutableStateOf<List<HistoricoDoacaoCombinado>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var searchQuery by remember { mutableStateOf("") }
+    var selectedFilter by remember { mutableStateOf("Todos") }
+
+    val primaryColor = Color(0xFF990410)
 
     LaunchedEffect(Unit) {
-        val userId = UserDataManager.getUserId(context)
+        val userId = SharedPreferencesUtils.getUserId(context)
         val combinedList = mutableListOf<HistoricoDoacaoCombinado>()
 
-        if (userId != 0) {
+        if (userId > 0) {
             try {
                 val response = RetrofitFactory(context).getUserService().getHistorico(userId)
                 if (response.isSuccessful) {
@@ -93,39 +84,242 @@ fun TelaHistorico(navController: NavController) {
         isLoading = false
     }
 
-    val filteredHistorico = if (searchQuery.isEmpty()) {
-        historico
-    } else {
-        historico.filter {
-            it.hospitalName.contains(searchQuery, ignoreCase = true) || it.status.contains(searchQuery, ignoreCase = true)
+    val filteredHistorico = historico.filter { item ->
+        val matchesSearch = item.hospitalName.contains(searchQuery, ignoreCase = true) || 
+                            item.status.contains(searchQuery, ignoreCase = true)
+        val matchesFilter = when (selectedFilter) {
+            "Concluídas" -> item.status.equals("Concluido", ignoreCase = true) || 
+                           item.status.equals("Concluído", ignoreCase = true) || 
+                           item.status.equals("Manual", ignoreCase = true)
+            "Agendadas" -> item.status.equals("Agendado", ignoreCase = true) || item.status.equals("Pendente", ignoreCase = true)
+            else -> true
         }
+        matchesSearch && matchesFilter
     }
+
+    val totalDoacoes = historico.count { 
+        val s = it.status.uppercase()
+        s == "CONCLUIDO" || s == "CONCLUÍDO" || s == "MANUAL" 
+    }
+    val ultimaDoacao = historico.firstOrNull { 
+        val s = it.status.uppercase()
+        s == "CONCLUIDO" || s == "CONCLUÍDO" || s == "MANUAL" 
+    }?.date ?: "--"
 
     Scaffold(
         topBar = { TopBarHistorico(navController) },
-        content = { padding ->
-            Column(modifier = Modifier.fillMaxSize().padding(padding).background(Color(0xFFF7F7F7))) {
-                SearchBar(searchQuery) { newQuery -> searchQuery = newQuery }
+        containerColor = Color(0xFFF5F5F5)
+    ) { padding ->
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            
+            // Header com Resumo
+            DonationSummaryCard(totalDoacoes, ultimaDoacao)
 
-                if (isLoading) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = Color(0xFF990410))
+            // Barra de Pesquisa e Filtros
+            Column(modifier = Modifier.background(Color.White).padding(bottom = 8.dp)) {
+                SearchBar(searchQuery) { searchQuery = it }
+                FilterChips(selectedFilter) { selectedFilter = it }
+            }
+
+            if (isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = primaryColor)
+                }
+            } else if (filteredHistorico.isEmpty()) {
+                EmptyState(searchQuery.isNotEmpty())
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(filteredHistorico) { donation ->
+                        DoacaoCardModern(donation) { navigateToDetail(navController, donation) }
                     }
-                } else if (filteredHistorico.isEmpty()) {
-                    EmptyState()
-                } else {
-                    LazyColumn(
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        items(filteredHistorico) { donation ->
-                            DoacaoCard(donation) { navigateToDetail(navController, donation) }
-                        }
+                    item {
+                        Spacer(modifier = Modifier.height(32.dp))
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun DonationSummaryCard(total: Int, lastDate: String) {
+    val primaryColor = Color(0xFF990410)
+    val gradient = Brush.horizontalGradient(
+        colors = listOf(primaryColor, Color(0xFFCC2B36))
     )
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Box(modifier = Modifier.background(gradient).padding(20.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "Total de Doações",
+                        color = Color.White.copy(alpha = 0.8f),
+                        fontSize = 14.sp
+                    )
+                    Text(
+                        text = "$total",
+                        color = Color.White,
+                        fontSize = 36.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.History,
+                            contentDescription = null,
+                            tint = Color.White.copy(alpha = 0.8f),
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Última: $lastDate",
+                            color = Color.White.copy(alpha = 0.9f),
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+                
+                Icon(
+                    painter = painterResource(R.drawable.gota),
+                    contentDescription = null,
+                    tint = Color.White.copy(alpha = 0.2f),
+                    modifier = Modifier.size(80.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun FilterChips(selected: String, onSelect: (String) -> Unit) {
+    val filters = listOf("Todos", "Concluídas", "Agendadas")
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(filters) { filter ->
+            val isSelected = selected == filter
+            FilterChip(
+                selected = isSelected,
+                onClick = { onSelect(filter) },
+                label = { Text(filter) },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = Color(0xFF990410).copy(alpha = 0.1f),
+                    selectedLabelColor = Color(0xFF990410)
+                ),
+                border = FilterChipDefaults.filterChipBorder(
+                    enabled = true,
+                    selected = isSelected,
+                    borderColor = Color.LightGray,
+                    selectedBorderColor = Color(0xFF990410)
+                )
+            )
+        }
+    }
+}
+
+@Composable
+fun DoacaoCardModern(donation: HistoricoDoacaoCombinado, onClick: () -> Unit) {
+    val (statusColor, statusText, statusIcon) = when (donation.status.uppercase()) {
+        "CONCLUIDO", "CONCLUÍDO", "MANUAL" -> Triple(Color(0xFF2E7D32), "Concluída", Icons.Default.CheckCircle)
+        "AGENDADO" -> Triple(Color(0xFFF57C00), "Agendada", Icons.Default.Schedule)
+        "CANCELADO" -> Triple(Color(0xFFD32F2F), "Cancelada", Icons.Default.Close)
+        else -> Triple(Color.Gray, donation.status, Icons.Default.History)
+    }
+
+    ElevatedCard(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.elevatedCardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(modifier = Modifier.padding(16.dp)) {
+            // Data Badge
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFFF5F5F5))
+                    .padding(vertical = 8.dp, horizontal = 12.dp)
+            ) {
+                val parts = donation.date.split("/")
+                if (parts.size == 3) {
+                    Text(text = parts[0], fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF333333))
+                    Text(text = getMonthShortName(parts[1]), fontSize = 12.sp, color = Color(0xFF757575), fontWeight = FontWeight.Medium)
+                } else {
+                    Icon(Icons.Default.CalendarToday, null, tint = Color.Gray)
+                }
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // Conteúdo
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = donation.hospitalName,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF212121),
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(6.dp))
+                
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.LocationOn, null, modifier = Modifier.size(14.dp), tint = Color(0xFF757575))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Hemocentro / Hospital",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFF757575)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Status Chip Personalizado
+                Surface(
+                    color = statusColor.copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(6.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Icon(statusIcon, null, modifier = Modifier.size(12.dp), tint = statusColor)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(text = statusText, color = statusColor, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                    }
+                }
+            }
+        }
+    }
+}
+
+fun getMonthShortName(month: String): String {
+    return when(month) {
+        "01" -> "JAN"; "02" -> "FEV"; "03" -> "MAR"; "04" -> "ABR"
+        "05" -> "MAI"; "06" -> "JUN"; "07" -> "JUL"; "08" -> "AGO"
+        "09" -> "SET"; "10" -> "OUT"; "11" -> "NOV"; "12" -> "DEZ"
+        else -> ""
+    }
 }
 
 fun AgendamentoItem.toCombinedHistory(): HistoricoDoacaoCombinado {
@@ -151,123 +345,87 @@ fun DoacaoManual.toCombinedHistory(): HistoricoDoacaoCombinado {
     )
 }
 
-@Composable
-fun DoacaoCard(donation: HistoricoDoacaoCombinado, onClick: () -> Unit) {
-    val (statusColor, statusText) = when (donation.status.uppercase()) {
-        "CONCLUIDO" -> Pair(Color(0xFF4CAF50), "Concluído")
-        "AGENDADO" -> Pair(Color(0xFFFF9800), "Agendado")
-        "MANUAL" -> Pair(Color(0xFF607D8B), "Manual")
-        else -> Pair(Color.Gray, donation.status.replaceFirstChar { it.uppercase() })
-    }
-
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = BorderStroke(1.dp, statusColor.copy(alpha = 0.5f))
-    ) {
-        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            if (donation.proofImageUrl != null) {
-                AsyncImage(
-                    model = donation.proofImageUrl,
-                    contentDescription = "Comprovante",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .border(1.dp, Color.LightGray, CircleShape)
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(statusColor.copy(alpha = 0.1f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.gota),
-                        contentDescription = "Doação",
-                        tint = statusColor,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = donation.hospitalName,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = Color.DarkGray
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.CalendarToday,
-                        contentDescription = "Data",
-                        modifier = Modifier.size(14.dp),
-                        tint = Color.Gray
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = donation.date,
-                        fontSize = 14.sp,
-                        color = Color.Gray
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.width(8.dp))
-            StatusTag(statusText, statusColor)
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBarHistorico(navController: NavController) {
-    TopAppBar(
-        title = { Text("Meu Histórico", fontWeight = FontWeight.Bold, fontSize = 22.sp) },
-        navigationIcon = { IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") } },
-        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White, titleContentColor = Color(0xFFB03940))
+    CenterAlignedTopAppBar(
+        title = { 
+            Text(
+                "Histórico de Doações", 
+                fontWeight = FontWeight.SemiBold, 
+                fontSize = 18.sp
+            ) 
+        },
+        navigationIcon = {
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar", tint = Color(0xFF212121))
+            }
+        },
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+            containerColor = Color.White,
+            titleContentColor = Color(0xFF212121)
+        )
     )
 }
 
 @Composable
 fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
     OutlinedTextField(
-        value = query, onValueChange = onQueryChange, placeholder = { Text("Pesquisar...") },
-        leadingIcon = { Icon(Icons.Default.Search, "Pesquisar") }, shape = RoundedCornerShape(12.dp),
-        modifier = Modifier.fillMaxWidth().padding(16.dp),
-        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color(0xFF990410), unfocusedBorderColor = Color.LightGray)
+        value = query, 
+        onValueChange = onQueryChange, 
+        placeholder = { Text("Buscar hospital...", fontSize = 14.sp) },
+        leadingIcon = { Icon(Icons.Default.Search, "Pesquisar", tint = Color.Gray) },
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = Color(0xFF990410),
+            unfocusedBorderColor = Color(0xFFE0E0E0),
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White
+        ),
+        singleLine = true
     )
 }
 
 @Composable
-fun EmptyState() {
+fun EmptyState(isSearch: Boolean) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
-    ) {
-        Image(painter = painterResource(id = R.drawable.doarsangue), "Histórico Vazio", modifier = Modifier.size(150.dp))
-        Spacer(modifier = Modifier.height(16.dp))
-        Text("Nenhuma doação encontrada", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.DarkGray)
-        Text("Seu histórico de doações aparecerá aqui.", fontSize = 14.sp, color = Color.Gray, textAlign = TextAlign.Center)
-    }
-}
-
-@Composable
-fun StatusTag(text: String, color: Color) {
-    Box(
         modifier = Modifier
-            .background(color.copy(alpha = 0.15f), RoundedCornerShape(50))
-            .padding(horizontal = 12.dp, vertical = 6.dp)
+            .fillMaxSize()
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Text(text, color = color, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFF5F5F5)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.gota),
+                contentDescription = null,
+                modifier = Modifier.size(60.dp),
+                tint = Color(0xFF990410).copy(alpha = 0.4f)
+            )
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = if (isSearch) "Nenhum resultado encontrado" else "Seu histórico está vazio",
+            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+            color = Color(0xFF424242)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = if (isSearch) "Tente buscar com outro termo." else "Agende sua doação e comece a salvar vidas!",
+            fontSize = 14.sp,
+            color = Color(0xFF757575),
+            textAlign = TextAlign.Center
+        )
     }
 }
 

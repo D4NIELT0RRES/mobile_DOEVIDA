@@ -13,6 +13,7 @@ object SharedPreferencesUtils {
     private const val KEY_USER_ID = "user_id"
     private const val KEY_USER_NAME = "user_name"
     private const val KEY_USER_EMAIL = "user_email"
+    private const val KEY_USER_CPF = "user_cpf"
     private const val KEY_USER_PROFILE_IMAGE_URL = "user_profile_image_url"
     private const val KEY_MANUAL_DONATIONS = "manual_donations"
 
@@ -22,13 +23,14 @@ object SharedPreferencesUtils {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
 
-    fun saveUserData(context: Context, userId: Int, userName: String, userEmail: String) {
+    fun saveUserData(context: Context, userId: Int, userName: String, userEmail: String, userCpf: String) {
         val editor = getSharedPreferences(context).edit()
         editor.putInt(KEY_USER_ID, userId)
         editor.putString(KEY_USER_NAME, userName)
         editor.putString(KEY_USER_EMAIL, userEmail)
+        editor.putString(KEY_USER_CPF, userCpf)
         editor.apply()
-        Log.i("SharedPreferencesUtils", "UserData salvo: ID=$userId, Nome=$userName, Email=$userEmail")
+        Log.i("SharedPreferencesUtils", "UserData salvo: ID=$userId, Nome=$userName, Email=$userEmail, CPF=$userCpf")
     }
 
     fun getUserId(context: Context): Int {
@@ -41,6 +43,10 @@ object SharedPreferencesUtils {
 
     fun getUserEmail(context: Context): String {
         return getSharedPreferences(context).getString(KEY_USER_EMAIL, "email@example.com") ?: "email@example.com"
+    }
+
+    fun getUserCpf(context: Context): String {
+        return getSharedPreferences(context).getString(KEY_USER_CPF, "") ?: ""
     }
 
     fun saveUserProfileImage(context: Context, imageUrl: String) {

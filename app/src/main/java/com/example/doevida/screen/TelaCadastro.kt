@@ -36,6 +36,7 @@ import com.example.doevida.R
 import com.example.doevida.model.Cadastro
 import com.example.doevida.service.RetrofitFactory
 import com.example.doevida.service.SharedPreferencesUtils
+import com.example.doevida.util.UserDataManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -313,10 +314,23 @@ fun TelaCadastro(navController: NavController) {
                                         val resposta = response.body()
                                         val usuario = resposta?.usuario
                                         if (usuario != null) {
+                                            // Limpa dados de usuário anterior
+                                            SharedPreferencesUtils.clearUserData(context)
+                                            
                                             SharedPreferencesUtils.saveUserData(
                                                 context = context, userId = usuario.id ?: 0,
-                                                userName = usuario.nome ?: "", userEmail = usuario.email ?: ""
+                                                userName = usuario.nome ?: "", userEmail = usuario.email ?: "",
+                                                userCpf = "" // CPF vazio no cadastro inicial
                                             )
+
+                                            // Salva também no UserDataManager para compatibilidade
+                                            UserDataManager.saveUserData(
+                                                context = context,
+                                                id = usuario.id ?: 0,
+                                                name = usuario.nome ?: "",
+                                                email = usuario.email ?: ""
+                                            )
+
                                             Toast.makeText(context, "Cadastro realizado com sucesso!", Toast.LENGTH_LONG).show()
                                             navController.navigate("tela_login") {
                                                 popUpTo("tela_cadastro") { inclusive = true }

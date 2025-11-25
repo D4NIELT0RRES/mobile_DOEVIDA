@@ -55,8 +55,8 @@ fun TelaHome(navController: NavController) {
         userProfileImageUri.value = imageUrl?.toUri()
         
         // Lógica para calcular os dias restantes
-        val userId = UserDataManager.getUserId(context)
-        if (userId != 0) {
+        val userId = SharedPreferencesUtils.getUserId(context)
+        if (userId > 0) {
             try {
                 // Busca doações manuais
                 val manualDonations = SharedPreferencesUtils.getManualDonations(context)
