@@ -7,10 +7,11 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 
 class RetrofitFactory(private val context: Context) {
 
-    private val BASE_URL = "http://10.0.2.2:8080/v1/doevida/"
+    private val BASE_URL = "https://doevida.azurewebsites.net/v1/doevida/"
 
     // Interceptor inteligente que só adiciona o token em rotas privadas
     private val authInterceptor = Interceptor { chain ->
@@ -35,6 +36,9 @@ class RetrofitFactory(private val context: Context) {
     private val client = OkHttpClient.Builder()
         .addInterceptor(authInterceptor)
         .addInterceptor(loggingInterceptor)
+        .connectTimeout(60, TimeUnit.SECONDS) // Aumentado para 60s
+        .readTimeout(60, TimeUnit.SECONDS)    // Aumentado para 60s
+        .writeTimeout(60, TimeUnit.SECONDS)   // Aumentado para 60s
         .build()
 
     private val retrofit = Retrofit.Builder()

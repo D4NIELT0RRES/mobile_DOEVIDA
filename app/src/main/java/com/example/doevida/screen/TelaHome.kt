@@ -32,20 +32,67 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.doevida.R
 import com.example.doevida.components.MenuInferior
+import com.example.doevida.service.RetrofitFactory
 import com.example.doevida.service.SharedPreferencesUtils
+import com.example.doevida.util.UserDataManager
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 @Composable
 fun TelaHome(navController: NavController) {
     val userName = remember { mutableStateOf("") }
-    val userProfileImageUri = remember { mutableStateOf<Uri?>(null) } // Novo estado para a imagem
+    val userProfileImageUri = remember { mutableStateOf<Uri?>(null) }
     val context = LocalContext.current
+    
+    // Estados para o contador de doação
+    var daysRemaining by remember { mutableStateOf<Int?>(null) }
+    var lastDonationDate by remember { mutableStateOf<LocalDate?>(null) }
 
-    // LaunchedEffect é ideal para carregar dados que não mudam com frequência na tela.
     LaunchedEffect(Unit) {
         userName.value = SharedPreferencesUtils.getUserName(context)
         val imageUrl = SharedPreferencesUtils.getUserProfileImage(context)
         userProfileImageUri.value = imageUrl?.toUri()
-        Log.d("TelaHome", "Nome: ${userName.value}, Imagem: ${imageUrl}")
+        
+        // Lógica para calcular os dias restantes
+        val userId = UserDataManager.getUserId(context)
+        if (userId != 0) {
+            try {
+                // Busca doações manuais
+                val manualDonations = SharedPreferencesUtils.getManualDonations(context)
+                    .filter { it.userId == userId }
+                    .mapNotNull { 
+                        try {
+                            LocalDate.parse(it.donationDate, DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                        } catch (e: Exception) { null }
+                    }
+                
+                // Busca doações da API (se possível)
+                val apiDonations = try {
+                    val response = RetrofitFactory(context).getUserService().getHistorico(userId)
+                    if (response.isSuccessful) {
+                        response.body()?.agendamentos?.mapNotNull { 
+                            try {
+                                LocalDate.parse(it.dataAgendamento.substringBefore("T"))
+                            } catch (e: Exception) { null }
+                        } ?: emptyList()
+                    } else emptyList()
+                } catch (e: Exception) { emptyList() }
+                
+                // Encontra a data mais recente
+                val allDates = manualDonations + apiDonations
+                val latestDate = allDates.maxOrNull()
+                
+                if (latestDate != null) {
+                    lastDonationDate = latestDate
+                    val nextDonationDate = latestDate.plusDays(60) // Assumindo intervalo de 60 dias (homens)
+                    val days = ChronoUnit.DAYS.between(LocalDate.now(), nextDonationDate).toInt()
+                    daysRemaining = days
+                }
+            } catch (e: Exception) {
+                Log.e("TelaHome", "Erro ao calcular dias restantes", e)
+            }
+        }
     }
 
     Scaffold(
@@ -60,11 +107,13 @@ fun TelaHome(navController: NavController) {
         ) {
             HomeHeader(
                 userName = userName.value,
-                profileImageUri = userProfileImageUri.value, // Passa a URI da imagem
+                profileImageUri = userProfileImageUri.value,
                 onProfileClick = { navController.navigate("tela_perfil") }
             )
             Spacer(modifier = Modifier.height(16.dp))
-            DonationCountdownCard()
+            
+            DonationCountdownCard(daysRemaining)
+            
             Spacer(modifier = Modifier.height(24.dp))
             ActionsGrid(navController = navController)
             Spacer(modifier = Modifier.height(16.dp))
@@ -93,23 +142,23 @@ fun HomeHeader(userName: String, profileImageUri: Uri?, onProfileClick: () -> Un
                 overflow = TextOverflow.Ellipsis
             )
         }
-        // Substituído Image por AsyncImage para carregar a URL
         AsyncImage(
-            model = profileImageUri ?: R.drawable.logologin, // Usa a URI, ou o logo como fallback
+            model = profileImageUri ?: R.drawable.logologin,
             contentDescription = "Perfil",
             modifier = Modifier
                 .size(55.dp)
                 .clip(CircleShape)
                 .border(2.dp, primaryColor, CircleShape)
                 .clickable(onClick = onProfileClick),
-            contentScale = ContentScale.Crop // Garante que a imagem preencha o círculo
+            contentScale = ContentScale.Crop
         )
     }
 }
 
 @Composable
-fun DonationCountdownCard() {
+fun DonationCountdownCard(daysRemaining: Int?) {
     val primaryColor = Color(0xFF990410)
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -125,19 +174,42 @@ fun DonationCountdownCard() {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = "13", // TODO: Substituir por valor dinâmico
-                color = Color.White,
-                fontSize = 48.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(
-                text = "dias para a\npróxima doação",
-                color = Color.White.copy(alpha = 0.9f),
-                fontSize = 18.sp,
-                lineHeight = 22.sp
-            )
+            if (daysRemaining == null) {
+                Text(
+                    text = "Faça sua primeira doação!",
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            } else if (daysRemaining <= 0) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                     Text(
+                        text = "Você já pode doar!",
+                        color = Color.White,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Agende agora mesmo",
+                        color = Color.White.copy(alpha = 0.9f),
+                        fontSize = 14.sp
+                    )
+                }
+            } else {
+                Text(
+                    text = "$daysRemaining",
+                    color = Color.White,
+                    fontSize = 48.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = "dias para a\npróxima doação",
+                    color = Color.White.copy(alpha = 0.9f),
+                    fontSize = 18.sp,
+                    lineHeight = 22.sp
+                )
+            }
         }
     }
 }

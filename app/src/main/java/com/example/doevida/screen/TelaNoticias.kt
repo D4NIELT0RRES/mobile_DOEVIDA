@@ -12,7 +12,8 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,13 +30,13 @@ import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
 import com.example.doevida.components.MenuInferior
 
-// --- MOCK DATA ---
+// --- MOCK DATA NOTÍCIAS ---
 data class Noticia(
     val id: Int,
     val title: String,
     val category: String,
     val source: String,
-    val imageUrl: Int, // Usando Int para recursos drawable mocados
+    val imageUrl: Int,
     val content: String,
     val author: String,
     val authorImageUrl: Int
@@ -60,21 +61,136 @@ object NoticiaRepository {
     }
 }
 
+// --- DADOS DE CURIOSIDADES ---
+data class Curiosidade(
+    val title: String,
+    val description: String
+)
+
+val curiosidadesList = listOf(
+    Curiosidade("Salva múltiplas vidas", "Uma única doação pode ser dividida em até quatro componentes sanguíneos (hemácias, plasma, plaquetas e crioprecipitado), cada um sendo usado em pacientes diferentes."),
+    Curiosidade("Recuperação rápida", "O corpo repõe o volume de sangue doado em até 72 horas. A quantidade retirada representa menos de 10% do volume total de sangue do doador."),
+    Curiosidade("Não há risco de contaminação", "Todo o material utilizado durante o processo é estéril e descartável, evitando qualquer risco de contaminação para o doador."),
+    Curiosidade("Segurança do processo", "A doação é um procedimento simples, rápido e seguro, realizado por profissionais capacitados em locais adequados, com aferição da pressão, verificação de anemia e análise do histórico de saúde."),
+    Curiosidade("Doador universal", "O tipo de sangue O- é considerado o doador universal, pois pode ser transfundido para pacientes de todos os outros tipos sanguíneos."),
+    Curiosidade("O que pode impedir a doação temporariamente", "Se a pessoa estiver gripada ou resfriada, precisará esperar 7 dias após o fim dos sintomas."),
+    Curiosidade("O que impede a doação", "Tatuagens ou piercings são restrições temporárias que exigem um período de espera de 6 a 12 meses, dependendo do local onde foram feitos, devido ao risco de infecções."),
+    Curiosidade("Frequência da doação", "Homens podem doar até 4 vezes por ano, com intervalo de 60 dias, e mulheres até 3 vezes por ano, com intervalo de 90 dias.")
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TelaNoticias(navController: NavController) {
+    var selectedTab by remember { mutableIntStateOf(0) }
+    val tabs = listOf("Notícias", "Curiosidades")
+
     Scaffold(
         topBar = { NoticiasTopAppBar() },
         bottomBar = { MenuInferior(navController) }
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .background(Color(0xFFF7F7F7)) // Fundo cinza claro
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .background(Color(0xFFF7F7F7))
         ) {
-            item { HighlightsSection(navController = navController) }
-            item { RecommendedSection(navController = navController) }
+            TabRow(
+                selectedTabIndex = selectedTab,
+                containerColor = Color.White,
+                contentColor = Color(0xFF990410),
+                indicator = { tabPositions ->
+                    TabRowDefaults.SecondaryIndicator(
+                        Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                        color = Color(0xFF990410)
+                    )
+                }
+            ) {
+                tabs.forEachIndexed { index, title ->
+                    Tab(
+                        text = { Text(title, fontWeight = FontWeight.SemiBold) },
+                        selected = selectedTab == index,
+                        onClick = { selectedTab = index }
+                    )
+                }
+            }
+
+            when (selectedTab) {
+                0 -> NoticiasContent(navController)
+                1 -> CuriosidadesContent()
+            }
+        }
+    }
+}
+
+@Composable
+fun NoticiasContent(navController: NavController) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 16.dp)
+    ) {
+        item { HighlightsSection(navController = navController) }
+        item { RecommendedSection(navController = navController) }
+    }
+}
+
+@Composable
+fun CuriosidadesContent() {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF990410)),
+                elevation = CardDefaults.cardElevation(4.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Você sabia?",
+                        color = Color.White,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Uma única doação de sangue pode salvar até quatro vidas, pois o volume coletado (cerca de 450 ml) é fracionado em componentes como plaquetas, hemácias e plasma.",
+                        color = Color.White.copy(alpha = 0.9f),
+                        fontSize = 16.sp,
+                        lineHeight = 22.sp
+                    )
+                }
+            }
+        }
+        items(curiosidadesList) { curiosidade ->
+            CuriosidadeCard(curiosidade)
+        }
+    }
+}
+
+@Composable
+fun CuriosidadeCard(curiosidade: Curiosidade) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(2.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = curiosidade.title,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = Color(0xFF990410)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = curiosidade.description,
+                fontSize = 15.sp,
+                color = Color.DarkGray,
+                lineHeight = 22.sp
+            )
         }
     }
 }
@@ -83,11 +199,10 @@ fun TelaNoticias(navController: NavController) {
 @Composable
 fun NoticiasTopAppBar() {
     TopAppBar(
-        title = { Text("Notícias", fontWeight = FontWeight.Bold, fontSize = 24.sp) },
+        title = { Text("Informativo", fontWeight = FontWeight.Bold, fontSize = 24.sp) },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Color.White,
-            titleContentColor = Color(0xFF990410),
-            scrolledContainerColor = Color.White
+            titleContentColor = Color(0xFF990410)
         ),
         modifier = Modifier.fillMaxWidth()
     )
@@ -187,7 +302,7 @@ fun RecommendedSection(navController: NavController) {
             modifier = Modifier.padding(start = 16.dp, bottom = 16.dp)
         )
         LazyColumn(
-            modifier = Modifier.heightIn(max = 1000.dp), // Avoid nested scrolling issues
+            modifier = Modifier.heightIn(max = 1000.dp),
             contentPadding = PaddingValues(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
