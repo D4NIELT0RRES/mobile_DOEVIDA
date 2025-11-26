@@ -48,7 +48,10 @@ fun AppNavigation() {
         composable("tela_banco_sangue") { TelaBancodeSangue(navController) }
         composable("tela_agendamento") { TelaAgendamento(navController) }
         composable("tela_perfil") { TelaPerfil(navController) }
-        composable("tela_certificado") { TelaCertificado(navController) }
+        
+        // Rota atualizada para o sistema de Gamificação
+        composable("tela_conquistas") { TelaConquistas(navController) }
+        
         composable("tela_registrar_doacao") { TelaRegistrarDoacao(navController) }
         composable("tela_noticias") { TelaNoticias(navController) }
 
@@ -96,7 +99,6 @@ fun AppNavigation() {
             TelaDetalheNoticia(navController, noticiaId)
         }
 
-        // Rota corrigida para receber o JSON, decodificar e passar o objeto para a tela
         composable(
             route = "tela_detalhe_doacao/{doacaoJson}",
             arguments = listOf(navArgument("doacaoJson") { type = NavType.StringType })

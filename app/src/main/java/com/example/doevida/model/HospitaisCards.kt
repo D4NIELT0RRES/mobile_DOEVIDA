@@ -29,7 +29,11 @@ data class HospitaisCards(
 
     // O back agora envia "endereco"; mantemos opcional
     @SerializedName("endereco")
-    private val enderecoApi: String? = null
+    private val enderecoApi: String? = null,
+
+    // Coordenadas para o Mapa (Adicionado)
+    val latitude: Double? = null,
+    val longitude: Double? = null
 ) {
     val endereco: String
         get() = when {
@@ -39,5 +43,22 @@ data class HospitaisCards(
             !complemento.isNullOrBlank() -> complemento
             else -> "Endereço não informado"
         }
-}
 
+    // Helper para retornar LatLng válido ou um padrão (São Paulo) se nulo
+    // Útil para demonstração até o backend enviar dados reais
+    fun getCoordenadas(): Pair<Double, Double> {
+        return if (latitude != null && longitude != null) {
+            latitude to longitude
+        } else {
+            // Mock temporário baseado no nome ou ID para espalhar no mapa (Demo)
+            // Centro de SP: -23.5505, -46.6333
+            when (id % 5) {
+                0 -> -23.5565 to -46.6623 // Clínicas
+                1 -> -23.5885 to -46.6452 // Hospital SP
+                2 -> -23.5489 to -46.6388 // Santa Casa
+                3 -> -23.5666 to -46.6522 // Outro
+                else -> -23.5505 to -46.6333
+            }
+        }
+    }
+}

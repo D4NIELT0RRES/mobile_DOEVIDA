@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -29,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -247,9 +249,8 @@ fun ProfileHeader(userName: String, imageUri: Uri?, isUploading: Boolean = false
 
 @Composable
 fun UserInfoCard(name: String, email: String) {
-    // TODO: Carregar CPF e Data de Nascimento quando estiverem disponíveis
-    val cpf = "123.456.789-00" // Valor de exemplo
-    val dataNascimento = "01/01/2005" // Valor de exemplo
+    val cpf = "123.456.789-00"
+    val dataNascimento = "01/01/2005"
 
     Card(
         modifier = Modifier
@@ -295,8 +296,9 @@ fun OptionsMenu(navController: NavController) {
             elevation = CardDefaults.cardElevation(4.dp)
         ) {
             Column {
-                OptionItem("Certificados", painterResource(id = R.drawable.doarsangue)) {
-                    navController.navigate("tela_certificado")
+                // Item atualizado para Gamificação/Ranking
+                OptionItem("Minhas Conquistas", Icons.Default.EmojiEvents) {
+                    navController.navigate("tela_conquistas")
                 }
             }
         }
@@ -304,7 +306,7 @@ fun OptionsMenu(navController: NavController) {
 }
 
 @Composable
-fun OptionItem(title: String, icon: Painter, onClick: () -> Unit) {
+fun OptionItem(title: String, icon: ImageVector, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -312,7 +314,7 @@ fun OptionItem(title: String, icon: Painter, onClick: () -> Unit) {
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(painter = icon, contentDescription = title, tint = Color(0xFF990410))
+        Icon(imageVector = icon, contentDescription = title, tint = Color(0xFF990410))
         Spacer(modifier = Modifier.width(16.dp))
         Text(text = title, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = Color.DarkGray)
         Spacer(modifier = Modifier.weight(1f))

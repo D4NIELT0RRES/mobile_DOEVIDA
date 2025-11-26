@@ -106,4 +106,9 @@ dependencies {
 
     // Azure Storage Blob SDK
     implementation("com.azure:azure-storage-blob:12.25.0")
+
+    // OpenStreetMap (Gratuito)
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
+    // Mantendo location para permissão se necessário, mas removendo Google Maps
+    implementation("com.google.android.gms:play-services-location:21.2.0")
 }
