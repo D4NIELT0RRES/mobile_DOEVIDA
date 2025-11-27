@@ -105,20 +105,9 @@ fun TelaCadastro(navController: NavController) {
         Box(
             modifier = Modifier
                 .size(270.dp)
-                .offset(x = (-100).dp, y = (-120).dp)
+                .offset(x = (-120).dp, y = (-120).dp)
                 .background(color = primaryColor, shape = CircleShape)
         )
-        IconButton(
-            onClick = { navController.navigate("tela_inicial") },
-            modifier = Modifier.align(Alignment.TopStart).padding(top = 16.dp, start = 16.dp)
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.voltar),
-                contentDescription = "Voltar",
-                tint = Color.White,
-                modifier = Modifier.size(20.dp)
-            )
-        }
 
         Column(
             modifier = Modifier
@@ -131,7 +120,7 @@ fun TelaCadastro(navController: NavController) {
             Spacer(modifier = Modifier.height(60.dp)) // Espaço para compensar o Top
             
             Image(
-                painter = painterResource(id = R.drawable.logocadastro),
+                painter = painterResource(id = R.drawable.newlogo),
                 contentDescription = "Logo cadastro DOEVIDA",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier

@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -64,11 +65,21 @@ fun TelaInicial(navController: NavController) {
                 verticalArrangement = Arrangement.Center
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.logo1),
+                    painter = painterResource(id = R.drawable.newlogo),
                     contentDescription = "Logo DOEVIDA",
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
-                        .size(180.dp)
+                        .size(150.dp)
+                        .clip(CircleShape)
+
+                )
+
+                Text(
+                    text = "DOEVIDA",
+                    color = primaryColor,
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(top = 16.dp)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(

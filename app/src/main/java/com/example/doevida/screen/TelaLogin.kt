@@ -5,6 +5,9 @@ import android.util.Patterns
 import android.widget.Toast
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.keyframes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -19,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -26,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -46,9 +51,13 @@ import com.example.doevida.service.RetrofitFactory
 import com.example.doevida.service.SharedPreferencesUtils
 import com.example.doevida.util.TokenManager
 import com.example.doevida.util.UserDataManager
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
+// Data class para ajudar a decodificar a mensagem de erro da API
+data class ErrorResponse(val message: String)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,6 +68,8 @@ fun TelaLogin(navController: NavController) {
 
     var emailError by remember { mutableStateOf<String?>(null) }
     var senhaError by remember { mutableStateOf<String?>(null) }
+    // Novo estado para controlar a mensagem de erro da API
+    var apiError by remember { mutableStateOf<String?>(null) }
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -67,7 +78,7 @@ fun TelaLogin(navController: NavController) {
 
     // Lógica de Biometria
     var canAuthenticate by remember { mutableStateOf(false) }
-    
+
     LaunchedEffect(Unit) {
         val biometricManager = BiometricManager.from(context)
         canAuthenticate = biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG) == BiometricManager.BIOMETRIC_SUCCESS
@@ -142,26 +153,12 @@ fun TelaLogin(navController: NavController) {
         Box(
             modifier = Modifier
                 .size(270.dp)
-                .offset(x = (-100).dp, y = (-120).dp)
+                .offset(x = (-120).dp, y = (-120).dp)
                 .background(
                     color = primaryColor,
                     shape = CircleShape
                 )
         )
-        
-        IconButton(
-            onClick = { navController.navigate("tela_inicial") },
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(top = 16.dp, start = 16.dp)
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.voltar),
-                contentDescription = "Voltar",
-                tint = Color.White,
-                modifier = Modifier.size(20.dp)
-            )
-        }
 
         Column(
             modifier = Modifier
@@ -171,22 +168,28 @@ fun TelaLogin(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top 
         ) {
-            Spacer(modifier = Modifier.height(160.dp)) 
+            Spacer(modifier = Modifier.height(100.dp)) 
 
             Image(
-                painter = painterResource(id = R.drawable.logologin),
+                painter = painterResource(id = R.drawable.newlogo),
                 contentDescription = "Logo DOEVIDA",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
-                    .size(120.dp) 
+                    .size(150.dp) 
                     .clip(CircleShape)
             )
 
-            Spacer(modifier = Modifier.height(30.dp))
+            Text(
+                text = "Login",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                color = primaryColor,
+                modifier = Modifier.padding(vertical = 16.dp)
+            )
 
             OutlinedTextField(
                 value = login,
-                onValueChange = { login = it },
+                onValueChange = { login = it; apiError = null },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Email ou Usuário") },
                 leadingIcon = {
@@ -220,7 +223,7 @@ fun TelaLogin(navController: NavController) {
 
             OutlinedTextField(
                 value = senha,
-                onValueChange = { senha = it },
+                onValueChange = { senha = it; apiError = null },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Senha") },
                 leadingIcon = {
