@@ -20,7 +20,9 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -124,13 +126,17 @@ fun TelaCadastro(navController: NavController) {
                 .padding(horizontal = 32.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Top // Mudado para Top para evitar problemas de rolagem
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(60.dp)) // Espaço para compensar o Top
+            
             Image(
                 painter = painterResource(id = R.drawable.logocadastro),
                 contentDescription = "Logo cadastro DOEVIDA",
-                modifier = Modifier.size(150.dp)
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .size(150.dp)
+                    .clip(CircleShape) // Recorte circular
             )
 
             Text(
@@ -156,7 +162,8 @@ fun TelaCadastro(navController: NavController) {
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = primaryColor, unfocusedBorderColor = Color.Gray,
-                    focusedLabelColor = primaryColor, cursorColor = primaryColor
+                    focusedLabelColor = primaryColor, cursorColor = primaryColor,
+                    focusedTextColor = Color.Black, unfocusedTextColor = Color.Black
                 )
             )
 
@@ -177,7 +184,8 @@ fun TelaCadastro(navController: NavController) {
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = primaryColor, unfocusedBorderColor = Color.Gray,
-                    focusedLabelColor = primaryColor, cursorColor = primaryColor
+                    focusedLabelColor = primaryColor, cursorColor = primaryColor,
+                    focusedTextColor = Color.Black, unfocusedTextColor = Color.Black
                 )
             )
 
@@ -199,13 +207,14 @@ fun TelaCadastro(navController: NavController) {
                 trailingIcon = {
                     val image = if (senhaVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                     IconButton(onClick = { senhaVisible = !senhaVisible }) {
-                        Icon(imageVector = image, if (senhaVisible) "Esconder senha" else "Mostrar senha")
+                        Icon(imageVector = image, if (senhaVisible) "Esconder senha" else "Mostrar senha", tint = Color.Gray)
                     }
                 },
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = primaryColor, unfocusedBorderColor = Color.Gray,
-                    focusedLabelColor = primaryColor, cursorColor = primaryColor
+                    focusedLabelColor = primaryColor, cursorColor = primaryColor,
+                    focusedTextColor = Color.Black, unfocusedTextColor = Color.Black
                 )
             )
 
@@ -227,13 +236,14 @@ fun TelaCadastro(navController: NavController) {
                 trailingIcon = {
                     val image = if (confirmarSenhaVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                     IconButton(onClick = { confirmarSenhaVisible = !confirmarSenhaVisible }) {
-                        Icon(imageVector = image, if (confirmarSenhaVisible) "Esconder senha" else "Mostrar senha")
+                        Icon(imageVector = image, if (confirmarSenhaVisible) "Esconder senha" else "Mostrar senha", tint = Color.Gray)
                     }
                 },
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = primaryColor, unfocusedBorderColor = Color.Gray,
-                    focusedLabelColor = primaryColor, cursorColor = primaryColor
+                    focusedLabelColor = primaryColor, cursorColor = primaryColor,
+                    focusedTextColor = Color.Black, unfocusedTextColor = Color.Black
                 )
             )
 
@@ -253,7 +263,8 @@ fun TelaCadastro(navController: NavController) {
                         modifier = Modifier.menuAnchor().fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = primaryColor, unfocusedBorderColor = Color.Gray,
-                            focusedLabelColor = primaryColor, cursorColor = primaryColor
+                            focusedLabelColor = primaryColor, cursorColor = primaryColor,
+                            focusedTextColor = Color.Black, unfocusedTextColor = Color.Black
                         )
                     )
                     ExposedDropdownMenu(expanded = expandedSexo, onDismissRequest = { expandedSexo = false }) {
@@ -282,7 +293,8 @@ fun TelaCadastro(navController: NavController) {
                         modifier = Modifier.menuAnchor().fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = primaryColor, unfocusedBorderColor = Color.Gray,
-                            focusedLabelColor = primaryColor, cursorColor = primaryColor
+                            focusedLabelColor = primaryColor, cursorColor = primaryColor,
+                            focusedTextColor = Color.Black, unfocusedTextColor = Color.Black
                         )
                     )
                     ExposedDropdownMenu(expanded = expandedTipo, onDismissRequest = { expandedTipo = false }) {

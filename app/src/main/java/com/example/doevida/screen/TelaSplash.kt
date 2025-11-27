@@ -7,13 +7,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -30,13 +33,13 @@ fun TelaSplash(navController: NavController) {
         scale.animateTo(
             targetValue = 1f,
             animationSpec = spring(
-                dampingRatio = 0.5f, // Controla o "salto" da animação
-                stiffness = 150f     // Controla a velocidade
+                dampingRatio = 0.5f,
+                stiffness = 150f
             )
         )
-        delay(1200) // Tempo que o logo fica visível após a animação
+        delay(1200)
         navController.navigate("tela_inicial") {
-            popUpTo("tela_splash") { inclusive = true }
+            popUpTo("splash") { inclusive = true } // Corrigido para bater com a rota no MainActivity
         }
     }
 
@@ -54,9 +57,12 @@ private fun TelaSplashContent(scale: Float) {
         Image(
             painter = painterResource(id = R.drawable.logoo),
             contentDescription = "Logo DoeVida",
+            contentScale = ContentScale.Fit,
             modifier = Modifier
-                .size(220.dp) // Aumenta um pouco o tamanho para mais impacto
+                .size(220.dp)
                 .scale(scale)
+                // Tenta recortar para remover possíveis bordas quadradas brancas
+                // .clip(CircleShape) 
         )
     }
 }
@@ -64,6 +70,5 @@ private fun TelaSplashContent(scale: Float) {
 @Preview(showSystemUi = true)
 @Composable
 private fun TelaSplashPreview() {
-    // Para o preview, mostramos o estado final da animação
     TelaSplashContent(scale = 1f)
 }

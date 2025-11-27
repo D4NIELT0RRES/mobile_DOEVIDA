@@ -3,14 +3,20 @@ package com.example.doevida.screen
 import android.util.Log
 import android.util.Patterns
 import android.widget.Toast
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
@@ -18,7 +24,9 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -28,6 +36,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.doevida.R
@@ -53,6 +63,56 @@ fun TelaLogin(navController: NavController) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val primaryColor = Color(0xFF990410)
+    val scrollState = rememberScrollState()
+
+    // Lógica de Biometria
+    var canAuthenticate by remember { mutableStateOf(false) }
+    
+    LaunchedEffect(Unit) {
+        val biometricManager = BiometricManager.from(context)
+        canAuthenticate = biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG) == BiometricManager.BIOMETRIC_SUCCESS
+        
+        // Se houver token válido e biometria, tenta logar
+        val token = TokenManager(context).getToken()
+        if (token != null && canAuthenticate) {
+            // Aqui poderia acionar a biometria automaticamente se desejado
+        }
+    }
+
+    fun authenticateWithBiometrics() {
+        val executor = ContextCompat.getMainExecutor(context)
+        val biometricPrompt = BiometricPrompt(context as FragmentActivity, executor,
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    super.onAuthenticationSucceeded(result)
+                    // Sucesso: Login automático se houver token ou preencher campos salvos
+                    // Como não estamos salvando senha localmente por segurança, 
+                    // a biometria serve como "Fast Pass" se o token ainda for válido.
+                    val token = TokenManager(context).getToken()
+                    if (token != null) {
+                        Toast.makeText(context, "Autenticado com sucesso!", Toast.LENGTH_SHORT).show()
+                        navController.navigate("tela_home") {
+                            popUpTo("tela_login") { inclusive = true }
+                        }
+                    } else {
+                        Toast.makeText(context, "Sessão expirada. Por favor, faça login com senha.", Toast.LENGTH_LONG).show()
+                    }
+                }
+
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    super.onAuthenticationError(errorCode, errString)
+                    Toast.makeText(context, "Erro na autenticação: $errString", Toast.LENGTH_SHORT).show()
+                }
+            })
+
+        val promptInfo = BiometricPrompt.PromptInfo.Builder()
+            .setTitle("Login Biométrico")
+            .setSubtitle("Use sua digital ou face para entrar")
+            .setNegativeButtonText("Cancelar")
+            .build()
+
+        biometricPrompt.authenticate(promptInfo)
+    }
 
     fun validarCampos(): Boolean {
         emailError = if (login.isBlank()) {
@@ -88,6 +148,7 @@ fun TelaLogin(navController: NavController) {
                     shape = CircleShape
                 )
         )
+        
         IconButton(
             onClick = { navController.navigate("tela_inicial") },
             modifier = Modifier
@@ -105,15 +166,20 @@ fun TelaLogin(navController: NavController) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 32.dp),
+                .padding(horizontal = 32.dp)
+                .verticalScroll(scrollState), 
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Top 
         ) {
+            Spacer(modifier = Modifier.height(160.dp)) 
+
             Image(
                 painter = painterResource(id = R.drawable.logologin),
                 contentDescription = "Logo DOEVIDA",
+                contentScale = ContentScale.Fit,
                 modifier = Modifier
-                    .size(150.dp)
+                    .size(120.dp) 
+                    .clip(CircleShape)
             )
 
             Spacer(modifier = Modifier.height(30.dp))
@@ -127,7 +193,8 @@ fun TelaLogin(navController: NavController) {
                     Icon(
                         painter = painterResource(id = R.drawable.perfil),
                         contentDescription = "Ícone de usuário",
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(24.dp),
+                        tint = primaryColor
                     )
                 },
                 isError = emailError != null,
@@ -143,7 +210,9 @@ fun TelaLogin(navController: NavController) {
                     unfocusedBorderColor = Color.Gray,
                     focusedLabelColor = primaryColor,
                     cursorColor = primaryColor,
-                    focusedLeadingIconColor = primaryColor
+                    focusedLeadingIconColor = primaryColor,
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black
                 )
             )
 
@@ -158,7 +227,8 @@ fun TelaLogin(navController: NavController) {
                     Icon(
                         painter = painterResource(id = R.drawable.senha),
                         contentDescription = "Ícone de senha",
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(24.dp),
+                        tint = primaryColor
                     )
                 },
                 isError = senhaError != null,
@@ -173,7 +243,7 @@ fun TelaLogin(navController: NavController) {
                     val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                     val description = if (passwordVisible) "Esconder senha" else "Mostrar senha"
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(imageVector = image, contentDescription = description)
+                        Icon(imageVector = image, contentDescription = description, tint = Color.Gray)
                     }
                 },
                 singleLine = true,
@@ -182,7 +252,9 @@ fun TelaLogin(navController: NavController) {
                     unfocusedBorderColor = Color.Gray,
                     focusedLabelColor = primaryColor,
                     cursorColor = primaryColor,
-                    focusedLeadingIconColor = primaryColor
+                    focusedLeadingIconColor = primaryColor,
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black
                 )
             )
 
@@ -273,9 +345,27 @@ fun TelaLogin(navController: NavController) {
                 )
             }
 
+            // Botão de Biometria (Só aparece se houver hardware disponível)
+            if (canAuthenticate) {
+                Spacer(modifier = Modifier.height(16.dp))
+                OutlinedButton(
+                    onClick = { authenticateWithBiometrics() },
+                    border = BorderStroke(1.dp, primaryColor),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.fillMaxWidth().height(48.dp)
+                ) {
+                    Icon(Icons.Default.Fingerprint, contentDescription = "Biometria", tint = primaryColor)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Entrar com Biometria", color = primaryColor)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
             Row(
-                modifier = Modifier.padding(top = 32.dp),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
             ) {
                 Text(
                     text = "Não tem uma conta?",
@@ -284,7 +374,7 @@ fun TelaLogin(navController: NavController) {
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "Fazer cadastro",
+                    text = "Cadastre-se",
                     color = primaryColor,
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp,

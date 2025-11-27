@@ -49,8 +49,11 @@ fun AppNavigation() {
         composable("tela_agendamento") { TelaAgendamento(navController) }
         composable("tela_perfil") { TelaPerfil(navController) }
         
-        // Rota atualizada para o sistema de Gamificação
+        // Rota para o sistema de Gamificação
         composable("tela_conquistas") { TelaConquistas(navController) }
+        
+        // Rota para a Pré-Triagem
+        composable("tela_pre_triagem") { TelaPreTriagem(navController) }
         
         composable("tela_registrar_doacao") { TelaRegistrarDoacao(navController) }
         composable("tela_noticias") { TelaNoticias(navController) }

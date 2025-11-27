@@ -109,6 +109,9 @@ dependencies {
 
     // OpenStreetMap (Gratuito)
     implementation("org.osmdroid:osmdroid-android:6.1.18")
-    // Mantendo location para permissão se necessário, mas removendo Google Maps
+    // Mantendo location para permissão se necessário
     implementation("com.google.android.gms:play-services-location:21.2.0")
+
+    // Biometria (NOVO)
+    implementation("androidx.biometric:biometric:1.1.0")
 }

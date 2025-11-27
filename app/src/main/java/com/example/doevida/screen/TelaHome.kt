@@ -229,7 +229,7 @@ fun ActionsGrid(navController: NavController) {
             horizontalArrangement = Arrangement.SpaceAround
         ) {
             ActionCard("Agendar Doação", R.drawable.doarsangue, "tela_agendamento", navController)
-            ActionCard("Hospitais", R.drawable.hospitais, "tela_hospitais", navController)
+            ActionCard("Posso Doar?", R.drawable.logologin, "tela_pre_triagem", navController) // Novo botão
         }
         Spacer(modifier = Modifier.height(16.dp))
         Row(
@@ -237,13 +237,14 @@ fun ActionsGrid(navController: NavController) {
             horizontalArrangement = Arrangement.SpaceAround
         ) {
             ActionCard("Banco de Sangue", R.drawable.bancodesangue, "tela_banco_sangue", navController)
-            ActionCard("Histórico", R.drawable.historicos, "tela_historico", navController)
+            ActionCard("Hospitais", R.drawable.hospitais, "tela_hospitais", navController)
         }
         Spacer(modifier = Modifier.height(16.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.SpaceAround
         ) {
+            ActionCard("Histórico", R.drawable.historicos, "tela_historico", navController)
             ActionCard("Registrar Doação", R.drawable.doarsangue, "tela_registrar_doacao", navController)
         }
     }

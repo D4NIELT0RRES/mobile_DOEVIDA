@@ -1,12 +1,17 @@
 package com.example.doevida.screen
 
+import android.content.Context
+import android.content.Intent
+import android.provider.CalendarContract
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
@@ -29,7 +34,8 @@ import com.example.doevida.model.HospitaisCards
 import com.example.doevida.service.RetrofitFactory
 import com.example.doevida.util.UserDataManager
 import kotlinx.coroutines.launch
-import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -45,7 +51,7 @@ fun TelaProtocoloAgendamento(navController: NavController, hospitalId: Int, data
 
     val dataFormatada = remember(dataSelecionada) {
         try {
-            LocalDate.parse(dataSelecionada).format(DateTimeFormatter.ofPattern("dd 'de' MMMM 'de' yyyy", Locale("pt", "BR")))
+            java.time.LocalDate.parse(dataSelecionada).format(DateTimeFormatter.ofPattern("dd 'de' MMMM 'de' yyyy", Locale("pt", "BR")))
         } catch (e: Exception) { dataSelecionada }
     }
 
@@ -74,6 +80,26 @@ fun TelaProtocoloAgendamento(navController: NavController, hospitalId: Int, data
         }
     }
 
+    fun addToCalendar() {
+        try {
+            val dateTimeStr = "${dataSelecionada}T${horarioSelecionado}:00"
+            val startMillis = LocalDateTime.parse(dateTimeStr).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            val endMillis = startMillis + 60 * 60 * 1000 // 1 hora de duração
+
+            val intent = Intent(Intent.ACTION_INSERT).apply {
+                data = CalendarContract.Events.CONTENT_URI
+                putExtra(CalendarContract.Events.TITLE, "Doação de Sangue - ${hospital?.nomeHospital ?: "Hospital"}")
+                putExtra(CalendarContract.Events.EVENT_LOCATION, hospital?.endereco ?: "")
+                putExtra(CalendarContract.Events.DESCRIPTION, "Agendamento via DoeVida. Protocolo: ${agendamentoProtocolo ?: "N/A"}")
+                putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, startMillis)
+                putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endMillis)
+            }
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(context, "Não foi possível abrir o calendário", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     LaunchedEffect(hospitalId) {
         scope.launch {
             try {
@@ -85,7 +111,7 @@ fun TelaProtocoloAgendamento(navController: NavController, hospitalId: Int, data
 
     Scaffold(
         topBar = { TopBarProtocolo() },
-        bottomBar = { BottomBarProtocolo(isLoading) { if(agendamentoProtocolo != null) { navController.navigate("tela_home") { popUpTo(0) } } else { salvarAgendamento() } } },
+        bottomBar = { BottomBarProtocolo(isLoading, agendamentoProtocolo != null) { if(agendamentoProtocolo != null) { navController.navigate("tela_home") { popUpTo(0) } } else { salvarAgendamento() } } },
         containerColor = Color(0xFFF7F7F7)
     ) {
         Column(
@@ -94,7 +120,7 @@ fun TelaProtocoloAgendamento(navController: NavController, hospitalId: Int, data
             if (agendamentoProtocolo == null) {
                 ReviewDetails(hospital, dataFormatada, horarioSelecionado)
             } else {
-                SuccessDetails(hospital, dataFormatada, horarioSelecionado, agendamentoProtocolo!!)
+                SuccessDetails(hospital, dataFormatada, horarioSelecionado, agendamentoProtocolo!!, onAddToCalendar = { addToCalendar() })
             }
         }
     }
@@ -112,7 +138,7 @@ fun ReviewDetails(hospital: HospitaisCards?, dataFormatada: String, horarioSelec
 }
 
 @Composable
-fun SuccessDetails(hospital: HospitaisCards?, dataFormatada: String, horarioSelecionado: String, protocolo: String) {
+fun SuccessDetails(hospital: HospitaisCards?, dataFormatada: String, horarioSelecionado: String, protocolo: String, onAddToCalendar: () -> Unit) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
         Icon(Icons.Filled.CheckCircle, contentDescription = "Sucesso", tint = Color(0xFF4CAF50), modifier = Modifier.size(80.dp))
         Spacer(modifier = Modifier.height(16.dp))
@@ -120,7 +146,19 @@ fun SuccessDetails(hospital: HospitaisCards?, dataFormatada: String, horarioSele
         Text("Seu protocolo é:", color = Color.Gray, modifier = Modifier.padding(top = 16.dp))
         Text(protocolo, style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold, color = Color.DarkGray, modifier = Modifier.padding(vertical = 8.dp))
         
-        Spacer(modifier = Modifier.height(24.dp))
+        // Botão para adicionar ao calendário
+        OutlinedButton(
+            onClick = onAddToCalendar,
+            border = BorderStroke(1.dp, Color(0xFF990410)),
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
+        ) {
+            Icon(Icons.Default.CalendarToday, contentDescription = null, tint = Color(0xFF990410))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Adicionar ao Calendário", color = Color(0xFF990410))
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
         InstructionsCard()
     }
 }
@@ -202,7 +240,7 @@ fun TopBarProtocolo() {
 }
 
 @Composable
-fun BottomBarProtocolo(isLoading: Boolean, onClick: () -> Unit) {
+fun BottomBarProtocolo(isLoading: Boolean, isSuccess: Boolean, onClick: () -> Unit) {
     Surface(shadowElevation = 8.dp, color = Color.White) {
         Button(
             onClick = onClick,
@@ -214,7 +252,7 @@ fun BottomBarProtocolo(isLoading: Boolean, onClick: () -> Unit) {
             if (isLoading) {
                 CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
             } else {
-                Text("Confirmar e Agendar", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text(if (isSuccess) "Voltar ao Início" else "Confirmar e Agendar", fontWeight = FontWeight.Bold, fontSize = 16.sp)
             }
         }
     }

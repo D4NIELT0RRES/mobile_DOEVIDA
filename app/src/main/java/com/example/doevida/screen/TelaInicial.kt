@@ -5,8 +5,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedButton
@@ -15,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -28,12 +31,14 @@ import com.example.doevida.R
 @Composable
 fun TelaInicial(navController: NavController) {
     val primaryColor = Color(0xFF990410)
+    val scrollState = rememberScrollState()
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
     ) {
+        // Elemento decorativo de fundo
         Box(
             modifier = Modifier
                 .size(250.dp)
@@ -47,10 +52,13 @@ fun TelaInicial(navController: NavController) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(scrollState) // Adiciona rolagem para telas pequenas
                 .padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceAround // Use SpaceAround for better distribution
+            verticalArrangement = Arrangement.Center
         ) {
+            Spacer(modifier = Modifier.height(40.dp)) // Espaço para compensar o elemento decorativo
+
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
@@ -58,7 +66,9 @@ fun TelaInicial(navController: NavController) {
                 Image(
                     painter = painterResource(id = R.drawable.logo1),
                     contentDescription = "Logo DOEVIDA",
-                    modifier = Modifier.size(180.dp)
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .size(180.dp)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
@@ -69,6 +79,8 @@ fun TelaInicial(navController: NavController) {
                     textAlign = TextAlign.Center
                 )
             }
+
+            Spacer(modifier = Modifier.height(60.dp)) // Espaçamento flexível
 
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -117,9 +129,11 @@ fun TelaInicial(navController: NavController) {
                     color = primaryColor,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clickable { navController.navigate("tela_learn_more") }
+                    modifier = Modifier.clickable { /* navController.navigate("tela_learn_more") */ }
                 )
             }
+            
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
