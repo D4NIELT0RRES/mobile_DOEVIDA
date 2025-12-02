@@ -197,10 +197,13 @@ private fun FloatingBackButton(onClick: () -> Unit) {
     }
 }
 
-private fun formatarHorario(horarioISO: String?): String {
-    if (horarioISO.isNullOrBlank() || !horarioISO.contains("T")) return ""
+private fun formatarHorario(horario: String?): String {
+    if (horario.isNullOrBlank()) return ""
     return try {
-        horarioISO.substringAfter('T').take(5)
+        // Se tiver 'T', pega o que vem depois. Senão, pega a própria string.
+        val timePart = if (horario.contains("T")) horario.substringAfter('T') else horario
+        // Tenta pegar os primeiros 5 caracteres (HH:mm)
+        timePart.take(5)
     } catch (e: Exception) {
         ""
     }
