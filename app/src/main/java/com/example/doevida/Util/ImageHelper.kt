@@ -7,11 +7,10 @@ object ImageHelper {
     private const val BASE_URL_EMULATOR = "http://10.0.2.2:8080"
     
     // URL base para Azure (produção)
-    // Atualizado para corresponder exatamente à URL do Retrofit, incluindo o path da API
-    private const val BASE_URL_AZURE = "https://doevida.azurewebsites.net/v1/doevida"
+    private const val BASE_URL_AZURE = "https://doevida.azurewebsites.net"
     
-    // IMPORTANTE: Use false para produção (Azure)
-    private const val USE_LOCAL = false
+    // IMPORTANTE: Como você está rodando LOCALMENTE agora, mudei para true
+    private const val USE_LOCAL = true
     
     /**
      * Constrói a URL completa da imagem a partir do path retornado pelo backend

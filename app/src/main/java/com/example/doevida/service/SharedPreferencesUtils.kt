@@ -60,9 +60,28 @@ object SharedPreferencesUtils {
         return getSharedPreferences(context).getString(KEY_USER_PROFILE_IMAGE_URL, null)
     }
 
+    /**
+     * Salva uma doação manual, evitando duplicatas exatas (mesmo usuário, hospital e data).
+     * Se já existir, remove a antiga e adiciona a nova (atualização).
+     */
     fun saveManualDonation(context: Context, newDonation: DoacaoManual) {
         val donations = getManualDonations(context).toMutableList()
+        
+        // Remove duplicatas se houver (mesmo usuário, hospital e data)
+        // Isso evita criar "outro card" se o usuário registrar a mesma doação novamente
+        val iterator = donations.iterator()
+        while (iterator.hasNext()) {
+            val existing = iterator.next()
+            if (existing.userId == newDonation.userId &&
+                existing.hospitalName == newDonation.hospitalName &&
+                existing.donationDate == newDonation.donationDate) {
+                iterator.remove() // Remove a antiga para substituir pela nova
+            }
+        }
+
+        // Adiciona a nova no topo
         donations.add(0, newDonation)
+        
         val json = gson.toJson(donations)
         getSharedPreferences(context).edit().putString(KEY_MANUAL_DONATIONS, json).apply()
         Log.i("SharedPreferencesUtils", "Doação manual salva. Total: ${donations.size}")

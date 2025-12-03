@@ -11,7 +11,8 @@ import java.util.concurrent.TimeUnit
 
 class RetrofitFactory(private val context: Context) {
 
-    private val BASE_URL = "https://doevida.azurewebsites.net/v1/doevida/"
+    // CORREÇÃO: Mudado de https para http para rodar localmente
+    private val BASE_URL = "http://10.0.2.2:8080/v1/doevida/"
 
     // Interceptor inteligente que só adiciona o token em rotas privadas
     private val authInterceptor = Interceptor { chain ->
