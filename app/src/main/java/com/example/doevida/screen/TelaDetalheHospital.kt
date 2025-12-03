@@ -1,7 +1,6 @@
 package com.example.doevida.screen
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,15 +23,17 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.doevida.R
 import com.example.doevida.model.HospitaisCards
 import com.example.doevida.service.RetrofitFactory
+import com.example.doevida.util.ImageHelper
 import com.example.doevida.util.abrirNoMaps
 import com.example.doevida.util.ligarPara
 import kotlinx.coroutines.launch
@@ -121,13 +122,30 @@ fun TelaDetalheHospital(navController: NavController, hospitalId: Int) {
 @Composable
 private fun HospitalDetailHeader(hospital: HospitaisCards) {
     Box(modifier = Modifier.fillMaxWidth().height(280.dp)) {
-        Image(
-            painter = painterResource(id = R.drawable.hospital),
-            contentDescription = null,
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(ImageHelper.getImageUrl(hospital.foto))
+                .crossfade(true)
+                .placeholder(R.drawable.hospital)
+                .error(R.drawable.hospital)
+                .build(),
+            contentDescription = "Foto do Hospital",
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
-        Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.8f)), startY = 300f)))
+        
+        // Gradiente para facilitar leitura do texto
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.8f)),
+                        startY = 300f
+                    )
+                )
+        )
+        
         Column(
             modifier = Modifier.align(Alignment.BottomStart).padding(16.dp)
         ) {
@@ -200,9 +218,7 @@ private fun FloatingBackButton(onClick: () -> Unit) {
 private fun formatarHorario(horario: String?): String {
     if (horario.isNullOrBlank()) return ""
     return try {
-        // Se tiver 'T', pega o que vem depois. Senão, pega a própria string.
         val timePart = if (horario.contains("T")) horario.substringAfter('T') else horario
-        // Tenta pegar os primeiros 5 caracteres (HH:mm)
         timePart.take(5)
     } catch (e: Exception) {
         ""
